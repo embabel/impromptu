@@ -1,0 +1,36 @@
+ragbot:
+  chunker-config:
+    max-chunk-size: 800
+    overlap-size: 100
+    embedding-batch-size: 800
+
+  chat-llm:
+    model: gpt-4.1-mini
+    temperature: 0.0
+
+  voice:
+    persona: music-guide
+    max-words: 250
+
+  objective: music
+
+embabel:
+
+  agent:
+
+    shell:
+      # If true, redirects logging to logs/chat-session.log rather than console during chat
+      redirect-log-to-file: false
+    logging:
+      personality: colossus
+
+
+  models:
+
+    # Change this to use a non Open AI default LLM
+    default-llm:
+      model: gpt-4.1-mini
+
+    default-embedding-model:
+      model: text-embedding-3-small
+

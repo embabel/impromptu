@@ -1,0 +1,15 @@
+
+embabel-agent-api/src/main/resources/mcp/**
+
+/target/**
+*/target/**
+*/*/target/**
+*/*/*/target/**
+
+.idea/**
+
+.claude
+
+.lucene-index
+
+**/*.log

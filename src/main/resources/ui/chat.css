@@ -1,0 +1,96 @@
+<style>
+/* Dark mode theme for Javelit Chat UI - Catppuccin Mocha inspired */
+:root {
+    /* Override Javelit's color scheme for dark mode */
+    --jt-bg-primary: #1e1e2e !important;
+    --jt-bg-secondary: #181825 !important;
+    --jt-bg-tertiary: #313244 !important;
+    --jt-bg-input: #313244 !important;
+
+    --jt-text-primary: #cdd6f4 !important;
+    --jt-text-secondary: #a6adc8 !important;
+    --jt-text-muted: #6c7086 !important;
+    --jt-text-white: #cdd6f4 !important;
+
+    --jt-border-color: #45475a !important;
+    --jt-light-border-color: #313244 !important;
+
+    --jt-theme-color: #89b4fa !important;
+    --jt-theme-hover: #b4befe !important;
+    --jt-theme-active: #74c7ec !important;
+
+    --jt-primary-color: #89b4fa !important;
+    --jt-primary-hover: #b4befe !important;
+    --jt-primary-active: #74c7ec !important;
+
+    --jt-success-color: #a6e3a1 !important;
+    --jt-danger-color: #f38ba8 !important;
+    --jt-warning-color: #f9e2af !important;
+    --jt-info-color: #89dceb !important;
+
+    /* Smaller font sizes */
+    --jt-font-size-xs: 0.55rem !important;
+    --jt-font-size-sm: 0.65rem !important;
+    --jt-font-size-base: 0.75rem !important;
+    --jt-font-size-lg: 0.8rem !important;
+    --jt-font-size-xl: 0.9rem !important;
+    --jt-font-size-2xl: 1.0rem !important;
+    --jt-font-size-3xl: 1.15rem !important;
+    --jt-font-size-4xl: 1.3rem !important;
+}
+
+/* Force body dark background */
+body {
+    background-color: #1e1e2e !important;
+    color: #cdd6f4 !important;
+}
+
+/* Links */
+a {
+    color: #89b4fa !important;
+}
+
+a:hover {
+    color: #b4befe !important;
+}
+
+/* Code blocks */
+code, pre {
+    background-color: #313244 !important;
+    color: #a6e3a1 !important;
+}
+
+/* Strong/bold text */
+strong, b {
+    color: #89b4fa !important;
+}
+
+/* Scrollbars for dark mode */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1e1e2e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #45475a;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #585b70;
+}
+
+/* Horizontal rule */
+hr {
+    border-color: #45475a !important;
+}
+
+/* Hide toolbar buttons */
+.toolbar {
+    display: none !important;
+}
+</style>

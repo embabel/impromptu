@@ -1,0 +1,2 @@
+# Simple Chat UI with Javelit
+If you're familir with Streamlit in Python, [Javelit](https://javelit.io/) is a similar framework for building web apps in Java. This example demonstrates how to create a simple chat UI using Javelit.
