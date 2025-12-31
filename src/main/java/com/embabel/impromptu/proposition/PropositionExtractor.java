@@ -1,8 +1,5 @@
 package com.embabel.impromptu.proposition;
 
-import com.embabel.agent.api.annotation.Action;
-import com.embabel.agent.api.annotation.EmbabelComponent;
-import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.core.DataDictionary;
 import com.embabel.agent.rag.model.Chunk;
 import com.embabel.chat.AssistantMessage;
@@ -10,47 +7,49 @@ import com.embabel.chat.Conversation;
 import com.embabel.chat.Message;
 import com.embabel.chat.UserMessage;
 import com.embabel.dice.pipeline.PropositionPipeline;
-import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.text2graph.builder.SourceAnalysisConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 
 import java.util.Map;
 import java.util.UUID;
 
 /**
- * Action that extracts propositions from chat conversations.
- * Triggered after user messages to learn facts from the dialogue.
+ * Async listener that extracts propositions from chat conversations.
+ * Adapts conversation exchanges to the dice proposition pipeline.
+ * Created as a bean in PropositionConfiguration.
  */
-@EmbabelComponent
-public class PropositionExtractorAction {
+public class PropositionExtractor {
 
-    private static final Logger logger = LoggerFactory.getLogger(PropositionExtractorAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(PropositionExtractor.class);
 
     private final PropositionPipeline propositionPipeline;
-    private final PropositionRepository propositionRepository;
     private final DataDictionary musicSchema;
 
-    public PropositionExtractorAction(
+    public PropositionExtractor(
             PropositionPipeline propositionPipeline,
-            PropositionRepository propositionRepository,
             DataDictionary musicSchema) {
         this.propositionPipeline = propositionPipeline;
-        this.propositionRepository = propositionRepository;
         this.musicSchema = musicSchema;
     }
 
     /**
-     * Extract propositions after user messages.
-     * This builds up a knowledge base from the conversation.
-     * Only runs every 5 messages to avoid excessive LLM calls.
+     * Async event listener for conversation exchanges.
+     * Extracts propositions in a separate thread to avoid blocking chat responses.
      */
-    @Action(
-            canRerun = true,
-            trigger = UserMessage.class,
-            pre = "spel:#conversation.messages.size() % 5 == 2"
-    )
-    public void extractPropositions(Conversation conversation, ActionContext context) {
+    @Async
+    @EventListener
+    public void onConversationExchange(ConversationExchangeEvent event) {
+        extractPropositions(event.getConversation());
+    }
+
+    /**
+     * Extract propositions from a conversation.
+     * This builds up a knowledge base from the dialogue.
+     */
+    public void extractPropositions(Conversation conversation) {
         try {
             var messages = conversation.getMessages();
             if (messages.size() < 2) {
@@ -97,16 +96,16 @@ public class PropositionExtractorAction {
             var sourceConfig = new SourceAnalysisConfig(
                     musicSchema,
                     """
-                    Extract facts about music, composers, musical works, and user interests.
-                    Focus on:
-                    - Facts about composers and their works mentioned in the conversation
-                    - Musical concepts or terms discussed
-                    - What topics the user is interested in or asking about
-                    - Any relationships between musical entities (composer wrote work, work is in genre, etc.)
-
-                    For user interests, create propositions like "The user is interested in [topic]"
-                    based on what they are asking about.
-                    """
+                            Extract facts about music, composers, musical works, and user interests.
+                            Focus on:
+                            - Facts about composers and their works mentioned in the conversation
+                            - Musical concepts or terms discussed
+                            - What topics the user is interested in or asking about
+                            - Any relationships between musical entities (composer wrote work, work is in genre, etc.)
+                            
+                            For user interests, create propositions like "The user is interested in [topic]"
+                            based on what they are asking about.
+                            """
             );
 
             logger.debug("Extracting propositions from conversation exchange");
@@ -144,7 +143,7 @@ public class PropositionExtractorAction {
     private String buildExtractionText(Message userMsg, Message assistantMsg) {
         return """
                 User asked: %s
-
+                
                 Assistant response: %s
                 """.formatted(userMsg.getContent(), assistantMsg.getContent());
     }

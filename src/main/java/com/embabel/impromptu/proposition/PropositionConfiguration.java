@@ -14,12 +14,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * Configuration for proposition extraction from chat conversations.
  * Sets up the dice pipeline components for extracting and storing propositions.
+ * Enables async processing for non-blocking proposition extraction.
  */
 @Configuration
+@EnableAsync
 public class PropositionConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(PropositionConfiguration.class);
@@ -64,7 +67,7 @@ public class PropositionConfiguration {
      * LLM-based proposition extractor using the dice library.
      */
     @Bean
-    public LlmPropositionExtractor propositionExtractor(AiBuilder aiBuilder) {
+    public LlmPropositionExtractor llmPropositionExtractor(AiBuilder aiBuilder) {
         var ai = aiBuilder
                 .withShowPrompts(false)
                 .withShowLlmResponses(false)
@@ -80,13 +83,23 @@ public class PropositionConfiguration {
      */
     @Bean
     public PropositionPipeline propositionPipeline(
-            LlmPropositionExtractor propositionExtractor,
+            LlmPropositionExtractor llmPropositionExtractor,
             PropositionRepository propositionRepository) {
         logger.info("Building proposition extraction pipeline");
         return PropositionBuilders
-                .withExtractor(propositionExtractor)
+                .withExtractor(llmPropositionExtractor)
                 .withEntityResolver(new InMemoryEntityResolver())
                 .withStore(propositionRepository)
                 .build();
+    }
+
+    /**
+     * Async event listener that adapts conversations to the proposition pipeline.
+     */
+    @Bean
+    public PropositionExtractor propositionExtractor(
+            PropositionPipeline propositionPipeline,
+            DataDictionary musicSchema) {
+        return new PropositionExtractor(propositionPipeline, musicSchema);
     }
 }

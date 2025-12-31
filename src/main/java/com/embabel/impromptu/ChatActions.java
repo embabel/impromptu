@@ -8,6 +8,8 @@ import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
+import com.embabel.impromptu.proposition.ConversationExchangeEvent;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Map;
 
@@ -19,9 +21,11 @@ public class ChatActions {
 
     private final ToolishRag toolishRag;
     private final ImpromptuProperties properties;
+    private final ApplicationEventPublisher eventPublisher;
 
     public ChatActions(
             SearchOperations searchOperations,
+            ApplicationEventPublisher eventPublisher,
             ImpromptuProperties properties) {
         this.toolishRag = new ToolishRag(
                 "sources",
@@ -29,6 +33,7 @@ public class ChatActions {
                 searchOperations)
                 .withHint(TryHyDE.usingConversationContext());
         this.properties = properties;
+        this.eventPublisher = eventPublisher;
     }
 
     // TODO orient
@@ -40,8 +45,6 @@ public class ChatActions {
     void respond(
             Conversation conversation,
             ActionContext context) {
-        // We could use a simple prompt here but choose to use a template
-        // as chatbots tend to require longer prompts
         var assistantMessage = context.
                 ai()
                 .withLlm(properties.chatLlm())
@@ -53,5 +56,10 @@ public class ChatActions {
                         "objective", properties.objective()
                 ));
         context.sendMessage(conversation.addMessage(assistantMessage));
+
+        // Publish event for async proposition extraction (every 3rd exchange)
+        if (conversation.getMessages().size() % 3 == 0) {
+            eventPublisher.publishEvent(new ConversationExchangeEvent(this, conversation));
+        }
     }
 }
