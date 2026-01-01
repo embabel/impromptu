@@ -1,8 +1,6 @@
 package com.embabel.impromptu.spotify;
 
-import com.embabel.agent.api.annotation.Action;
-import com.embabel.agent.api.annotation.EmbabelComponent;
-import com.embabel.agent.api.common.OperationContext;
+import com.embabel.agent.api.annotation.LlmTool;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,39 +11,23 @@ import java.util.stream.Collectors;
 /**
  * Actions for Spotify playlist management.
  * These actions are available to the chatbot when the user has linked their Spotify account.
+ *
  */
-@EmbabelComponent
-public class SpotifyActions {
+public record SpotifyTools(
+        ImpromptuUser user,
+        SpotifyService spotifyService) {
 
-    private static final Logger logger = LoggerFactory.getLogger(SpotifyActions.class);
-
-    private final SpotifyService spotifyService;
-
-    public SpotifyActions(SpotifyService spotifyService) {
-        this.spotifyService = spotifyService;
-    }
-
-    /**
-     * Get the current user as ImpromptuUser from the operation context.
-     */
-    private ImpromptuUser getUser(OperationContext context) {
-        var forUser = context.getProcessContext().getProcessOptions().getIdentities().getForUser();
-        if (forUser instanceof ImpromptuUser iu) {
-            return iu;
-        }
-        return null;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(SpotifyTools.class);
 
     /**
      * Check if Spotify is available for the current user.
      */
-    @Action(description = "Check if user has linked their Spotify account")
-    public String checkSpotifyStatus(OperationContext context) {
+    @LlmTool(description = "Check if user has linked their Spotify account")
+    public String checkSpotifyStatus() {
         if (!spotifyService.isConfigured()) {
             return "Spotify integration is not configured on this server.";
         }
 
-        ImpromptuUser user = getUser(context);
         if (user == null) {
             return "Unable to determine current user.";
         }
@@ -60,9 +42,8 @@ public class SpotifyActions {
     /**
      * Get user's Spotify playlists.
      */
-    @Action(description = "Get the user's Spotify playlists")
-    public String getPlaylists(OperationContext context) {
-        ImpromptuUser user = getUser(context);
+    @LlmTool(description = "Get the user's Spotify playlists")
+    public String getPlaylists() {
         if (user == null || !spotifyService.isLinked(user)) {
             return "Please link your Spotify account first by clicking 'Link Spotify' in the header.";
         }
@@ -88,11 +69,10 @@ public class SpotifyActions {
     /**
      * Search for tracks on Spotify.
      */
-    @Action(description = "Search for tracks on Spotify by song name, artist, or both")
+    @LlmTool(description = "Search for tracks on Spotify by song name, artist, or both")
     public String searchTracks(
-            String query,
-            OperationContext context) {
-        ImpromptuUser user = getUser(context);
+            String query
+    ) {
         if (user == null || !spotifyService.isLinked(user)) {
             return "Please link your Spotify account first by clicking 'Link Spotify' in the header.";
         }
@@ -119,12 +99,10 @@ public class SpotifyActions {
     /**
      * Create a new Spotify playlist.
      */
-    @Action(description = "Create a new Spotify playlist with the given name and description")
+    @LlmTool(description = "Create a new Spotify playlist with the given name and description")
     public String createPlaylist(
             String name,
-            String description,
-            OperationContext context) {
-        ImpromptuUser user = getUser(context);
+            String description) {
         if (user == null || !spotifyService.isLinked(user)) {
             return "Please link your Spotify account first by clicking 'Link Spotify' in the header.";
         }
@@ -143,12 +121,10 @@ public class SpotifyActions {
     /**
      * Search for tracks and add them to a playlist.
      */
-    @Action(description = "Search for tracks and add matching results to an existing playlist")
+//    @LlmTool(description = "Search for tracks and add matching results to an existing playlist")
     public String addTracksToPlaylist(
             String playlistName,
-            List<String> trackQueries,
-            OperationContext context) {
-        ImpromptuUser user = getUser(context);
+            List<String> trackQueries) {
         if (user == null || !spotifyService.isLinked(user)) {
             return "Please link your Spotify account first by clicking 'Link Spotify' in the header.";
         }
@@ -197,13 +173,11 @@ public class SpotifyActions {
     /**
      * Create a new playlist and add tracks to it in one action.
      */
-    @Action(description = "Create a new playlist and populate it with tracks found by searching")
+//    @LlmTool(description = "Create a new playlist and populate it with tracks found by searching")
     public String createPlaylistWithTracks(
             String playlistName,
             String description,
-            List<String> trackQueries,
-            OperationContext context) {
-        ImpromptuUser user = getUser(context);
+            List<String> trackQueries) {
         if (user == null || !spotifyService.isLinked(user)) {
             return "Please link your Spotify account first by clicking 'Link Spotify' in the header.";
         }

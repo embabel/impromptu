@@ -11,11 +11,15 @@ import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.proposition.ConversationExchangeEvent;
+import com.embabel.impromptu.spotify.SpotifyService;
+import com.embabel.impromptu.spotify.SpotifyTools;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,10 +32,12 @@ public class ChatActions {
 
     private final ToolishRag toolishRag;
     private final ImpromptuProperties properties;
+    private final SpotifyService spotifyService;
     private final ApplicationEventPublisher eventPublisher;
 
     public ChatActions(
             SearchOperations searchOperations,
+            SpotifyService spotifyService,
             ApplicationEventPublisher eventPublisher,
             ImpromptuProperties properties) {
         this.toolishRag = new ToolishRag(
@@ -39,6 +45,7 @@ public class ChatActions {
                 "The music criticism written by Robert Schumann: His own writings",
                 searchOperations)
                 .withHint(TryHyDE.usingConversationContext());
+        this.spotifyService = spotifyService;
         this.properties = properties;
         this.eventPublisher = eventPublisher;
     }
@@ -64,11 +71,16 @@ public class ChatActions {
             ActionContext context) {
         logger.info("ChatActions.respond() called! Conversation has {} messages",
                 conversation != null ? conversation.getMessages().size() : "null");
+        List<Object> tools = new LinkedList<>();
+        if (user.isSpotifyLinked()) {
+            tools.add(new SpotifyTools(user, spotifyService));
+        }
         var assistantMessage = context.
                 ai()
                 .withLlm(properties.chatLlm())
                 .withPromptContributor(user)
                 .withReference(toolishRag)
+                .withToolObjects(tools)
                 .withTemplate("ragbot")
                 .respondWithSystemPrompt(conversation, Map.of(
                         "properties", properties,
