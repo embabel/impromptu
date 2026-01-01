@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Vaadin-based chat view for the RAG chatbot.
- * Provides a browser-based chat interface as an alternative to Javelit and shell.
+ * Provides a browser-based chat interface.
  */
 @Route("chat")
 @PageTitle("Embabel RAG Chat")
