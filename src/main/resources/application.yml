@@ -19,11 +19,11 @@ embabel:
   agent:
 
     shell:
+
       # If true, redirects logging to logs/chat-session.log rather than console during chat
       redirect-log-to-file: false
     logging:
       personality: colossus
-
 
   models:
 
@@ -34,3 +34,10 @@ embabel:
     default-embedding-model:
       model: text-embedding-3-small
 
+
+spring:
+  main:
+    web-application-type: servlet
+
+# Default: web mode with Vaadin
+# Use --spring.profiles.active=shell for CLI mode

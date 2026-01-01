@@ -11,6 +11,9 @@ import com.embabel.chat.UserMessage;
 import com.embabel.impromptu.proposition.ConversationExchangeEvent;
 import org.springframework.context.ApplicationEventPublisher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 
 /**
@@ -18,6 +21,8 @@ import java.util.Map;
  */
 @EmbabelComponent
 public class ChatActions {
+
+    private static final Logger logger = LoggerFactory.getLogger(ChatActions.class);
 
     private final ToolishRag toolishRag;
     private final ImpromptuProperties properties;
@@ -45,6 +50,8 @@ public class ChatActions {
     void respond(
             Conversation conversation,
             ActionContext context) {
+        logger.info("ChatActions.respond() called! Conversation has {} messages",
+                conversation != null ? conversation.getMessages().size() : "null");
         var assistantMessage = context.
                 ai()
                 .withLlm(properties.chatLlm())

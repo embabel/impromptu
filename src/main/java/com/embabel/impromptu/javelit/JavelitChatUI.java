@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Javelit-based web UI for the RAG chatbot.
- * Provides a browser-based chat interface as an alternative to the shell.
+ * Provides a browser-based chat interface.
  */
 @Component
 public record JavelitChatUI(

@@ -31,5 +31,5 @@ if [ ! -f "$POM_FILE" ]; then
     exit 1
 fi
 
-# Run Maven Spring Boot application
-"$SCRIPT_DIR/../../mvnw" -U -f "$POM_FILE" -Dmaven.test.skip=true spring-boot:run
+# Run Maven Spring Boot application with shell profile
+"$SCRIPT_DIR/../../mvnw" -U -f "$POM_FILE" -Dmaven.test.skip=true spring-boot:run -Dspring-boot.run.profiles=shell

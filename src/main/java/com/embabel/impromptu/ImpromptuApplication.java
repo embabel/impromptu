@@ -16,12 +16,15 @@
 package com.embabel.impromptu;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 @SpringBootApplication
 class ImpromptuApplication {
     public static void main(String[] args) {
-        SpringApplication.run(ImpromptuApplication.class, args);
+        var app = new SpringApplication(ImpromptuApplication.class);
+        app.setWebApplicationType(WebApplicationType.SERVLET);
+        app.run(args);
     }
 }
