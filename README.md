@@ -53,6 +53,44 @@ The model configured in `application.yml` determines which key is required. The 
    chat
    ```
 
+## Web Interface (Vaadin)
+
+Impromptu includes a browser-based chat interface built with Vaadin, featuring a dark theme inspired by concert halls.
+
+### Running the Web App
+
+```bash
+./mvnw spring-boot:run
+```
+
+The app runs on **port 8888** (double the 88 piano keys) at http://localhost:8888/chat
+
+### Google OAuth2 Authentication
+
+The web interface supports Google OAuth2 for user authentication. To enable it:
+
+1. Go to https://console.cloud.google.com/
+2. Create a new project or select an existing one
+3. Navigate to **APIs & Services > Credentials**
+4. Create an **OAuth client ID** (Web application type)
+5. Add authorized JavaScript origins: `http://localhost:8888`
+6. Add authorized redirect URIs: `http://localhost:8888/login/oauth2/code/google`
+7. Set environment variables with your credentials:
+
+```bash
+export GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+export GOOGLE_CLIENT_SECRET="your-client-secret"
+```
+
+Without these credentials, the app falls back to anonymous user mode.
+
+### Features
+
+- **Dark Concert Hall Theme**: Elegant dark theme with gold accents, inspired by classical concert venues
+- **Knowledge Base Panel**: Collapsible panel showing extracted propositions from conversations
+- **Real-time Chat**: Streaming responses from the RAG-powered chatbot
+- **User Authentication**: Optional Google OAuth2 login
+
 ## Usage
 
 Run the shell script to start Embabel under Spring Shell:

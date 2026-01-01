@@ -72,6 +72,12 @@
             <artifactId>vaadin-spring-boot-starter</artifactId>
         </dependency>
 
+        <!-- Spring Security OAuth2 for Google authentication -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.embabel.agent</groupId>
             <artifactId>embabel-agent-test</artifactId>

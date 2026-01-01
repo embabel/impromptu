@@ -32,9 +32,27 @@ embabel:
       model: text-embedding-3-small
 
 
+server:
+  port: 8888  # Double the 88 piano keys
+
 spring:
   main:
     web-application-type: servlet
 
-# Default: web mode with Vaadin
-# Use --spring.profiles.active=shell for CLI mode
+  # Google OAuth2 Configuration
+  # To set up Google OAuth2:
+  # 1. Go to https://console.cloud.google.com/
+  # 2. Create a new project or select an existing one
+  # 3. Navigate to APIs & Services > Credentials
+  # 4. Create an OAuth client ID (Web application type)
+  # 5. Add authorized redirect URIs: http://localhost:8888/login/oauth2/code/google
+  # 6. Copy the client ID and client secret below
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: email,profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"

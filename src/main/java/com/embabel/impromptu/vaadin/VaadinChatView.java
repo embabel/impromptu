@@ -15,11 +15,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.details.DetailsVariant;
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
@@ -27,9 +23,13 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import jakarta.annotation.security.PermitAll;
 import com.vaadin.flow.server.VaadinSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -45,16 +45,10 @@ import java.util.concurrent.TimeUnit;
  */
 @Route("chat")
 @PageTitle("Impromptu Classical Music Explorer")
+@PermitAll
 public class VaadinChatView extends VerticalLayout {
 
     private static final Logger logger = LoggerFactory.getLogger(VaadinChatView.class);
-
-    private static final User ANONYMOUS_USER = new SimpleUser(
-            "anonymous",
-            "Anonymous User",
-            "anonymous",
-            null
-    );
 
     private static final DateTimeFormatter TIME_FORMATTER =
             DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
@@ -94,7 +88,30 @@ public class VaadinChatView extends VerticalLayout {
      * This ensures Spring context is fully initialized (all @Actions registered)
      * and properly scopes the session to VaadinSession for multi-user support.
      */
-    private record SessionData(ChatSession chatSession, BlockingQueue<Message> responseQueue) {}
+    private record SessionData(ChatSession chatSession, BlockingQueue<Message> responseQueue) {
+    }
+
+    /**
+     * Gets the authenticated user from Google OAuth, or an anonymous user if not authenticated.
+     */
+    private User getAuthenticatedUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof OAuth2User oauth2User) {
+            // Google OAuth provides these attributes
+            String id = oauth2User.getAttribute("sub"); // Google's unique user ID
+            String displayName = oauth2User.getAttribute("name");
+            String email = oauth2User.getAttribute("email");
+            // Use email as username for Google OAuth
+            return new SimpleUser(
+                    id != null ? id : UUID.randomUUID().toString(),
+                    displayName != null ? displayName : "User",
+                    email != null ? email : "unknown",
+                    email
+            );
+        }
+        // Return anonymous user
+        return new SimpleUser(UUID.randomUUID().toString(), "Anonymous", "anonymous", null);
+    }
 
     private SessionData getOrCreateSession() {
         var vaadinSession = VaadinSession.getCurrent();
@@ -103,10 +120,11 @@ public class VaadinChatView extends VerticalLayout {
         if (sessionData == null) {
             var responseQueue = new ArrayBlockingQueue<Message>(10);
             var outputChannel = new QueueingOutputChannel(responseQueue);
-            var chatSession = chatbot.createSession(ANONYMOUS_USER, outputChannel, UUID.randomUUID().toString());
+            var user = getAuthenticatedUser();
+            var chatSession = chatbot.createSession(user, outputChannel, UUID.randomUUID().toString());
             sessionData = new SessionData(chatSession, responseQueue);
             vaadinSession.setAttribute("sessionData", sessionData);
-            logger.info("Created new chat session for user");
+            logger.info("Created new chat session for user: {}", user.getDisplayName());
         }
 
         return sessionData;
@@ -293,8 +311,47 @@ public class VaadinChatView extends VerticalLayout {
         header.setPadding(false);
         header.setSpacing(false);
 
+        // Title row with logout
+        var titleRow = new HorizontalLayout();
+        titleRow.setWidthFull();
+        titleRow.setAlignItems(Alignment.CENTER);
+        titleRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
+
         var title = new H3("Impromptu Classical Music Explorer");
         title.getStyle().set("margin", "0");
+
+        // User info and logout
+        var userSection = new HorizontalLayout();
+        userSection.setAlignItems(Alignment.CENTER);
+        userSection.setSpacing(true);
+
+        var user = getAuthenticatedUser();
+        var userName = new Span(user.getDisplayName());
+        userName.getStyle()
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("font-size", "var(--lumo-font-size-s)");
+
+        if (!"Anonymous".equals(user.getDisplayName())) {
+            var logoutButton = new Button("Logout", e -> {
+                getUI().ifPresent(ui -> {
+                    ui.getPage().setLocation("/logout");
+                });
+            });
+            logoutButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+            logoutButton.getStyle()
+                    .set("color", "var(--lumo-primary-text-color)")
+                    .set("font-size", "var(--lumo-font-size-s)");
+            userSection.add(userName, logoutButton);
+        } else {
+            var loginLink = new Anchor("/login", "Sign in");
+            loginLink.getStyle()
+                    .set("color", "var(--lumo-primary-text-color)")
+                    .set("font-size", "var(--lumo-font-size-s)")
+                    .set("text-decoration", "none");
+            userSection.add(loginLink);
+        }
+
+        titleRow.add(title, userSection);
 
         // Stats line
         var stats = searchOperations.info();
@@ -309,7 +366,7 @@ public class VaadinChatView extends VerticalLayout {
                 .set("font-size", "var(--lumo-font-size-s)")
                 .set("color", "var(--lumo-secondary-text-color)");
 
-        header.add(title, statsText);
+        header.add(titleRow, statsText);
         return header;
     }
 
