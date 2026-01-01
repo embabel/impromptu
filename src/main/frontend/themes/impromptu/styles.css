@@ -1,0 +1,359 @@
+/* Impromptu - A Dark Theme for Classical Music Chat */
+
+:root {
+  /* Dark color palette inspired by a concert hall */
+  --concert-black: #0a0a0f;
+  --piano-black: #121218;
+  --velvet-purple: #1a1525;
+  --gold-accent: #c9a227;
+  --gold-soft: #d4af37;
+  --gold-glow: rgba(201, 162, 39, 0.15);
+  --ivory-white: #f5f5f0;
+  --ivory-soft: #e8e8e3;
+  --silver-string: #9ca3af;
+  --deep-burgundy: #4a1c2b;
+  --soft-burgundy: #6b2c3f;
+
+  /* Lumo overrides for dark theme */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--gold-accent);
+  --lumo-primary-color-50pct: rgba(201, 162, 39, 0.5);
+  --lumo-primary-text-color: var(--gold-accent);
+  --lumo-primary-contrast-color: var(--concert-black);
+
+  --lumo-header-text-color: var(--ivory-white);
+  --lumo-body-text-color: var(--ivory-soft);
+  --lumo-secondary-text-color: var(--silver-string);
+  --lumo-tertiary-text-color: #6b7280;
+  --lumo-disabled-text-color: #4b5563;
+
+  --lumo-contrast: var(--ivory-white);
+  --lumo-contrast-90pct: rgba(245, 245, 240, 0.9);
+  --lumo-contrast-80pct: rgba(245, 245, 240, 0.8);
+  --lumo-contrast-70pct: rgba(245, 245, 240, 0.7);
+  --lumo-contrast-60pct: rgba(245, 245, 240, 0.6);
+  --lumo-contrast-50pct: rgba(245, 245, 240, 0.5);
+  --lumo-contrast-40pct: rgba(245, 245, 240, 0.4);
+  --lumo-contrast-30pct: rgba(245, 245, 240, 0.3);
+  --lumo-contrast-20pct: rgba(245, 245, 240, 0.2);
+  --lumo-contrast-10pct: rgba(245, 245, 240, 0.1);
+  --lumo-contrast-5pct: rgba(245, 245, 240, 0.05);
+
+  --lumo-shade: var(--concert-black);
+  --lumo-shade-5pct: rgba(10, 10, 15, 0.05);
+  --lumo-shade-10pct: rgba(10, 10, 15, 0.1);
+  --lumo-shade-20pct: rgba(10, 10, 15, 0.2);
+  --lumo-shade-30pct: rgba(10, 10, 15, 0.3);
+  --lumo-shade-40pct: rgba(10, 10, 15, 0.4);
+  --lumo-shade-50pct: rgba(10, 10, 15, 0.5);
+
+  --lumo-error-color: #ef4444;
+  --lumo-success-color: #22c55e;
+
+  --lumo-border-radius-m: 12px;
+  --lumo-border-radius-l: 16px;
+
+  --lumo-font-family: 'Crimson Pro', 'Georgia', serif;
+  --lumo-font-size-xl: 1.375rem;
+  --lumo-font-size-l: 1.125rem;
+  --lumo-font-size-m: 1rem;
+  --lumo-font-size-s: 0.875rem;
+  --lumo-font-size-xs: 0.75rem;
+}
+
+/* Import elegant serif font */
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+/* Body styling */
+html {
+  background: linear-gradient(135deg, var(--concert-black) 0%, var(--velvet-purple) 50%, var(--piano-black) 100%);
+  min-height: 100vh;
+}
+
+body {
+  background: transparent;
+}
+
+/* Main layout */
+vaadin-vertical-layout {
+  background: transparent;
+}
+
+/* Header styling with musical flourish */
+h3 {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--gold-accent);
+  text-shadow: 0 0 30px var(--gold-glow);
+  position: relative;
+}
+
+h3::before {
+  content: "♪";
+  margin-right: 0.5rem;
+  opacity: 0.7;
+}
+
+h3::after {
+  content: "♫";
+  margin-left: 0.5rem;
+  opacity: 0.7;
+}
+
+/* Stats line styling */
+span[style*="font-size: var(--lumo-font-size-s)"] {
+  font-style: italic;
+  letter-spacing: 0.03em;
+}
+
+/* Chat messages container - styled like a concert program */
+vaadin-scroller {
+  background: linear-gradient(180deg,
+    rgba(26, 21, 37, 0.8) 0%,
+    rgba(18, 18, 24, 0.9) 100%);
+  border: 1px solid rgba(201, 162, 39, 0.2) !important;
+  border-radius: 16px !important;
+  box-shadow:
+    inset 0 2px 20px rgba(0, 0, 0, 0.3),
+    0 4px 30px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+/* User message bubbles - elegant ivory */
+div[style*="background: var(--lumo-primary-color)"] {
+  background: linear-gradient(135deg, var(--gold-accent) 0%, var(--gold-soft) 100%) !important;
+  color: var(--concert-black) !important;
+  box-shadow:
+    0 4px 15px rgba(201, 162, 39, 0.3),
+    0 0 30px rgba(201, 162, 39, 0.1);
+  font-weight: 500;
+}
+
+/* Assistant message bubbles - rich velvet */
+div[style*="background: var(--lumo-contrast-10pct)"] {
+  background: linear-gradient(135deg, var(--velvet-purple) 0%, rgba(74, 28, 43, 0.6) 100%) !important;
+  border: 1px solid rgba(201, 162, 39, 0.15);
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Sender name styling */
+span[style*="font-weight: bold"] {
+  font-family: 'Crimson Pro', Georgia, serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.7rem !important;
+}
+
+/* Text input field - piano key inspired */
+vaadin-text-field {
+  --vaadin-input-field-background: var(--piano-black);
+  --vaadin-input-field-border-color: rgba(201, 162, 39, 0.3);
+  --vaadin-input-field-focused-border-color: var(--gold-accent);
+}
+
+vaadin-text-field::part(input-field) {
+  background: linear-gradient(180deg,
+    rgba(18, 18, 24, 0.9) 0%,
+    rgba(10, 10, 15, 0.95) 100%);
+  border: 1px solid rgba(201, 162, 39, 0.3);
+  border-radius: 12px;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(201, 162, 39, 0.1);
+  transition: all 0.3s ease;
+}
+
+vaadin-text-field:focus-within::part(input-field) {
+  border-color: var(--gold-accent);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(201, 162, 39, 0.2);
+}
+
+vaadin-text-field::part(value) {
+  color: var(--ivory-white);
+}
+
+vaadin-text-field::placeholder {
+  color: var(--silver-string);
+  font-style: italic;
+}
+
+/* Send button - golden accent */
+vaadin-button[theme~="primary"] {
+  background: linear-gradient(135deg, var(--gold-accent) 0%, #b8922a 100%);
+  color: var(--concert-black);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 15px rgba(201, 162, 39, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+vaadin-button[theme~="primary"]:hover {
+  background: linear-gradient(135deg, var(--gold-soft) 0%, var(--gold-accent) 100%);
+  box-shadow:
+    0 6px 25px rgba(201, 162, 39, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+vaadin-button[theme~="primary"]:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 10px rgba(201, 162, 39, 0.3),
+    inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Footer text */
+p[style*="text-align: center"] {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-style: italic;
+  color: var(--silver-string);
+  opacity: 0.7;
+}
+
+p[style*="text-align: center"]::before {
+  content: "— ";
+}
+
+p[style*="text-align: center"]::after {
+  content: " —";
+}
+
+/* Error messages */
+div[style*="background: var(--lumo-error-color-10pct)"] {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
+  border-left-color: #ef4444 !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--piano-black);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--gold-accent) 0%, #9a7b1e 100%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-soft);
+}
+
+/* Musical decorative elements */
+vaadin-vertical-layout::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--gold-accent) 20%,
+    var(--gold-soft) 50%,
+    var(--gold-accent) 80%,
+    transparent 100%);
+  opacity: 0.6;
+}
+
+/* Subtle staff lines decoration in background */
+vaadin-vertical-layout::after {
+  content: "";
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 40px;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 7px,
+    rgba(201, 162, 39, 0.1) 7px,
+    rgba(201, 162, 39, 0.1) 8px
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Animation for new messages */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+div[style*="flex-direction: column"] > div {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Knowledge Base / Propositions Panel */
+vaadin-details {
+  --vaadin-details-content-padding: 0;
+  background: linear-gradient(180deg, rgba(26, 21, 37, 0.6) 0%, rgba(18, 18, 24, 0.8) 100%);
+  border: 1px solid rgba(201, 162, 39, 0.15);
+  border-radius: var(--lumo-border-radius-l);
+}
+
+vaadin-details::part(summary) {
+  background: linear-gradient(135deg, rgba(74, 28, 43, 0.3) 0%, rgba(26, 21, 37, 0.5) 100%);
+  border-bottom: 1px solid rgba(201, 162, 39, 0.1);
+}
+
+vaadin-details::part(summary):hover {
+  background: linear-gradient(135deg, rgba(74, 28, 43, 0.4) 0%, rgba(26, 21, 37, 0.6) 100%);
+}
+
+vaadin-details[opened]::part(summary) {
+  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+}
+
+/* Proposition cards */
+.proposition-card,
+div[style*="background: var(--lumo-contrast-5pct)"] {
+  background: linear-gradient(135deg, rgba(26, 21, 37, 0.8) 0%, rgba(18, 18, 24, 0.9) 100%) !important;
+  border: 1px solid rgba(201, 162, 39, 0.1);
+  transition: all 0.2s ease;
+}
+
+.proposition-card:hover,
+div[style*="background: var(--lumo-contrast-5pct)"]:hover {
+  border-color: rgba(201, 162, 39, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Confidence badges */
+span[style*="background: var(--lumo-contrast-10pct)"] {
+  background: linear-gradient(135deg, rgba(201, 162, 39, 0.15) 0%, rgba(201, 162, 39, 0.1) 100%) !important;
+  border: 1px solid rgba(201, 162, 39, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  h3::before, h3::after {
+    display: none;
+  }
+
+  vaadin-vertical-layout::after {
+    display: none;
+  }
+}

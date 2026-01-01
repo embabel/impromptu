@@ -13,3 +13,15 @@ embabel-agent-api/src/main/resources/mcp/**
 .lucene-index
 
 **/*.log
+
+# Vaadin generated files
+src/main/frontend/generated/
+frontend/generated/
+node_modules/
+vite.generated.ts
+package.json
+package-lock.json
+pnpm-lock.yaml
+tsconfig.json
+types.d.ts
+.pnpm-store/
