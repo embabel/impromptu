@@ -76,8 +76,6 @@ spring:
           spotify:
             client-id: ${SPOTIFY_CLIENT_ID:}
             client-secret: ${SPOTIFY_CLIENT_SECRET:}
-            # Override redirect URI (for production or non-localhost development)
-            redirect-uri-override: ${SPOTIFY_REDIRECT_URI:}
             scope: playlist-modify-public,playlist-modify-private,playlist-read-private,user-library-read
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/callback/spotify"

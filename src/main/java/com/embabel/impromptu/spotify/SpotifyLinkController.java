@@ -1,6 +1,5 @@
 package com.embabel.impromptu.spotify;
 
-import com.embabel.impromptu.user.ImpromptuUser;
 import com.embabel.impromptu.user.ImpromptuUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -81,15 +80,14 @@ public class SpotifyLinkController {
         }
 
         try {
-            // Get current user
-            ImpromptuUser user = userService.getAuthenticatedUser();
+            var user = userService.getAuthenticatedUser();
             if (user == null || "Anonymous".equals(user.getDisplayName())) {
                 logger.warn("Cannot link Spotify for anonymous user");
                 return "redirect:/chat?error=not_logged_in";
             }
 
             // Exchange code for tokens
-            String redirectUri = getRedirectUri(request);
+            var redirectUri = getRedirectUri(request);
             SpotifyService.SpotifyTokenResponse tokens = spotifyService.exchangeCodeForTokens(code, redirectUri);
 
             // Store tokens on user
@@ -132,7 +130,7 @@ public class SpotifyLinkController {
             return scheme + "://" + serverName + "/callback/spotify";
         }
 
-        StringBuilder url = new StringBuilder();
+        var url = new StringBuilder();
         url.append(scheme).append("://").append(serverName);
 
         if (("http".equals(scheme) && serverPort != 80)

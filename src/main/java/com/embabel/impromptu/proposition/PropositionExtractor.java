@@ -42,7 +42,7 @@ public class PropositionExtractor {
      */
     @Async
     @EventListener
-    public void onConversationExchange(ConversationExchangeEvent event) {
+    public void onConversationExchange(ConversationAnalysisRequestEvent event) {
         extractPropositions(event);
     }
 
@@ -54,7 +54,7 @@ public class PropositionExtractor {
      * Extract propositions from a conversation.
      * This builds up a knowledge base from the dialogue.
      */
-    public void extractPropositions(ConversationExchangeEvent event) {
+    public void extractPropositions(ConversationAnalysisRequestEvent event) {
         try {
             var messages = event.conversation.getMessages();
             if (messages.size() < 2) {

@@ -4,12 +4,13 @@ import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
@@ -25,7 +26,7 @@ public class SpotifyService {
     private static final String SPOTIFY_API_BASE = "https://api.spotify.com/v1";
     private static final String SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestClient restClient = RestClient.create();
 
     @Value("${spring.security.oauth2.client.registration.spotify.client-id:}")
     private String clientId;
@@ -48,33 +49,35 @@ public class SpotifyService {
         return user != null && user.isSpotifyLinked();
     }
 
+    private String basicAuthHeader() {
+        String credentials = clientId + ":" + clientSecret;
+        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+    }
+
     /**
      * Exchange authorization code for access and refresh tokens.
      */
     public SpotifyTokenResponse exchangeCodeForTokens(String code, String redirectUri) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setBasicAuth(clientId, clientSecret);
+        String formBody = "grant_type=authorization_code"
+                + "&code=" + URLEncoder.encode(code, StandardCharsets.UTF_8)
+                + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "authorization_code");
-        body.add("code", code);
-        body.add("redirect_uri", redirectUri);
+        Map<String, Object> response = restClient.post()
+                .uri(SPOTIFY_TOKEN_URL)
+                .header("Authorization", basicAuthHeader())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(formBody)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-
-        ResponseEntity<Map> response = restTemplate.postForEntity(
-                SPOTIFY_TOKEN_URL, request, Map.class);
-
-        Map<String, Object> responseBody = response.getBody();
-        if (responseBody == null) {
+        if (response == null) {
             throw new SpotifyException("Empty response from Spotify token endpoint");
         }
 
         return new SpotifyTokenResponse(
-                (String) responseBody.get("access_token"),
-                (String) responseBody.get("refresh_token"),
-                (Integer) responseBody.get("expires_in")
+                (String) response.get("access_token"),
+                (String) response.get("refresh_token"),
+                (Integer) response.get("expires_in")
         );
     }
 
@@ -82,31 +85,27 @@ public class SpotifyService {
      * Refresh the access token using the refresh token.
      */
     public SpotifyTokenResponse refreshAccessToken(String refreshToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setBasicAuth(clientId, clientSecret);
+        String formBody = "grant_type=refresh_token"
+                + "&refresh_token=" + URLEncoder.encode(refreshToken, StandardCharsets.UTF_8);
 
-        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-        body.add("grant_type", "refresh_token");
-        body.add("refresh_token", refreshToken);
+        Map<String, Object> response = restClient.post()
+                .uri(SPOTIFY_TOKEN_URL)
+                .header("Authorization", basicAuthHeader())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(formBody)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-
-        ResponseEntity<Map> response = restTemplate.postForEntity(
-                SPOTIFY_TOKEN_URL, request, Map.class);
-
-        Map<String, Object> responseBody = response.getBody();
-        if (responseBody == null) {
+        if (response == null) {
             throw new SpotifyException("Empty response from Spotify token refresh");
         }
 
         return new SpotifyTokenResponse(
-                (String) responseBody.get("access_token"),
-                // Refresh token may not be returned, keep the old one
-                responseBody.containsKey("refresh_token")
-                        ? (String) responseBody.get("refresh_token")
+                (String) response.get("access_token"),
+                response.containsKey("refresh_token")
+                        ? (String) response.get("refresh_token")
                         : refreshToken,
-                (Integer) responseBody.get("expires_in")
+                (Integer) response.get("expires_in")
         );
     }
 
@@ -141,19 +140,15 @@ public class SpotifyService {
     public SpotifyUser getCurrentUser(ImpromptuUser user) {
         String token = getValidAccessToken(user);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
+        Map<String, Object> response = restClient.get()
+                .uri(SPOTIFY_API_BASE + "/me")
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                SPOTIFY_API_BASE + "/me",
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                Map.class);
-
-        Map<String, Object> body = response.getBody();
         return new SpotifyUser(
-                (String) body.get("id"),
-                (String) body.get("display_name")
+                (String) response.get("id"),
+                (String) response.get("display_name")
         );
     }
 
@@ -164,17 +159,13 @@ public class SpotifyService {
     public List<SpotifyPlaylist> getUserPlaylists(ImpromptuUser user) {
         String token = getValidAccessToken(user);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
+        Map<String, Object> response = restClient.get()
+                .uri(SPOTIFY_API_BASE + "/me/playlists?limit=50")
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                SPOTIFY_API_BASE + "/me/playlists?limit=50",
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                Map.class);
-
-        Map<String, Object> body = response.getBody();
-        List<Map<String, Object>> items = (List<Map<String, Object>>) body.get("items");
+        List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
 
         return items.stream()
                 .map(item -> new SpotifyPlaylist(
@@ -192,26 +183,23 @@ public class SpotifyService {
         String token = getValidAccessToken(user);
         String spotifyUserId = user.getSpotifyUserId();
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         Map<String, Object> body = Map.of(
                 "name", name,
                 "description", description,
                 "public", isPublic
         );
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                SPOTIFY_API_BASE + "/users/" + spotifyUserId + "/playlists",
-                HttpMethod.POST,
-                new HttpEntity<>(body, headers),
-                Map.class);
+        Map<String, Object> response = restClient.post()
+                .uri(SPOTIFY_API_BASE + "/users/" + spotifyUserId + "/playlists")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
 
-        Map<String, Object> responseBody = response.getBody();
         return new SpotifyPlaylist(
-                (String) responseBody.get("id"),
-                (String) responseBody.get("name"),
+                (String) response.get("id"),
+                (String) response.get("name"),
                 0
         );
     }
@@ -222,17 +210,15 @@ public class SpotifyService {
     public void addTracksToPlaylist(ImpromptuUser user, String playlistId, List<String> trackUris) {
         String token = getValidAccessToken(user);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
         Map<String, Object> body = Map.of("uris", trackUris);
 
-        restTemplate.exchange(
-                SPOTIFY_API_BASE + "/playlists/" + playlistId + "/tracks",
-                HttpMethod.POST,
-                new HttpEntity<>(body, headers),
-                Map.class);
+        restClient.post()
+                .uri(SPOTIFY_API_BASE + "/playlists/" + playlistId + "/tracks")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .toBodilessEntity();
 
         logger.info("Added {} tracks to playlist {}", trackUris.size(), playlistId);
     }
@@ -244,20 +230,16 @@ public class SpotifyService {
     public List<SpotifyTrack> searchTracks(ImpromptuUser user, String query, int limit) {
         String token = getValidAccessToken(user);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-
         String url = SPOTIFY_API_BASE + "/search?type=track&limit=" + limit + "&q=" +
-                java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8);
+                URLEncoder.encode(query, StandardCharsets.UTF_8);
 
-        ResponseEntity<Map> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                new HttpEntity<>(headers),
-                Map.class);
+        Map<String, Object> response = restClient.get()
+                .uri(url)
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
 
-        Map<String, Object> body = response.getBody();
-        Map<String, Object> tracks = (Map<String, Object>) body.get("tracks");
+        Map<String, Object> tracks = (Map<String, Object>) response.get("tracks");
         List<Map<String, Object>> items = (List<Map<String, Object>>) tracks.get("items");
 
         return items.stream()

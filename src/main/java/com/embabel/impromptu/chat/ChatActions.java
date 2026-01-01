@@ -10,7 +10,7 @@ import com.embabel.agent.rag.tools.TryHyDE;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.proposition.ConversationExchangeEvent;
+import com.embabel.impromptu.proposition.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.spotify.SpotifyTools;
 import com.embabel.impromptu.user.ImpromptuUser;
@@ -91,7 +91,7 @@ public class ChatActions {
 
         // Publish event for async proposition extraction (every 3rd exchange)
         if (user != null && conversation.getMessages().size() % 3 == 0) {
-            eventPublisher.publishEvent(new ConversationExchangeEvent(
+            eventPublisher.publishEvent(new ConversationAnalysisRequestEvent(
                     this,
                     user,
                     conversation));

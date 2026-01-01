@@ -8,12 +8,12 @@ import org.springframework.context.ApplicationEvent;
  * Event published after a conversation exchange (user message + assistant response).
  * Used to trigger async proposition extraction.
  */
-public class ConversationExchangeEvent extends ApplicationEvent {
+public class ConversationAnalysisRequestEvent extends ApplicationEvent {
 
     public final ImpromptuUser user;
     public final Conversation conversation;
 
-    public ConversationExchangeEvent(
+    public ConversationAnalysisRequestEvent(
             Object source,
             ImpromptuUser user,
             Conversation conversation) {
