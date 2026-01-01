@@ -1,4 +1,4 @@
-ragbot:
+impromptu:
   chunker-config:
     max-chunk-size: 800
     overlap-size: 100
@@ -9,7 +9,7 @@ ragbot:
     temperature: 0.0
 
   voice:
-    persona: music-guide
+    persona: impromptu
     max-words: 250
 
   objective: music
@@ -18,10 +18,7 @@ embabel:
 
   agent:
 
-    shell:
 
-      # If true, redirects logging to logs/chat-session.log rather than console during chat
-      redirect-log-to-file: false
     logging:
       personality: colossus
 

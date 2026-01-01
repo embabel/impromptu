@@ -13,7 +13,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
  * @param voice         the persona and output style of the chatbot while achieving its objective
  * @param chunkerConfig configuration for ingestion
  */
-@ConfigurationProperties(prefix = "ragbot")
+@ConfigurationProperties(prefix = "impromptu")
 public record ImpromptuProperties(
         @NestedConfigurationProperty LlmOptions chatLlm,
         String objective,
