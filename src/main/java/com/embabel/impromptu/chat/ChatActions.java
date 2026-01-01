@@ -15,7 +15,6 @@ import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.lang.Nullable;
 
 import java.util.Map;
 
@@ -44,7 +43,16 @@ public class ChatActions {
         this.eventPublisher = eventPublisher;
     }
 
-    // TODO orient
+    @Action
+    ImpromptuUser bindUser(OperationContext context) {
+        var forUser = context.getProcessContext().getProcessOptions().getIdentities().getForUser();
+        if (forUser instanceof ImpromptuUser iu) {
+            return iu;
+        } else {
+            logger.warn("bindUser: forUser is not an ImpromptuUser: {}", forUser);
+            return null;
+        }
+    }
 
     @Action(
             canRerun = true,
@@ -52,12 +60,14 @@ public class ChatActions {
     )
     void respond(
             Conversation conversation,
+            ImpromptuUser user,
             ActionContext context) {
         logger.info("ChatActions.respond() called! Conversation has {} messages",
                 conversation != null ? conversation.getMessages().size() : "null");
         var assistantMessage = context.
                 ai()
                 .withLlm(properties.chatLlm())
+                .withPromptContributor(user)
                 .withReference(toolishRag)
                 .withTemplate("ragbot")
                 .respondWithSystemPrompt(conversation, Map.of(
@@ -67,7 +77,6 @@ public class ChatActions {
                 ));
         context.sendMessage(conversation.addMessage(assistantMessage));
 
-        var user = userFromContext(context);
         // Publish event for async proposition extraction (every 3rd exchange)
         if (user != null && conversation.getMessages().size() % 3 == 0) {
             eventPublisher.publishEvent(new ConversationExchangeEvent(
@@ -75,11 +84,5 @@ public class ChatActions {
                     user,
                     conversation));
         }
-    }
-
-    @Nullable
-    private ImpromptuUser userFromContext(OperationContext context) {
-        var forUser = context.getProcessContext().getProcessOptions().getIdentities().getForUser();
-        return forUser instanceof ImpromptuUser iu ? iu : null;
     }
 }

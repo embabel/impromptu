@@ -1,11 +1,13 @@
 package com.embabel.impromptu.user;
 
 import com.embabel.agent.api.identity.User;
+import com.embabel.common.ai.prompt.PromptContributor;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Mutable user class for Impromptu application.
  */
-public class ImpromptuUser implements User {
+public class ImpromptuUser implements User, PromptContributor {
 
     private String id;
     private String displayName;
@@ -17,6 +19,11 @@ public class ImpromptuUser implements User {
         this.displayName = displayName;
         this.username = username;
         this.email = email;
+    }
+
+    @Override
+    public @NonNull String contribution() {
+        return toString();
     }
 
     @Override
