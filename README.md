@@ -63,7 +63,9 @@ Impromptu includes a browser-based chat interface built with Vaadin, featuring a
 ./mvnw spring-boot:run
 ```
 
-The app runs on **port 8888** (double the 88 piano keys) at http://localhost:8888/chat
+The app runs on **port 8888** (double the 88 piano keys) at http://127.0.0.1:8888/chat
+
+**Important:** Use `127.0.0.1` (loopback address), not `localhost`, for OAuth to work correctly with both Google and Spotify.
 
 ### Google OAuth2 Authentication
 
@@ -73,8 +75,8 @@ The web interface supports Google OAuth2 for user authentication. To enable it:
 2. Create a new project or select an existing one
 3. Navigate to **APIs & Services > Credentials**
 4. Create an **OAuth client ID** (Web application type)
-5. Add authorized JavaScript origins: `http://localhost:8888`
-6. Add authorized redirect URIs: `http://localhost:8888/login/oauth2/code/google`
+5. Add authorized JavaScript origins: `http://127.0.0.1:8888`
+6. Add authorized redirect URIs: `http://127.0.0.1:8888/login/oauth2/code/google`
 7. Set environment variables with your credentials:
 
 ```bash
@@ -84,12 +86,36 @@ export GOOGLE_CLIENT_SECRET="your-client-secret"
 
 Without these credentials, the app falls back to anonymous user mode.
 
+### Spotify Integration (Optional)
+
+After logging in with Google, users can link their Spotify account to enable playlist management through the chatbot.
+
+To enable Spotify integration:
+
+1. Go to https://developer.spotify.com/dashboard
+2. Create an app (or select existing)
+3. Add redirect URI: `http://127.0.0.1:8888/callback/spotify` (loopback, not localhost)
+4. In **User Management**, add your Spotify email as a user (required for development mode)
+5. Set environment variables:
+
+```bash
+export SPOTIFY_CLIENT_ID="your-spotify-client-id"
+export SPOTIFY_CLIENT_SECRET="your-spotify-client-secret"
+```
+
+Once configured, a "Link Spotify" button appears in the header after Google login. The chatbot can then:
+- List your Spotify playlists
+- Search for tracks
+- Create new playlists
+- Add tracks to playlists
+
 ### Features
 
 - **Dark Concert Hall Theme**: Elegant dark theme with gold accents, inspired by classical concert venues
 - **Knowledge Base Panel**: Collapsible panel showing extracted propositions from conversations
 - **Real-time Chat**: Streaming responses from the RAG-powered chatbot
 - **User Authentication**: Optional Google OAuth2 login
+- **Spotify Integration**: Link your Spotify account to create and manage playlists through the chatbot
 
 ## Usage
 

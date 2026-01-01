@@ -8,6 +8,7 @@ import com.embabel.chat.*;
 import com.embabel.dice.proposition.Proposition;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.user.ImpromptuUserService;
 import com.embabel.impromptu.user.InMemoryImpromptuUserService;
 import com.vaadin.flow.component.Key;
@@ -55,6 +56,7 @@ public class VaadinChatView extends VerticalLayout {
     private final LuceneSearchOperations searchOperations;
     private final PropositionRepository propositionRepository;
     private final ImpromptuUserService userService;
+    private final SpotifyService spotifyService;
 
     private VerticalLayout messagesLayout;
     private VerticalLayout propositionsContent;
@@ -68,12 +70,14 @@ public class VaadinChatView extends VerticalLayout {
             ImpromptuProperties properties,
             LuceneSearchOperations searchOperations,
             PropositionRepository propositionRepository,
-            InMemoryImpromptuUserService userService) {
+            InMemoryImpromptuUserService userService,
+            SpotifyService spotifyService) {
         this.chatbot = chatbot;
         this.properties = properties;
         this.searchOperations = searchOperations;
         this.propositionRepository = propositionRepository;
         this.userService = userService;
+        this.spotifyService = spotifyService;
         this.persona = properties.voice() != null ? properties.voice().persona() : "Assistant";
 
         setSizeFull();
@@ -310,6 +314,33 @@ public class VaadinChatView extends VerticalLayout {
                 .set("font-size", "var(--lumo-font-size-s)");
 
         if (!"Anonymous".equals(user.getDisplayName())) {
+            // Spotify link button (only show if Spotify is configured)
+            if (spotifyService.isConfigured()) {
+                if (spotifyService.isLinked(user)) {
+                    // User has linked Spotify
+                    var spotifyBadge = new Span("Spotify linked");
+                    spotifyBadge.getStyle()
+                            .set("color", "var(--lumo-success-text-color)")
+                            .set("font-size", "var(--lumo-font-size-xs)")
+                            .set("background", "var(--lumo-success-color-10pct)")
+                            .set("padding", "2px 8px")
+                            .set("border-radius", "var(--lumo-border-radius-s)");
+                    userSection.add(spotifyBadge);
+                } else {
+                    // User hasn't linked Spotify yet
+                    var linkSpotifyAnchor = new Anchor("/link/spotify", "Link Spotify");
+                    linkSpotifyAnchor.getElement().setAttribute("router-ignore", true);
+                    linkSpotifyAnchor.getStyle()
+                            .set("color", "#1DB954") // Spotify green
+                            .set("font-size", "var(--lumo-font-size-s)")
+                            .set("text-decoration", "none")
+                            .set("padding", "4px 8px")
+                            .set("border", "1px solid #1DB954")
+                            .set("border-radius", "var(--lumo-border-radius-s)");
+                    userSection.add(linkSpotifyAnchor);
+                }
+            }
+
             var logoutButton = new Button("Logout", e -> {
                 getUI().ifPresent(ui -> {
                     ui.getPage().setLocation("/logout");

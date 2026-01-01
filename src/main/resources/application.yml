@@ -53,8 +53,9 @@ spring:
   # 2. Create a new project or select an existing one
   # 3. Navigate to APIs & Services > Credentials
   # 4. Create an OAuth client ID (Web application type)
-  # 5. Add authorized redirect URIs: http://localhost:8888/login/oauth2/code/google
+  # 5. Add authorized redirect URIs: http://127.0.0.1:8888/login/oauth2/code/google
   # 6. Copy the client ID and client secret below
+  # 7. Access the app via http://127.0.0.1:8888 (not localhost)
   security:
     oauth2:
       client:
@@ -64,3 +65,25 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: email,profile
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          # Spotify OAuth2 for playlist management (linked after Google login)
+          # To set up Spotify:
+          # 1. Go to https://developer.spotify.com/dashboard
+          # 2. Create an app
+          # 3. Add redirect URI: http://127.0.0.1:8888/callback/spotify (loopback, not localhost)
+          # 4. Add yourself as a user in User Management (for dev mode)
+          # 5. Copy client ID and secret below
+          # 6. Access the app via http://127.0.0.1:8888 (not localhost)
+          spotify:
+            client-id: ${SPOTIFY_CLIENT_ID:}
+            client-secret: ${SPOTIFY_CLIENT_SECRET:}
+            # Override redirect URI (for production or non-localhost development)
+            redirect-uri-override: ${SPOTIFY_REDIRECT_URI:}
+            scope: playlist-modify-public,playlist-modify-private,playlist-read-private,user-library-read
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/callback/spotify"
+        provider:
+          spotify:
+            authorization-uri: https://accounts.spotify.com/authorize
+            token-uri: https://accounts.spotify.com/api/token
+            user-info-uri: https://api.spotify.com/v1/me
+            user-name-attribute: id

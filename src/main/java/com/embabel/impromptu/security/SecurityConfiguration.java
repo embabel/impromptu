@@ -36,5 +36,8 @@ class SecurityConfiguration extends VaadinWebSecurity {
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
                 .permitAll()
         );
+
+        // Note: /callback/spotify and /link/spotify are protected by default
+        // since VaadinWebSecurity requires authentication for non-public routes
     }
 }
