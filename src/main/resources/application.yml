@@ -12,11 +12,15 @@ impromptu:
     model: gpt-4.1-mini
     temperature: 0.0
 
+
   voice:
     persona: impromptu
     max-words: 250
 
   objective: music
+
+  show-extraction-prompts: true
+  show-extraction-responses: false
 
 embabel:
 

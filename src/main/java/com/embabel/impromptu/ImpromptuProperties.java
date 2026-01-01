@@ -19,7 +19,9 @@ public record ImpromptuProperties(
         String objective,
         @NestedConfigurationProperty Voice voice,
         @NestedConfigurationProperty ContentChunker.DefaultConfig chunkerConfig,
-        @NestedConfigurationProperty LlmOptions propositionExtractionLlm
+        @NestedConfigurationProperty LlmOptions propositionExtractionLlm,
+        boolean showExtractionPrompts,
+        boolean showExtractionResponses
 ) {
 
     public record Voice(

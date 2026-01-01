@@ -72,8 +72,8 @@ public class PropositionConfiguration {
             AiBuilder aiBuilder,
             ImpromptuProperties impromptuProperties) {
         var ai = aiBuilder
-                .withShowPrompts(false)
-                .withShowLlmResponses(false)
+                .withShowPrompts(impromptuProperties.showExtractionPrompts())
+                .withShowLlmResponses(impromptuProperties.showExtractionResponses())
                 .ai();
         logger.info("Creating LlmPropositionExtractor with model: {}", impromptuProperties.propositionExtractionLlm());
         return new LlmPropositionExtractor(ai, impromptuProperties.propositionExtractionLlm());
