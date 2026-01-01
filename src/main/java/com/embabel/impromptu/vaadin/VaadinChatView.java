@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  * Provides a browser-based chat interface.
  */
 @Route("chat")
-@PageTitle("Embabel RAG Chat")
+@PageTitle("Impromptu Classical Music Explorer")
 public class VaadinChatView extends VerticalLayout {
 
     private static final Logger logger = LoggerFactory.getLogger(VaadinChatView.class);
@@ -125,7 +125,7 @@ public class VaadinChatView extends VerticalLayout {
         add(inputSection);
 
         // Footer
-        var footer = new Paragraph("Powered by Embabel Agent with RAG");
+        var footer = new Paragraph("Powered by Embabel");
         footer.getStyle()
                 .set("font-size", "var(--lumo-font-size-s)")
                 .set("color", "var(--lumo-secondary-text-color)")
@@ -138,7 +138,7 @@ public class VaadinChatView extends VerticalLayout {
         header.setPadding(false);
         header.setSpacing(false);
 
-        var title = new H3("Embabel RAG Chat");
+        var title = new H3("Impromptu Classical Music Explorer");
         title.getStyle().set("margin", "0");
 
         // Stats line
