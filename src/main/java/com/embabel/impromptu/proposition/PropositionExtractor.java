@@ -5,8 +5,11 @@ import com.embabel.agent.rag.model.Chunk;
 import com.embabel.chat.AssistantMessage;
 import com.embabel.chat.Message;
 import com.embabel.chat.UserMessage;
+import com.embabel.dice.common.EntityResolver;
+import com.embabel.dice.common.resolver.InMemoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.text2graph.builder.SourceAnalysisConfig;
+import com.embabel.impromptu.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -41,6 +44,10 @@ public class PropositionExtractor {
     @EventListener
     public void onConversationExchange(ConversationExchangeEvent event) {
         extractPropositions(event);
+    }
+
+    private EntityResolver entityResolverForUser(ImpromptuUser user) {
+        return new InMemoryEntityResolver();
     }
 
     /**
@@ -91,6 +98,7 @@ public class PropositionExtractor {
 
             var sourceConfig = new SourceAnalysisConfig(
                     musicSchema,
+                    entityResolverForUser(event.user),
                     """
                             Extract facts about music, composers, musical works, and user interests.
                             Focus on:

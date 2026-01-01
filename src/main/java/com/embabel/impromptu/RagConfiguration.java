@@ -1,6 +1,7 @@
 package com.embabel.impromptu;
 
 import com.embabel.agent.rag.lucene.LuceneSearchOperations;
+import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria;
 import com.embabel.common.ai.model.ModelProvider;
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import java.nio.file.Paths;
 
@@ -18,7 +20,8 @@ class RagConfiguration {
     private final Logger logger = LoggerFactory.getLogger(RagConfiguration.class);
 
     @Bean
-    LuceneSearchOperations luceneSearchOperations(
+    @Primary
+    SearchOperations luceneSearchOperations(
             ModelProvider modelProvider,
             ImpromptuProperties properties) {
         var embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria.INSTANCE);
