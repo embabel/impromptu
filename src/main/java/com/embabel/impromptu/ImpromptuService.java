@@ -3,8 +3,6 @@ package com.embabel.impromptu;
 import com.embabel.agent.rag.ingestion.NeverRefreshExistingDocumentContentPolicy;
 import com.embabel.agent.rag.ingestion.TikaHierarchicalContentReader;
 import com.embabel.agent.rag.lucene.LuceneSearchOperations;
-import com.embabel.agent.rag.model.ContentElement;
-import com.embabel.agent.rag.model.Section;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;

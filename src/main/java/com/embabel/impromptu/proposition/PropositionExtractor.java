@@ -3,7 +3,6 @@ package com.embabel.impromptu.proposition;
 import com.embabel.agent.core.DataDictionary;
 import com.embabel.agent.rag.model.Chunk;
 import com.embabel.chat.AssistantMessage;
-import com.embabel.chat.Conversation;
 import com.embabel.chat.Message;
 import com.embabel.chat.UserMessage;
 import com.embabel.dice.pipeline.PropositionPipeline;
@@ -14,7 +13,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Async listener that extracts propositions from chat conversations.
@@ -42,16 +40,16 @@ public class PropositionExtractor {
     @Async
     @EventListener
     public void onConversationExchange(ConversationExchangeEvent event) {
-        extractPropositions(event.conversation);
+        extractPropositions(event);
     }
 
     /**
      * Extract propositions from a conversation.
      * This builds up a knowledge base from the dialogue.
      */
-    public void extractPropositions(Conversation conversation) {
+    public void extractPropositions(ConversationExchangeEvent event) {
         try {
-            var messages = conversation.getMessages();
+            var messages = event.conversation.getMessages();
             if (messages.size() < 2) {
                 logger.debug("Not enough messages for extraction");
                 return;
@@ -82,15 +80,13 @@ public class PropositionExtractor {
             // Build context for extraction: combine user question and assistant response
             var extractionText = buildExtractionText(lastUserMsg, lastAssistantMsg);
 
-            // Create a chunk from the conversation exchange using companion object
-            var chunk = Chunk.Companion.invoke(
-                    UUID.randomUUID().toString(),
+            var chunk = Chunk.create(
                     extractionText,
+                    event.conversation.getId(),
                     Map.of(
                             "source", "conversation",
-                            "conversationId", conversation.getId()
-                    ),
-                    conversation.getId()
+                            "conversationId", event.conversation.getId()
+                    )
             );
 
             var sourceConfig = new SourceAnalysisConfig(

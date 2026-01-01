@@ -8,6 +8,10 @@ impromptu:
     model: gpt-4.1-mini
     temperature: 0.0
 
+  proposition-extraction-llm:
+    model: gpt-4.1-mini
+    temperature: 0.0
+
   voice:
     persona: impromptu
     max-words: 250

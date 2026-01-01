@@ -3,13 +3,14 @@ package com.embabel.impromptu.proposition;
 import com.embabel.agent.api.common.AiBuilder;
 import com.embabel.agent.core.DataDictionary;
 import com.embabel.common.ai.model.EmbeddingService;
-import com.embabel.common.ai.model.LlmOptions;
 import com.embabel.dice.pipeline.PropositionBuilders;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.extraction.LlmPropositionExtractor;
 import com.embabel.dice.proposition.store.InMemoryPropositionRepository;
+import com.embabel.dice.text2graph.EntityResolver;
 import com.embabel.dice.text2graph.resolver.InMemoryEntityResolver;
+import com.embabel.impromptu.ImpromptuProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -67,15 +68,20 @@ public class PropositionConfiguration {
      * LLM-based proposition extractor using the dice library.
      */
     @Bean
-    public LlmPropositionExtractor llmPropositionExtractor(AiBuilder aiBuilder) {
+    public LlmPropositionExtractor llmPropositionExtractor(
+            AiBuilder aiBuilder,
+            ImpromptuProperties impromptuProperties) {
         var ai = aiBuilder
                 .withShowPrompts(false)
                 .withShowLlmResponses(false)
                 .ai();
-        // Use a fast model for extraction to minimize latency
-        var llmOptions = LlmOptions.withModel("gpt-4.1-mini");
-        logger.info("Creating LlmPropositionExtractor with model: {}", llmOptions.getModel());
-        return new LlmPropositionExtractor(ai, llmOptions);
+        logger.info("Creating LlmPropositionExtractor with model: {}", impromptuProperties.propositionExtractionLlm());
+        return new LlmPropositionExtractor(ai, impromptuProperties.propositionExtractionLlm());
+    }
+
+    @Bean
+    public EntityResolver entityResolver() {
+        return new InMemoryEntityResolver();
     }
 
     /**
@@ -84,11 +90,12 @@ public class PropositionConfiguration {
     @Bean
     public PropositionPipeline propositionPipeline(
             LlmPropositionExtractor llmPropositionExtractor,
-            PropositionRepository propositionRepository) {
+            PropositionRepository propositionRepository,
+            EntityResolver entityResolver) {
         logger.info("Building proposition extraction pipeline");
         return PropositionBuilders
                 .withExtractor(llmPropositionExtractor)
-                .withEntityResolver(new InMemoryEntityResolver())
+                .withEntityResolver(entityResolver)
                 .withStore(propositionRepository)
                 .build();
     }
