@@ -3,16 +3,17 @@ package com.embabel.impromptu;
 import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
+import com.embabel.agent.api.common.OperationContext;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
 import com.embabel.impromptu.proposition.ConversationExchangeEvent;
-import org.springframework.context.ApplicationEventPublisher;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.lang.Nullable;
 
 import java.util.Map;
 
@@ -64,9 +65,19 @@ public class ChatActions {
                 ));
         context.sendMessage(conversation.addMessage(assistantMessage));
 
+        var user = userFromContext(context);
         // Publish event for async proposition extraction (every 3rd exchange)
-        if (conversation.getMessages().size() % 3 == 0) {
-            eventPublisher.publishEvent(new ConversationExchangeEvent(this, conversation));
+        if (user != null && conversation.getMessages().size() % 3 == 0) {
+            eventPublisher.publishEvent(new ConversationExchangeEvent(
+                    this,
+                    user,
+                    conversation));
         }
+    }
+
+    @Nullable
+    private ImpromptuUser userFromContext(OperationContext context) {
+        var forUser = context.getProcessContext().getProcessOptions().getIdentities().getForUser();
+        return forUser instanceof ImpromptuUser iu ? iu : null;
     }
 }

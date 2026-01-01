@@ -42,7 +42,7 @@ public class PropositionExtractor {
     @Async
     @EventListener
     public void onConversationExchange(ConversationExchangeEvent event) {
-        extractPropositions(event.getConversation());
+        extractPropositions(event.conversation);
     }
 
     /**

@@ -3,13 +3,12 @@ package com.embabel.impromptu.vaadin;
 import com.embabel.agent.api.channel.MessageOutputChannelEvent;
 import com.embabel.agent.api.channel.OutputChannel;
 import com.embabel.agent.api.channel.OutputChannelEvent;
-import com.embabel.agent.api.identity.SimpleUser;
-import com.embabel.agent.api.identity.User;
 import com.embabel.agent.rag.lucene.LuceneSearchOperations;
 import com.embabel.chat.*;
 import com.embabel.dice.proposition.Proposition;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.UserService;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -27,9 +26,6 @@ import jakarta.annotation.security.PermitAll;
 import com.vaadin.flow.server.VaadinSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -57,6 +53,7 @@ public class VaadinChatView extends VerticalLayout {
     private final ImpromptuProperties properties;
     private final LuceneSearchOperations searchOperations;
     private final PropositionRepository propositionRepository;
+    private final UserService userService;
 
     private VerticalLayout messagesLayout;
     private VerticalLayout propositionsContent;
@@ -69,11 +66,13 @@ public class VaadinChatView extends VerticalLayout {
             Chatbot chatbot,
             ImpromptuProperties properties,
             LuceneSearchOperations searchOperations,
-            PropositionRepository propositionRepository) {
+            PropositionRepository propositionRepository,
+            UserService userService) {
         this.chatbot = chatbot;
         this.properties = properties;
         this.searchOperations = searchOperations;
         this.propositionRepository = propositionRepository;
+        this.userService = userService;
         this.persona = properties.voice() != null ? properties.voice().persona() : "Assistant";
 
         setSizeFull();
@@ -91,28 +90,6 @@ public class VaadinChatView extends VerticalLayout {
     private record SessionData(ChatSession chatSession, BlockingQueue<Message> responseQueue) {
     }
 
-    /**
-     * Gets the authenticated user from Google OAuth, or an anonymous user if not authenticated.
-     */
-    private User getAuthenticatedUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof OAuth2User oauth2User) {
-            // Google OAuth provides these attributes
-            String id = oauth2User.getAttribute("sub"); // Google's unique user ID
-            String displayName = oauth2User.getAttribute("name");
-            String email = oauth2User.getAttribute("email");
-            // Use email as username for Google OAuth
-            return new SimpleUser(
-                    id != null ? id : UUID.randomUUID().toString(),
-                    displayName != null ? displayName : "User",
-                    email != null ? email : "unknown",
-                    email
-            );
-        }
-        // Return anonymous user
-        return new SimpleUser(UUID.randomUUID().toString(), "Anonymous", "anonymous", null);
-    }
-
     private SessionData getOrCreateSession() {
         var vaadinSession = VaadinSession.getCurrent();
         var sessionData = (SessionData) vaadinSession.getAttribute("sessionData");
@@ -120,7 +97,7 @@ public class VaadinChatView extends VerticalLayout {
         if (sessionData == null) {
             var responseQueue = new ArrayBlockingQueue<Message>(10);
             var outputChannel = new QueueingOutputChannel(responseQueue);
-            var user = getAuthenticatedUser();
+            var user = userService.getAuthenticatedUser();
             var chatSession = chatbot.createSession(user, outputChannel, UUID.randomUUID().toString());
             sessionData = new SessionData(chatSession, responseQueue);
             vaadinSession.setAttribute("sessionData", sessionData);
@@ -325,7 +302,7 @@ public class VaadinChatView extends VerticalLayout {
         userSection.setAlignItems(Alignment.CENTER);
         userSection.setSpacing(true);
 
-        var user = getAuthenticatedUser();
+        var user = userService.getAuthenticatedUser();
         var userName = new Span(user.getDisplayName());
         userName.getStyle()
                 .set("color", "var(--lumo-secondary-text-color)")

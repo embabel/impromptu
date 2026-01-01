@@ -1,6 +1,7 @@
 package com.embabel.impromptu.proposition;
 
 import com.embabel.chat.Conversation;
+import com.embabel.impromptu.ImpromptuUser;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -9,14 +10,15 @@ import org.springframework.context.ApplicationEvent;
  */
 public class ConversationExchangeEvent extends ApplicationEvent {
 
-    private final Conversation conversation;
+    public final ImpromptuUser user;
+    public final Conversation conversation;
 
-    public ConversationExchangeEvent(Object source, Conversation conversation) {
+    public ConversationExchangeEvent(
+            Object source,
+            ImpromptuUser user,
+            Conversation conversation) {
         super(source);
+        this.user = user;
         this.conversation = conversation;
-    }
-
-    public Conversation getConversation() {
-        return conversation;
     }
 }
