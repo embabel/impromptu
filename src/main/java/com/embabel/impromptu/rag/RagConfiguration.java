@@ -1,9 +1,10 @@
-package com.embabel.impromptu;
+package com.embabel.impromptu.rag;
 
 import com.embabel.agent.rag.lucene.LuceneSearchOperations;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria;
 import com.embabel.common.ai.model.ModelProvider;
+import com.embabel.impromptu.ImpromptuProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

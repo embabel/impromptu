@@ -1,4 +1,4 @@
-package com.embabel.impromptu;
+package com.embabel.impromptu.rag;
 
 import com.embabel.agent.rag.ingestion.NeverRefreshExistingDocumentContentPolicy;
 import com.embabel.agent.rag.ingestion.TikaHierarchicalContentReader;
@@ -11,7 +11,7 @@ import java.nio.file.Path;
  * Service for ingesting and managing RAG content.
  */
 @Service
-public record ImpromptuService(LuceneSearchOperations luceneSearchOperations) {
+public record DataManager(LuceneSearchOperations luceneSearchOperations) {
 
     private static final String DEFAULT_LOCATION = "./data/schumann/musicandmusician001815mbp.md";
     private static final String DEFAULT_DIRECTORY = "./data";

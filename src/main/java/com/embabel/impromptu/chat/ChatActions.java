@@ -1,4 +1,4 @@
-package com.embabel.impromptu;
+package com.embabel.impromptu.chat;
 
 import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.EmbabelComponent;
@@ -9,7 +9,9 @@ import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
+import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.proposition.ConversationExchangeEvent;
+import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;

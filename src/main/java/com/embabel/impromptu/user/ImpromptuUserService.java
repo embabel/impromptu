@@ -1,4 +1,4 @@
-package com.embabel.impromptu;
+package com.embabel.impromptu.user;
 
 import com.embabel.agent.api.identity.UserService;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.embabel.impromptu;
+package com.embabel.impromptu.security;
 
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
 import org.springframework.context.annotation.Configuration;

@@ -1,9 +1,11 @@
-package com.embabel.impromptu;
+package com.embabel.impromptu.chat;
 
 import com.embabel.agent.core.AgentPlatform;
 import com.embabel.agent.core.Verbosity;
 import com.embabel.chat.Chatbot;
 import com.embabel.chat.agent.AgentProcessChatbot;
+import com.embabel.impromptu.user.ImpromptuUserService;
+import com.embabel.impromptu.user.InMemoryImpromptuUserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

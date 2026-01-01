@@ -1,7 +1,7 @@
 package com.embabel.impromptu.proposition;
 
 import com.embabel.chat.Conversation;
-import com.embabel.impromptu.ImpromptuUser;
+import com.embabel.impromptu.user.ImpromptuUser;
 import org.springframework.context.ApplicationEvent;
 
 /**

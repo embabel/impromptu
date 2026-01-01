@@ -9,7 +9,7 @@ import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.resolver.InMemoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.text2graph.builder.SourceAnalysisConfig;
-import com.embabel.impromptu.ImpromptuUser;
+import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;

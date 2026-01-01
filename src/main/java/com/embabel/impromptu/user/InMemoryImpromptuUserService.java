@@ -1,4 +1,4 @@
-package com.embabel.impromptu;
+package com.embabel.impromptu.user;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
