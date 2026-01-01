@@ -45,15 +45,30 @@
         </dependency>
 
         <dependency>
-            <groupId>com.embabel</groupId>
-            <artifactId>dice</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <groupId>org.drivine</groupId>
+            <artifactId>drivine4j-spring-boot-starter</artifactId>
+            <version>0.0.12</version>
         </dependency>
 
         <dependency>
             <groupId>com.embabel.agent</groupId>
-            <artifactId>embabel-agent-rag-lucene</artifactId>
-            <version>${embabel-agent.version}</version>
+            <artifactId>embabel-agent-rag-neo-drivine</artifactId>
+            <version>0.1.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.drivine</groupId>
+                    <artifactId>drivine4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+
+
+        <dependency>
+            <groupId>com.embabel</groupId>
+            <artifactId>dice</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
