@@ -8,7 +8,8 @@ import com.embabel.chat.*;
 import com.embabel.dice.proposition.Proposition;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.UserService;
+import com.embabel.impromptu.ImpromptuUserService;
+import com.embabel.impromptu.InMemoryImpromptuUserService;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -22,8 +23,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import jakarta.annotation.security.PermitAll;
 import com.vaadin.flow.server.VaadinSession;
+import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,7 @@ public class VaadinChatView extends VerticalLayout {
     private final ImpromptuProperties properties;
     private final LuceneSearchOperations searchOperations;
     private final PropositionRepository propositionRepository;
-    private final UserService userService;
+    private final ImpromptuUserService userService;
 
     private VerticalLayout messagesLayout;
     private VerticalLayout propositionsContent;
@@ -67,7 +68,7 @@ public class VaadinChatView extends VerticalLayout {
             ImpromptuProperties properties,
             LuceneSearchOperations searchOperations,
             PropositionRepository propositionRepository,
-            UserService userService) {
+            InMemoryImpromptuUserService userService) {
         this.chatbot = chatbot;
         this.properties = properties;
         this.searchOperations = searchOperations;

@@ -20,4 +20,9 @@ class ChatConfiguration {
                 new Verbosity().showPrompts()
         );
     }
+
+    @Bean
+    ImpromptuUserService impromptuUserService() {
+        return new InMemoryImpromptuUserService();
+    }
 }

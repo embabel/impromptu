@@ -1,24 +1,26 @@
 package com.embabel.impromptu;
 
+import com.embabel.agent.api.identity.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
-/**
- * Service for managing user authentication.
- */
-@Service
-public class UserService {
+public abstract class ImpromptuUserService implements UserService<ImpromptuUser> {
 
-    private final Logger logger = LoggerFactory.getLogger(UserService.class);
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    /**
+     * Find or create a user by ID.
+     */
+    protected abstract ImpromptuUser findOrCreate(String id, String displayName, String username, String email);
 
     /**
      * Gets the authenticated user from Google OAuth, or an anonymous user if not authenticated.
+     * Looks up existing user or provisions a new one.
      */
     public ImpromptuUser getAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -27,22 +29,19 @@ public class UserService {
             String id = oauth2User.getAttribute("sub"); // Google's unique user ID
             String displayName = oauth2User.getAttribute("name");
             String email = oauth2User.getAttribute("email");
-            // Use email as username for Google OAuth
             // Prefer Google's sub (stable user ID), fall back to email for persistence
             var finalId = id != null ? id : email;
             if (finalId == null) {
                 throw new IllegalStateException("OAuth2 user has neither 'sub' nor 'email' - cannot identify user");
             }
-            var user = new ImpromptuUser(
+            return findOrCreate(
                     finalId,
                     displayName != null ? displayName : "User",
                     email != null ? email : "unknown",
                     email
             );
-            logger.info("Authenticated user: {}", user);
-            return user;
         }
-        // Return anonymous user
+        // Return anonymous user (not persisted)
         return new ImpromptuUser(UUID.randomUUID().toString(), "Anonymous", "anonymous", null);
     }
 }
