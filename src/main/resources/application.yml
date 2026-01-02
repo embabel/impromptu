@@ -3,13 +3,14 @@ database:
     neo:
       type: NEO4J
       host: ${NEO4J_HOST:localhost}
-      port: ${NEO4J_PORT:7687}
+      port: ${NEO4J_PORT:7888}
       user-name: ${NEO4J_USERNAME:neo4j}
-      password: ${NEO4J_PASSWORD:password}
+      password: ${NEO4J_PASSWORD:brahmsian}
       database-name: ${NEO4J_DATABASE:neo4j}
 
 impromptu:
-  chunker-config:
+
+  neo-rag:
     max-chunk-size: 800
     overlap-size: 100
     embedding-batch-size: 800

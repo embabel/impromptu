@@ -2,6 +2,7 @@ package com.embabel.impromptu.rag;
 
 import com.embabel.agent.rag.neo.drivine.DrivineCypherSearch;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
+import com.embabel.common.ai.model.DefaultModelSelectionCriteria;
 import com.embabel.common.ai.model.ModelProvider;
 import com.embabel.impromptu.ImpromptuProperties;
 import org.drivine.manager.PersistenceManager;
@@ -25,13 +26,14 @@ class RagConfiguration {
     @Primary
     DrivineStore drivineStore(
             PersistenceManager persistenceManager,
-                                          PlatformTransactionManager platformTransactionManager,
-                                          ModelProvider modelProvider,
-                                          ImpromptuProperties properties) {
+            PlatformTransactionManager platformTransactionManager,
+            ModelProvider modelProvider,
+            ImpromptuProperties properties) {
+        var embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria.INSTANCE);
         return new DrivineStore(
                 persistenceManager,
                 properties.neoRag(),
-                modelProvider,
+                embeddingService,
                 platformTransactionManager,
                 new DrivineCypherSearch(persistenceManager)
         );
