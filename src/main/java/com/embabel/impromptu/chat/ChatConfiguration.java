@@ -4,8 +4,9 @@ import com.embabel.agent.core.AgentPlatform;
 import com.embabel.agent.core.Verbosity;
 import com.embabel.chat.Chatbot;
 import com.embabel.chat.agent.AgentProcessChatbot;
+import com.embabel.impromptu.user.DrivineImpromptuUserService;
 import com.embabel.impromptu.user.ImpromptuUserService;
-import com.embabel.impromptu.user.InMemoryImpromptuUserService;
+import org.drivine.manager.GraphObjectManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -24,7 +25,7 @@ class ChatConfiguration {
     }
 
     @Bean
-    ImpromptuUserService impromptuUserService() {
-        return new InMemoryImpromptuUserService();
+    ImpromptuUserService impromptuUserService(GraphObjectManager gom) {
+        return new DrivineImpromptuUserService(gom);
     }
 }

@@ -10,7 +10,6 @@ import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.user.ImpromptuUserService;
-import com.embabel.impromptu.user.InMemoryImpromptuUserService;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -80,7 +79,7 @@ public class VaadinChatView extends VerticalLayout {
             ImpromptuProperties properties,
             DrivineStore searchOperations,
             PropositionRepository propositionRepository,
-            InMemoryImpromptuUserService userService,
+            ImpromptuUserService userService,
             SpotifyService spotifyService,
             @Value("${database.datasources.neo.host:localhost}") String neo4jHost,
             @Value("${database.datasources.neo.port:7687}") int neo4jPort,
