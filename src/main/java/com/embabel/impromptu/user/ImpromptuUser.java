@@ -2,6 +2,10 @@ package com.embabel.impromptu.user;
 
 import com.embabel.agent.api.identity.User;
 import com.embabel.common.ai.prompt.PromptContributor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.drivine.annotation.NodeFragment;
+import org.drivine.annotation.NodeId;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -10,8 +14,10 @@ import java.time.Instant;
 /**
  * Mutable user class for Impromptu application.
  */
+@NodeFragment(labels = {"User"})
 public class ImpromptuUser implements User, PromptContributor {
 
+    @NodeId
     private String id;
     private String displayName;
     private String username;
@@ -23,7 +29,12 @@ public class ImpromptuUser implements User, PromptContributor {
     private @Nullable Instant spotifyTokenExpiry;
     private @Nullable String spotifyUserId;
 
-    public ImpromptuUser(String id, String displayName, String username, String email) {
+    @JsonCreator
+    public ImpromptuUser(
+            @JsonProperty("id") String id,
+            @JsonProperty("displayName") String displayName,
+            @JsonProperty("username") String username,
+            @JsonProperty("email") String email) {
         this.id = id;
         this.displayName = displayName;
         this.username = username;

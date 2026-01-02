@@ -5,6 +5,8 @@ import com.embabel.agent.rag.neo.drivine.DrivineStore;
 import com.embabel.common.ai.model.DefaultModelSelectionCriteria;
 import com.embabel.common.ai.model.ModelProvider;
 import com.embabel.impromptu.ImpromptuProperties;
+import org.drivine.manager.GraphObjectManager;
+import org.drivine.manager.GraphObjectManagerFactory;
 import org.drivine.manager.PersistenceManager;
 import org.drivine.manager.PersistenceManagerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -19,6 +21,11 @@ class RagConfiguration {
 
     @Bean
     PersistenceManager persistenceManager(PersistenceManagerFactory factory) {
+        return factory.get("neo");
+    }
+
+    @Bean
+    GraphObjectManager graphObjectManager(GraphObjectManagerFactory factory) {
         return factory.get("neo");
     }
 
