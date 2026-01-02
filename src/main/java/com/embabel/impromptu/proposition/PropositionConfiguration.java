@@ -9,7 +9,6 @@ import com.embabel.dice.pipeline.PropositionBuilders;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.extraction.LlmPropositionExtractor;
-import com.embabel.dice.proposition.store.InMemoryPropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,15 +52,6 @@ public class PropositionConfiguration {
     @Bean
     public EmbeddingService propositionEmbeddingService(AiBuilder aiBuilder) {
         return aiBuilder.ai().withDefaultEmbeddingService();
-    }
-
-    /**
-     * Repository for storing and querying propositions.
-     */
-    @Bean
-    public PropositionRepository propositionRepository(EmbeddingService propositionEmbeddingService) {
-        logger.info("Creating InMemoryPropositionRepository");
-        return new InMemoryPropositionRepository(propositionEmbeddingService);
     }
 
     /**

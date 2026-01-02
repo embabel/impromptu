@@ -9,6 +9,7 @@ import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
+import com.embabel.dice.projection.memory.MemoryProjection;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.proposition.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.spotify.SpotifyService;
@@ -33,11 +34,13 @@ public class ChatActions {
     private final ToolishRag toolishRag;
     private final ImpromptuProperties properties;
     private final SpotifyService spotifyService;
+    private final MemoryProjection memoryProjection;
     private final ApplicationEventPublisher eventPublisher;
 
     public ChatActions(
             SearchOperations searchOperations,
             SpotifyService spotifyService,
+            MemoryProjection memoryProjection,
             ApplicationEventPublisher eventPublisher,
             ImpromptuProperties properties) {
         this.toolishRag = new ToolishRag(
@@ -46,6 +49,7 @@ public class ChatActions {
                 searchOperations)
                 .withHint(TryHyDE.usingConversationContext());
         this.spotifyService = spotifyService;
+        this.memoryProjection = memoryProjection;
         this.properties = properties;
         this.eventPublisher = eventPublisher;
     }
@@ -75,6 +79,7 @@ public class ChatActions {
         if (user.isSpotifyLinked()) {
             tools.add(new SpotifyTools(user, spotifyService));
         }
+//        memoryProjection.projectUserProfile()
         var assistantMessage = context.
                 ai()
                 .withLlm(properties.chatLlm())

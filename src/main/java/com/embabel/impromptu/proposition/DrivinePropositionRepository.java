@@ -25,6 +25,7 @@ import org.drivine.manager.CascadeType;
 import org.drivine.manager.GraphObjectManager;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.List;
 /**
  * Drivine-based proposition repository that persists propositions to Neo4j.
  */
+@Service
 public class DrivinePropositionRepository implements PropositionRepository {
 
     private final GraphObjectManager graphObjectManager;
