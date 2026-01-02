@@ -8,6 +8,10 @@ database:
       password: ${NEO4J_PASSWORD:brahmsian}
       database-name: ${NEO4J_DATABASE:neo4j}
 
+neo4j:
+  http:
+    port: ${NEO4J_HTTP_PORT:8889}
+
 impromptu:
 
   neo-rag:

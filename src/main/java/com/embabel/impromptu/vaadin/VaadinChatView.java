@@ -28,6 +28,7 @@ import com.vaadin.flow.server.VaadinSession;
 import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -60,6 +61,13 @@ public class VaadinChatView extends VerticalLayout {
     private final ImpromptuUserService userService;
     private final SpotifyService spotifyService;
 
+    // Neo4j configuration for browser link
+    private final String neo4jHost;
+    private final int neo4jPort;
+    private final String neo4jUsername;
+    private final String neo4jPassword;
+    private final int neo4jHttpPort;
+
     private VerticalLayout messagesLayout;
     private VerticalLayout propositionsContent;
     private Span propositionCountSpan;
@@ -73,13 +81,23 @@ public class VaadinChatView extends VerticalLayout {
             DrivineStore searchOperations,
             PropositionRepository propositionRepository,
             InMemoryImpromptuUserService userService,
-            SpotifyService spotifyService) {
+            SpotifyService spotifyService,
+            @Value("${database.datasources.neo.host:localhost}") String neo4jHost,
+            @Value("${database.datasources.neo.port:7687}") int neo4jPort,
+            @Value("${database.datasources.neo.user-name:neo4j}") String neo4jUsername,
+            @Value("${database.datasources.neo.password:neo4j}") String neo4jPassword,
+            @Value("${neo4j.http.port:7474}") int neo4jHttpPort) {
         this.chatbot = chatbot;
         this.properties = properties;
         this.searchOperations = searchOperations;
         this.propositionRepository = propositionRepository;
         this.userService = userService;
         this.spotifyService = spotifyService;
+        this.neo4jHost = neo4jHost;
+        this.neo4jPort = neo4jPort;
+        this.neo4jUsername = neo4jUsername;
+        this.neo4jPassword = neo4jPassword;
+        this.neo4jHttpPort = neo4jHttpPort;
         this.persona = properties.voice() != null ? properties.voice().persona() : "Assistant";
 
         setSizeFull();
@@ -411,7 +429,25 @@ public class VaadinChatView extends VerticalLayout {
                 .set("font-weight", "500");
         embabelLink.setTarget("_blank");
 
-        footer.add(logo, poweredBy, embabelLink);
+        // Separator
+        var separator = new Span("|");
+        separator.getStyle()
+                .set("color", "var(--lumo-contrast-30pct)")
+                .set("margin", "0 var(--lumo-space-s)");
+
+        // Neo4j Browser button with auto-login
+        var neo4jBrowserUrl = String.format(
+                "http://%s:%d/browser/?connectURL=bolt://%s:%d&username=%s&password=%s",
+                neo4jHost, neo4jHttpPort, neo4jHost, neo4jPort, neo4jUsername, neo4jPassword);
+        var neo4jLink = new Anchor(neo4jBrowserUrl, "Neo4j Browser");
+        neo4jLink.getElement().setAttribute("router-ignore", true);
+        neo4jLink.setTarget("_blank");
+        neo4jLink.getStyle()
+                .set("font-size", "var(--lumo-font-size-s)")
+                .set("color", "var(--lumo-primary-text-color)")
+                .set("text-decoration", "none");
+
+        footer.add(logo, poweredBy, embabelLink, separator, neo4jLink);
         return footer;
     }
 
