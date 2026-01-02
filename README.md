@@ -4,6 +4,7 @@
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
 ![Apache Maven](https://img.shields.io/badge/Apache%20Maven-C71A36?style=for-the-badge&logo=Apache%20Maven&logoColor=white)
 ![ChatGPT](https://img.shields.io/badge/chatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white)
+![Neo4j](https://img.shields.io/badge/Neo4j-008CC1?style=for-the-badge&logo=neo4j&logoColor=white)
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
 
 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -16,7 +17,7 @@ Chatbot intended to help users discover classical music.
 
 Embabel features:
 
-- Agent-based chatbot with RAG
+- Agent-based chatbot with RAG (Neo4j vector storage)
 - Proposition extraction pipeline for memories about users
 - Spotify integration for playlist management
 
@@ -38,17 +39,42 @@ The model configured in `application.yml` determines which key is required. The 
 
 **Java**: Java 21+ is required.
 
-## Web Interface (Vaadin)
+**Docker**: Required for running Neo4j.
 
-Impromptu includes a browser-based chat interface built with Vaadin, featuring a dark theme inspired by concert halls.
+### Starting Neo4j
+
+The application uses Neo4j as its vector store for RAG. Start it with Docker Compose:
+
+```bash
+docker compose up -d
+```
+
+This starts Neo4j with:
+- **Bolt port**: `7888` (for application connections)
+- **HTTP port**: `8889` (for Neo4j Browser at http://localhost:8889)
+- **Credentials**: `neo4j` / `brahmsian`
+
+To stop Neo4j:
+```bash
+docker compose down
+```
+
+To wipe all data and start fresh:
+```bash
+docker compose down -v
+```
 
 ### Running the Web App
+
+After Neo4j is running:
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
 The app runs on **port 8888** (double the 88 piano keys) at http://127.0.0.1:8888/chat
+
+A "Neo4j Browser" link in the footer opens the database UI with credentials pre-filled.
 
 **Important:** Use `127.0.0.1` (loopback address), not `localhost`, for OAuth to work correctly with both Google and Spotify.
 
@@ -102,39 +128,42 @@ Once configured, a "Link Spotify" button appears in the header after Google logi
 - **Real-time Chat**: Streaming responses from the RAG-powered chatbot
 - **User Authentication**: Optional Google OAuth2 login
 - **Spotify Integration**: Link your Spotify account to create and manage playlists through the chatbot
+- **Neo4j Browser**: Direct link to explore the graph database
 
 ## Implementation Details
 
-### RAG Configuration
+### Neo4j Vector Storage
 
-RAG is configured in [`RagConfiguration.java`](src/main/java/com/embabel/impromptu/rag/RagConfiguration.java):
+The application uses Neo4j as its vector store for RAG, configured via `application.yml`:
 
-```java
-@Bean
-LuceneSearchOperations luceneSearchOperations(
-        ModelProvider modelProvider,
-        ImpromptuProperties properties) {
-    var embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria.INSTANCE);
-    return LuceneSearchOperations
-            .withName("docs")
-            .withEmbeddingService(embeddingService)
-            .withChunkerConfig(properties.chunkerConfig())
-            .withIndexPath(Paths.get("./.lucene-index"))
-            .buildAndLoadChunks();
-}
+```yaml
+database:
+  datasources:
+    neo:
+      type: NEO4J
+      host: ${NEO4J_HOST:localhost}
+      port: ${NEO4J_PORT:7888}
+      user-name: ${NEO4J_USERNAME:neo4j}
+      password: ${NEO4J_PASSWORD:brahmsian}
+      database-name: ${NEO4J_DATABASE:neo4j}
+
+neo4j:
+  http:
+    port: ${NEO4J_HTTP_PORT:8889}
 ```
 
 Key aspects:
 
-- **Lucene with disk persistence**: The vector index is stored at `./.lucene-index`, surviving application restarts
-- **Embedding service**: Uses the configured `ModelProvider` to get an embedding service for vectorizing content
+- **Neo4j with vector indexes**: Chunks are stored as nodes with vector embeddings for similarity search
+- **Graph relationships**: Content relationships can be modeled as edges in the graph
+- **Persistent storage**: Data survives container restarts (stored in Docker volume)
 - **Configurable chunking**: Content is split into chunks with configurable size (default 800 chars) and overlap (default 100 chars)
 
 Chunking properties can be configured via `application.yml`:
 
 ```yaml
 impromptu:
-  chunker-config:
+  neo-rag:
     max-chunk-size: 800
     overlap-size: 100
 ```
@@ -211,7 +240,7 @@ Key concepts:
    - `canRerun = true`: The action can be executed multiple times (for each user message)
 
 3. **`ToolishRag` as LLM reference**:
-   - Wraps the `SearchOperations` (Lucene index) as a tool the LLM can use
+   - Wraps the `SearchOperations` (Neo4j vector store) as a tool the LLM can use
    - When `.withReference(toolishRag)` is called, the LLM can search the RAG store to find relevant content
    - The LLM decides when to use this tool based on the user's question
 
@@ -285,24 +314,36 @@ All configuration is externalized in `application.yml`, allowing behavior change
 ### application.yml Reference
 
 ```yaml
+database:
+  datasources:
+    neo:
+      host: localhost
+      port: 7888               # Neo4j Bolt port
+      user-name: neo4j
+      password: brahmsian
+
+neo4j:
+  http:
+    port: 8889                 # Neo4j Browser HTTP port
+
 impromptu:
   # RAG chunking settings
-  chunker-config:
-    max-chunk-size: 800      # Maximum characters per chunk
-    overlap-size: 100        # Overlap between chunks for context continuity
+  neo-rag:
+    max-chunk-size: 800        # Maximum characters per chunk
+    overlap-size: 100          # Overlap between chunks for context continuity
 
   # LLM model selection and hyperparameters
   chat-llm:
-    model: gpt-4.1-mini      # Model to use for chat responses
-    temperature: 0.0         # 0.0 = deterministic, higher = more creative
+    model: gpt-4.1-mini        # Model to use for chat responses
+    temperature: 0.0           # 0.0 = deterministic, higher = more creative
 
   # Voice controls HOW the chatbot communicates
   voice:
-    persona: impromptu       # Which persona template to use (personas/*.jinja)
-    max-words: 250           # Hint for response length
+    persona: impromptu         # Which persona template to use (personas/*.jinja)
+    max-words: 250             # Hint for response length
 
   # Objective controls WHAT the chatbot accomplishes
-  objective: music           # Which objective template to use (objectives/*.jinja)
+  objective: music             # Which objective template to use (objectives/*.jinja)
 
 embabel:
   models:
