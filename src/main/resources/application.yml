@@ -1,3 +1,13 @@
+database:
+  datasources:
+    neo:
+      type: NEO4J
+      host: ${NEO4J_HOST:localhost}
+      port: ${NEO4J_PORT:7687}
+      user-name: ${NEO4J_USERNAME:neo4j}
+      password: ${NEO4J_PASSWORD:password}
+      database-name: ${NEO4J_DATABASE:neo4j}
+
 impromptu:
   chunker-config:
     max-chunk-size: 800

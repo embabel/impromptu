@@ -1,0 +1,16 @@
+# Test configuration for Drivine
+# This configuration is used by @EnableDrivineTestConfig
+#
+# The @EnableDrivineTestConfig annotation will:
+# - Use these settings as-is when USE_LOCAL_NEO4J=true
+# - Override host/port/password with Testcontainer values when USE_LOCAL_NEO4J=false (default)
+
+database:
+  datasources:
+    neo:
+      type: NEO4J
+      host: localhost
+      port: 7687
+      user-name: neo4j
+      password: brahmsian
+      database-name: neo4j

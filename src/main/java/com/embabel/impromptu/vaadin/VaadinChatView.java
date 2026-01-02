@@ -3,7 +3,7 @@ package com.embabel.impromptu.vaadin;
 import com.embabel.agent.api.channel.MessageOutputChannelEvent;
 import com.embabel.agent.api.channel.OutputChannel;
 import com.embabel.agent.api.channel.OutputChannelEvent;
-import com.embabel.agent.rag.lucene.LuceneSearchOperations;
+import com.embabel.agent.rag.neo.drivine.DrivineStore;
 import com.embabel.chat.*;
 import com.embabel.dice.proposition.Proposition;
 import com.embabel.dice.proposition.PropositionRepository;
@@ -53,7 +53,9 @@ public class VaadinChatView extends VerticalLayout {
 
     private final Chatbot chatbot;
     private final ImpromptuProperties properties;
-    private final LuceneSearchOperations searchOperations;
+
+    // TODO we want chunk info and search but not necessarily full DrivineStore here
+    private final DrivineStore searchOperations;
     private final PropositionRepository propositionRepository;
     private final ImpromptuUserService userService;
     private final SpotifyService spotifyService;
@@ -68,7 +70,7 @@ public class VaadinChatView extends VerticalLayout {
     public VaadinChatView(
             Chatbot chatbot,
             ImpromptuProperties properties,
-            LuceneSearchOperations searchOperations,
+            DrivineStore searchOperations,
             PropositionRepository propositionRepository,
             InMemoryImpromptuUserService userService,
             SpotifyService spotifyService) {

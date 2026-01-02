@@ -2,7 +2,7 @@ package com.embabel.impromptu.rag;
 
 import com.embabel.agent.rag.ingestion.NeverRefreshExistingDocumentContentPolicy;
 import com.embabel.agent.rag.ingestion.TikaHierarchicalContentReader;
-import com.embabel.agent.rag.lucene.LuceneSearchOperations;
+import com.embabel.agent.rag.neo.drivine.DrivineStore;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
@@ -11,7 +11,7 @@ import java.nio.file.Path;
  * Service for ingesting and managing RAG content.
  */
 @Service
-public record DataManager(LuceneSearchOperations luceneSearchOperations) {
+public record DataManager(DrivineStore store) {
 
     private static final String DEFAULT_LOCATION = "./data/schumann/musicandmusician001815mbp.md";
     private static final String DEFAULT_DIRECTORY = "./data";
@@ -31,7 +31,7 @@ public record DataManager(LuceneSearchOperations luceneSearchOperations) {
                 : Path.of(location).toAbsolutePath().toUri().toString();
         var ingested = NeverRefreshExistingDocumentContentPolicy.INSTANCE
                 .ingestUriIfNeeded(
-                        luceneSearchOperations,
+                        store,
                         new TikaHierarchicalContentReader(),
                         uri
                 );
@@ -66,7 +66,7 @@ public record DataManager(LuceneSearchOperations luceneSearchOperations) {
                             var fileUri = file.toPath().toAbsolutePath().toUri().toString();
                             var ingested = NeverRefreshExistingDocumentContentPolicy.INSTANCE
                                     .ingestUriIfNeeded(
-                                            luceneSearchOperations,
+                                            store,
                                             new TikaHierarchicalContentReader(),
                                             fileUri
                                     );
@@ -83,13 +83,9 @@ public record DataManager(LuceneSearchOperations luceneSearchOperations) {
 
         return "Ingested " + ingestedCount + " documents from directory: " + dirUri;
     }
-
-    public int clear() {
-        return luceneSearchOperations.clear();
-    }
-
+    
     public String getInfo() {
-        var info = luceneSearchOperations.info();
+        var info = store.info();
         return "Chunks: " + info.getChunkCount() + ", Documents: " + info.getDocumentCount();
     }
 }

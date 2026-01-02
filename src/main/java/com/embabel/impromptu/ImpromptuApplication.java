@@ -15,11 +15,15 @@
  */
 package com.embabel.impromptu;
 
+import org.drivine.autoconfigure.EnableDrivine;
+import org.drivine.autoconfigure.EnableDrivinePropertiesConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 
 @SpringBootApplication
+@EnableDrivine
+@EnableDrivinePropertiesConfig
 class ImpromptuApplication {
     public static void main(String[] args) {
         SpringApplication.run(ImpromptuApplication.class, args);
