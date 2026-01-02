@@ -36,12 +36,11 @@ impromptu:
 
   show-extraction-prompts: true
   show-extraction-responses: false
+  embedding-service: text-embedding-3-small
 
 embabel:
 
   agent:
-
-
     logging:
       personality: colossus
 
@@ -51,16 +50,11 @@ embabel:
     default-llm:
       model: gpt-4.1-mini
 
-    default-embedding-model:
-      model: text-embedding-3-small
-
 
 server:
   port: 8888  # Double the 88 piano keys
 
 spring:
-  main:
-    web-application-type: servlet
 
   # Google OAuth2 Configuration
   # To set up Google OAuth2:

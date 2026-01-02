@@ -158,6 +158,7 @@ Key aspects:
 - **Graph relationships**: Content relationships can be modeled as edges in the graph
 - **Persistent storage**: Data survives container restarts (stored in Docker volume)
 - **Configurable chunking**: Content is split into chunks with configurable size (default 800 chars) and overlap (default 100 chars)
+- **Admin queries**: See [`cypher/admin.cypher`](cypher/admin.cypher) for useful queries to inspect and manage the database
 
 Chunking properties can be configured via `application.yml`:
 

@@ -16,6 +16,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 @ConfigurationProperties(prefix = "impromptu")
 public record ImpromptuProperties(
         @NestedConfigurationProperty LlmOptions chatLlm,
+        String embeddingService,
         String objective,
         @NestedConfigurationProperty Voice voice,
         @NestedConfigurationProperty NeoRagServiceProperties neoRag,

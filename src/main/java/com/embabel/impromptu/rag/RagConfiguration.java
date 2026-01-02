@@ -2,8 +2,9 @@ package com.embabel.impromptu.rag;
 
 import com.embabel.agent.rag.neo.drivine.DrivineCypherSearch;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
-import com.embabel.common.ai.model.DefaultModelSelectionCriteria;
+import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.common.ai.model.ModelProvider;
+import com.embabel.common.ai.model.ModelSelectionCriteria;
 import com.embabel.impromptu.ImpromptuProperties;
 import org.drivine.manager.GraphObjectManager;
 import org.drivine.manager.GraphObjectManagerFactory;
@@ -31,12 +32,22 @@ class RagConfiguration {
 
     @Bean
     @Primary
+    EmbeddingService embeddingService(
+            ModelProvider modelProvider,
+            ImpromptuProperties properties) {
+        return modelProvider.getEmbeddingService(
+                ModelSelectionCriteria.byName(
+                        properties.embeddingService())
+        );
+    }
+
+    @Bean
+    @Primary
     DrivineStore drivineStore(
             PersistenceManager persistenceManager,
             PlatformTransactionManager platformTransactionManager,
-            ModelProvider modelProvider,
+            EmbeddingService embeddingService,
             ImpromptuProperties properties) {
-        var embeddingService = modelProvider.getEmbeddingService(DefaultModelSelectionCriteria.INSTANCE);
         return new DrivineStore(
                 persistenceManager,
                 properties.neoRag(),

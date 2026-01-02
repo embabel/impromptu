@@ -10,6 +10,7 @@ import com.embabel.agent.rag.tools.TryHyDE;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
 import com.embabel.dice.projection.memory.MemoryProjection;
+import com.embabel.dice.projection.memory.MemoryScope;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.proposition.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.spotify.SpotifyService;
@@ -79,11 +80,13 @@ public class ChatActions {
         if (user.isSpotifyLinked()) {
             tools.add(new SpotifyTools(user, spotifyService));
         }
-//        memoryProjection.projectUserProfile()
+        var userProfile = memoryProjection.projectUserProfile(
+                user.getId(), MemoryScope.global(user.getId())
+        );
         var assistantMessage = context.
                 ai()
                 .withLlm(properties.chatLlm())
-                .withPromptContributor(user)
+                .withPromptElements(user, userProfile)
                 .withReference(toolishRag)
                 .withToolObjects(tools)
                 .withTemplate("ragbot")

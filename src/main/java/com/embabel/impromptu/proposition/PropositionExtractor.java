@@ -2,13 +2,14 @@ package com.embabel.impromptu.proposition;
 
 import com.embabel.agent.core.DataDictionary;
 import com.embabel.agent.rag.model.Chunk;
-import com.embabel.chat.AssistantMessage;
-import com.embabel.chat.Message;
-import com.embabel.chat.UserMessage;
+import com.embabel.chat.Conversation;
+import com.embabel.chat.SimpleMessageFormatter;
+import com.embabel.chat.WindowingConversationFormatter;
 import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.resolver.InMemoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
-import com.embabel.dice.text2graph.builder.SourceAnalysisConfig;
+import com.embabel.dice.proposition.ReferencesEntities;
+import com.embabel.dice.t.SourceAnalysisConfig;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,30 +63,8 @@ public class PropositionExtractor {
                 return;
             }
 
-            // Find the most recent user message and assistant response
-            Message lastAssistantMsg = null;
-            Message lastUserMsg = null;
-
-            for (int i = messages.size() - 1; i >= 0; i--) {
-                var msg = messages.get(i);
-                if (lastAssistantMsg == null && msg instanceof AssistantMessage) {
-                    lastAssistantMsg = msg;
-                }
-                if (lastUserMsg == null && msg instanceof UserMessage) {
-                    lastUserMsg = msg;
-                }
-                if (lastAssistantMsg != null && lastUserMsg != null) {
-                    break;
-                }
-            }
-
-            if (lastUserMsg == null || lastAssistantMsg == null) {
-                logger.debug("Missing user or assistant message");
-                return;
-            }
-
             // Build context for extraction: combine user question and assistant response
-            var extractionText = buildExtractionText(lastUserMsg, lastAssistantMsg);
+            var extractionText = buildExtractionText(event.conversation);
 
             var chunk = Chunk.create(
                     extractionText,
@@ -100,15 +79,25 @@ public class PropositionExtractor {
                     musicSchema,
                     entityResolverForUser(event.user),
                     """
-                            Extract facts about music, composers, musical works, and user interests.
-                            Focus on:
-                            - Facts about composers and their works mentioned in the conversation
+                            Extract facts about the user and the user's musical preferences:
+                            
+                            - The user's level of knowledge
+                            - Composers, works, genres, and historical periods mentioned
+                            - The users's preferences or opinions expressed about such things
                             - Musical concepts or terms discussed
                             - What topics the user is interested in or asking about
-                            - Any relationships between musical entities (composer wrote work, work is in genre, etc.)
                             
-                            For user interests, create propositions like "The user is interested in [topic]"
+                            For user interests, create propositions like "The user dislikes Baroque music"
+                            or "The user is interested in learning about Romantic composers" or "The user's favorite composer is Messiaen".
                             based on what they are asking about.
+                            
+                            You are not noting known facts from general knowledge:
+                            GOOD: "The user discussed Brahms in detail"
+                            BAD: "Brahms was a Romantic composer"
+                            GOOD: "The user enjoys atonal music"
+                            BAD: "Atonal music lacks a tonal center"
+                            
+                            DO NOT ADD ANYTHING NOT SUPPORTED BY THE CONVERSATION TEXT.
                             """
             );
 
@@ -118,7 +107,7 @@ public class PropositionExtractor {
 
             if (!result.getPropositions().isEmpty()) {
                 var resolvedCount = result.getPropositions().stream()
-                        .filter(p -> p.isFullyResolved())
+                        .filter(ReferencesEntities::isFullyResolved)
                         .count();
 
                 logger.info(
@@ -144,11 +133,9 @@ public class PropositionExtractor {
         }
     }
 
-    private String buildExtractionText(Message userMsg, Message assistantMsg) {
-        return """
-                User asked: %s
-                
-                Assistant response: %s
-                """.formatted(userMsg.getContent(), assistantMsg.getContent());
+    private String buildExtractionText(Conversation conversation) {
+        // TODO deal with hardcoding
+        return new WindowingConversationFormatter(SimpleMessageFormatter.INSTANCE, 10)
+                .format(conversation);
     }
 }
