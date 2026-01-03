@@ -15,6 +15,7 @@
  */
 package com.embabel.impromptu.proposition;
 
+import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.dice.proposition.MentionRole;
 import com.embabel.dice.proposition.Proposition;
@@ -47,9 +48,12 @@ class DrivinePropositionRepositoryTest {
 
     private DrivinePropositionRepository repository;
 
+    private EmbeddingService embeddingService;
+
     @BeforeEach
     void setUp() {
-        repository = new DrivinePropositionRepository(graphObjectManager);
+        repository = new DrivinePropositionRepository(graphObjectManager,
+                persistenceManager, embeddingService);
         // Clean up any existing test propositions
         persistenceManager.execute(
                 QuerySpecification.withStatement("MATCH (p:Proposition) DETACH DELETE p")

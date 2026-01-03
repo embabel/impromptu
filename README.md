@@ -64,6 +64,39 @@ To wipe all data and start fresh:
 docker compose down -v
 ```
 
+### Loading Open Opus Data
+
+The application can load composer and works data from [Open Opus](https://openopus.org/), a free, open-source classical music database.
+
+**Load into Neo4j** (with the app running):
+```bash
+# Load data (fetches directly from Open Opus API)
+curl -X POST http://localhost:8888/api/openopus/load
+
+# Clear all Open Opus data
+curl -X DELETE http://localhost:8888/api/openopus
+```
+
+This creates a normalized graph with:
+- **Composer** nodes linked to **Epoch** (Baroque, Romantic, etc.)
+- **Work** nodes linked to **Genre** (Orchestral, Chamber, Keyboard, etc.)
+- **COMPOSED** relationships connecting composers to their works
+
+Example Cypher queries after loading:
+```cypher
+// Find all Romantic composers
+MATCH (c:Composer)-[:OF_EPOCH]->(e:Epoch {name: "Romantic"})
+RETURN c.completeName
+
+// Find all orchestral works by Brahms
+MATCH (c:Composer {name: "Brahms"})-[:COMPOSED]->(w:Work)-[:OF_GENRE]->(g:Genre {name: "Orchestral"})
+RETURN w.title
+
+// Count works by genre
+MATCH (w:Work)-[:OF_GENRE]->(g:Genre)
+RETURN g.name, count(w) as works ORDER BY works DESC
+```
+
 ### Running the Web App
 
 After Neo4j is running:
