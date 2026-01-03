@@ -6,16 +6,17 @@ import com.embabel.chat.Conversation;
 import com.embabel.chat.SimpleMessageFormatter;
 import com.embabel.chat.WindowingConversationFormatter;
 import com.embabel.dice.common.EntityResolver;
+import com.embabel.dice.common.SourceAnalysisContext;
 import com.embabel.dice.common.resolver.InMemoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.ReferencesEntities;
-import com.embabel.dice.t.SourceAnalysisConfig;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,6 +49,7 @@ public class PropositionExtractor {
     }
 
     private EntityResolver entityResolverForUser(ImpromptuUser user) {
+        // TODO this is wrong
         return new InMemoryEntityResolver();
     }
 
@@ -75,35 +77,20 @@ public class PropositionExtractor {
                     )
             );
 
-            var sourceConfig = new SourceAnalysisConfig(
+            var context = new SourceAnalysisContext(
                     musicSchema,
                     entityResolverForUser(event.user),
-                    """
-                            Extract facts about the user and the user's musical preferences:
-                            
-                            - The user's level of knowledge
-                            - Composers, works, genres, and historical periods mentioned
-                            - The users's preferences or opinions expressed about such things
-                            - Musical concepts or terms discussed
-                            - What topics the user is interested in or asking about
-                            
-                            For user interests, create propositions like "The user dislikes Baroque music"
-                            or "The user is interested in learning about Romantic composers" or "The user's favorite composer is Messiaen".
-                            based on what they are asking about.
-                            
-                            You are not noting known facts from general knowledge:
-                            GOOD: "The user discussed Brahms in detail"
-                            BAD: "Brahms was a Romantic composer"
-                            GOOD: "The user enjoys atonal music"
-                            BAD: "Atonal music lacks a tonal center"
-                            
-                            DO NOT ADD ANYTHING NOT SUPPORTED BY THE CONVERSATION TEXT.
-                            """
+                    List.of(
+                            event.user.toKnownEntity()
+                    ),
+                    Map.of(
+                            // Whatever
+                    )
             );
 
-            logger.debug("Extracting propositions from conversation exchange");
+            logger.info("Extracting propositions from conversation exchange");
 
-            var result = propositionPipeline.processChunk(chunk, sourceConfig);
+            var result = propositionPipeline.processChunk(chunk, context);
 
             if (!result.getPropositions().isEmpty()) {
                 var resolvedCount = result.getPropositions().stream()

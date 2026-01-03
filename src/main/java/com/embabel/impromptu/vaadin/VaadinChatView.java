@@ -8,6 +8,7 @@ import com.embabel.chat.*;
 import com.embabel.dice.proposition.Proposition;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.proposition.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.user.ImpromptuUserService;
 import com.vaadin.flow.component.Key;
@@ -28,6 +29,7 @@ import jakarta.annotation.security.PermitAll;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -59,6 +61,7 @@ public class VaadinChatView extends VerticalLayout {
     private final PropositionRepository propositionRepository;
     private final ImpromptuUserService userService;
     private final SpotifyService spotifyService;
+    private final ApplicationEventPublisher eventPublisher;
 
     // Neo4j configuration for browser link
     private final String neo4jHost;
@@ -81,6 +84,7 @@ public class VaadinChatView extends VerticalLayout {
             PropositionRepository propositionRepository,
             ImpromptuUserService userService,
             SpotifyService spotifyService,
+            ApplicationEventPublisher eventPublisher,
             @Value("${database.datasources.neo.host:localhost}") String neo4jHost,
             @Value("${database.datasources.neo.port:7687}") int neo4jPort,
             @Value("${database.datasources.neo.user-name:neo4j}") String neo4jUsername,
@@ -92,6 +96,7 @@ public class VaadinChatView extends VerticalLayout {
         this.propositionRepository = propositionRepository;
         this.userService = userService;
         this.spotifyService = spotifyService;
+        this.eventPublisher = eventPublisher;
         this.neo4jHost = neo4jHost;
         this.neo4jPort = neo4jPort;
         this.neo4jUsername = neo4jUsername;
@@ -291,19 +296,36 @@ public class VaadinChatView extends VerticalLayout {
                 .set("font-size", "var(--lumo-font-size-xs)")
                 .set("color", "var(--lumo-tertiary-text-color)");
 
-        // Entity mentions
+        metaLayout.add(confidenceSpan, timeSpan);
+
+        // Entity mentions as badges
         var mentions = prop.getMentions();
-        if (mentions != null && !mentions.isEmpty()) {
-            var entityCount = new Span(mentions.size() + " entities");
-            entityCount.getStyle()
-                    .set("font-size", "var(--lumo-font-size-xs)")
-                    .set("color", "var(--lumo-secondary-text-color)");
-            metaLayout.add(confidenceSpan, entityCount, timeSpan);
+        if (!mentions.isEmpty()) {
+            var entitiesLayout = new HorizontalLayout();
+            entitiesLayout.setSpacing(false);
+            entitiesLayout.getStyle()
+                    .set("flex-wrap", "wrap")
+                    .set("gap", "4px")
+                    .set("margin-top", "var(--lumo-space-xs)");
+
+            for (var mention : mentions) {
+                var id = mention.getResolvedId() != null ?
+                        mention.getResolvedId() :
+                        "?";
+                var badge = new Span(mention.getType() + ":" + id);
+                badge.getStyle()
+                        .set("font-size", "var(--lumo-font-size-xxs)")
+                        .set("color", "var(--lumo-primary-text-color)")
+                        .set("background", "var(--lumo-primary-color-10pct)")
+                        .set("padding", "1px 6px")
+                        .set("border-radius", "var(--lumo-border-radius-s)");
+                entitiesLayout.add(badge);
+            }
+            card.add(textSpan, metaLayout, entitiesLayout);
         } else {
-            metaLayout.add(confidenceSpan, timeSpan);
+            card.add(textSpan, metaLayout);
         }
 
-        card.add(textSpan, metaLayout);
         return card;
     }
 
@@ -446,8 +468,38 @@ public class VaadinChatView extends VerticalLayout {
                 .set("color", "var(--lumo-primary-text-color)")
                 .set("text-decoration", "none");
 
-        footer.add(logo, poweredBy, embabelLink, separator, neo4jLink);
+        // Separator
+        var separator2 = new Span("|");
+        separator2.getStyle()
+                .set("color", "var(--lumo-contrast-30pct)")
+                .set("margin", "0 var(--lumo-space-s)");
+
+        // Analyze conversation button
+        var analyzeButton = new Button("Analyze", e -> analyzeConversation());
+        analyzeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+        analyzeButton.getStyle()
+                .set("font-size", "var(--lumo-font-size-s)")
+                .set("color", "var(--lumo-primary-text-color)");
+        analyzeButton.getElement().setAttribute("title", "Extract propositions from conversation");
+
+        footer.add(logo, poweredBy, embabelLink, separator, neo4jLink, separator2, analyzeButton);
         return footer;
+    }
+
+    private void analyzeConversation() {
+        var vaadinSession = VaadinSession.getCurrent();
+        var sessionData = (SessionData) vaadinSession.getAttribute("sessionData");
+        if (sessionData == null) {
+            logger.info("No session data - nothing to analyze");
+            return;
+        }
+        var user = userService.getAuthenticatedUser();
+        var conversation = sessionData.chatSession().getConversation();
+        logger.info("Publishing ConversationAnalysisRequestEvent for user: {}", user.getDisplayName());
+        eventPublisher.publishEvent(new ConversationAnalysisRequestEvent(this, user, conversation));
+
+        // Schedule a refresh of propositions after analysis
+        getUI().ifPresent(this::schedulePropositionRefresh);
     }
 
     private HorizontalLayout createInputSection() {

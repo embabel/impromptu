@@ -89,7 +89,7 @@ public class ChatActions {
                 .withPromptElements(user, userProfile)
                 .withReference(toolishRag)
                 .withToolObjects(tools)
-                .withTemplate("ragbot")
+                .withTemplate("impromptu_chat_response")
                 .respondWithSystemPrompt(conversation, Map.of(
                         "properties", properties,
                         "voice", properties.voice(),
@@ -98,7 +98,7 @@ public class ChatActions {
         context.sendMessage(conversation.addMessage(assistantMessage));
 
         // Publish event for async proposition extraction (every 3rd exchange)
-        if (user != null && conversation.getMessages().size() % 3 == 0) {
+        if (conversation.getMessages().size() % 3 == 0) {
             eventPublisher.publishEvent(new ConversationAnalysisRequestEvent(
                     this,
                     user,

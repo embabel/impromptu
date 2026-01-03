@@ -1,0 +1,25 @@
+{% include "dice/extract_propositions.jinja" %}
+
+USE THIS FOCUS:
+
+Extract facts about the user and the user's musical preferences:
+
+- The user's level of knowledge
+- Composers, works, genres, and historical periods mentioned
+- The users's preferences or opinions expressed about such things
+- Musical concepts or terms discussed
+- What topics the user is interested in or asking about
+
+For user interests, create propositions like "The user dislikes Baroque music"
+or "The user is interested in learning about Romantic composers" or "The user's favorite composer is Messiaen".
+based on what they are asking about.
+
+You are not noting known facts from general knowledge:
+GOOD: "The user discussed Brahms in detail"
+BAD: "Brahms was a Romantic composer"
+GOOD: "The user enjoys atonal music"
+BAD: "Atonal music lacks a tonal center"
+
+DO NOT ADD ANYTHING NOT SUPPORTED BY THE CONVERSATION TEXT.
+
+The user's name is "{{ user.name }}".

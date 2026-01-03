@@ -66,7 +66,10 @@ public class PropositionConfiguration {
                 .withShowLlmResponses(impromptuProperties.showExtractionResponses())
                 .ai();
         logger.info("Creating LlmPropositionExtractor with model: {}", impromptuProperties.propositionExtractionLlm());
-        return new LlmPropositionExtractor(ai, impromptuProperties.propositionExtractionLlm());
+        return LlmPropositionExtractor
+                .withLlm(impromptuProperties.propositionExtractionLlm())
+                .withAi(ai)
+                .withTemplate("dice/extract_impromptu_user_propositions");
     }
 
     @Bean

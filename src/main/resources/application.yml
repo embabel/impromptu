@@ -30,7 +30,7 @@ impromptu:
 
   voice:
     persona: impromptu
-    max-words: 250
+    max-words: 120
 
   objective: music
 
