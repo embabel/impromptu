@@ -2,6 +2,7 @@ package com.embabel.impromptu.proposition;
 
 import com.embabel.agent.core.DataDictionary;
 import com.embabel.agent.rag.model.Chunk;
+import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.SimpleMessageFormatter;
 import com.embabel.chat.WindowingConversationFormatter;
@@ -9,12 +10,14 @@ import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.SourceAnalysisContext;
 import com.embabel.dice.common.resolver.InMemoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
+import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.ReferencesEntities;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
@@ -24,16 +27,23 @@ import java.util.Map;
  * Adapts conversation exchanges to the dice proposition pipeline.
  * Created as a bean in PropositionConfiguration.
  */
+@Service
 public class ConversationPropositionExtraction {
 
     private static final Logger logger = LoggerFactory.getLogger(ConversationPropositionExtraction.class);
 
     private final PropositionPipeline propositionPipeline;
     private final DataDictionary musicSchema;
+    private final PropositionRepository propositionRepository;
+    private final NamedEntityDataRepository entityRepository;
 
     public ConversationPropositionExtraction(
             PropositionPipeline propositionPipeline,
-            DataDictionary musicSchema) {
+            DataDictionary musicSchema,
+            PropositionRepository propositionRepository,
+            NamedEntityDataRepository entityRepository) {
+        this.propositionRepository = propositionRepository;
+        this.entityRepository = entityRepository;
         this.propositionPipeline = propositionPipeline;
         this.musicSchema = musicSchema;
     }
@@ -57,6 +67,7 @@ public class ConversationPropositionExtraction {
      * Extract propositions from a conversation.
      * This builds up a knowledge base from the dialogue.
      */
+    // TODO needs to be transactional
     public void extractPropositions(ConversationAnalysisRequestEvent event) {
         try {
             var messages = event.conversation.getMessages();
@@ -90,28 +101,30 @@ public class ConversationPropositionExtraction {
 
             logger.info("Extracting propositions from conversation exchange");
 
-            var result = propositionPipeline.processChunk(chunk, context);
+            var chunkPropositionResult = propositionPipeline.processChunk(chunk, context);
 
-            if (!result.getPropositions().isEmpty()) {
-                var resolvedCount = result.getPropositions().stream()
+            if (!chunkPropositionResult.getPropositions().isEmpty()) {
+                var resolvedCount = chunkPropositionResult.getPropositions().stream()
                         .filter(ReferencesEntities::isFullyResolved)
                         .count();
 
                 logger.info(
                         "Extracted {} propositions from conversation (resolved: {}, new: {})",
-                        result.getPropositions().size(),
+                        chunkPropositionResult.getPropositions().size(),
                         resolvedCount,
-                        result.getNewCount()
+                        chunkPropositionResult.getNewCount()
                 );
 
                 // Log a summary of what was learned
-                result.getPropositions().stream()
+                chunkPropositionResult.getPropositions().stream()
                         .limit(3)
                         .forEach(prop -> logger.debug("  - {} (confidence: {})", prop.getText(), prop.getConfidence()));
 
-                if (result.getPropositions().size() > 3) {
-                    logger.debug("  ... and {} more", result.getPropositions().size() - 3);
+                if (chunkPropositionResult.getPropositions().size() > 3) {
+                    logger.debug("  ... and {} more", chunkPropositionResult.getPropositions().size() - 3);
                 }
+                // Actually persist the extracted propositions and entities
+                chunkPropositionResult.persist(propositionRepository, entityRepository);
             }
         } catch (Exception e) {
             // Don't let extraction failures break the chat flow

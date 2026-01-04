@@ -570,7 +570,7 @@ public class VaadinChatView extends VerticalLayout {
                     // Refresh propositions after a delay to allow async extraction to complete
                     schedulePropositionRefresh(ui);
                 });
-                logger.info("ui.access() returned");
+                logger.debug("ui.access() returned");
             } catch (Exception e) {
                 logger.error("Error getting chatbot response", e);
                 ui.access(() -> {
@@ -640,7 +640,9 @@ public class VaadinChatView extends VerticalLayout {
                 .set("margin-bottom", "var(--lumo-space-xs)");
 
         var textSpan = new Span(text);
-        textSpan.getStyle().set("white-space", "pre-wrap");
+        textSpan.getStyle()
+                .set("white-space", "pre-wrap")
+                .set("font-size", "var(--lumo-font-size-l)");
 
         messageDiv.add(senderSpan, textSpan);
         container.add(messageDiv);

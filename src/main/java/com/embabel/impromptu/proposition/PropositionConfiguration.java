@@ -2,9 +2,11 @@ package com.embabel.impromptu.proposition;
 
 import com.embabel.agent.api.common.AiBuilder;
 import com.embabel.agent.core.DataDictionary;
+import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.resolver.InMemoryEntityResolver;
+import com.embabel.dice.common.store.InMemoryNamedEntityDataRepository;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionExtractor;
 import com.embabel.dice.proposition.PropositionRepository;
@@ -12,6 +14,7 @@ import com.embabel.dice.proposition.extraction.LlmPropositionExtractor;
 import com.embabel.dice.proposition.revision.LlmPropositionReviser;
 import com.embabel.dice.proposition.revision.PropositionReviser;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -43,7 +46,7 @@ public class PropositionConfiguration {
                 MusicDomainTypes.Instrument.class,
                 MusicDomainTypes.MusicPlace.class,
                 MusicDomainTypes.MusicalConcept.class,
-                MusicDomainTypes.ChatUser.class
+                ImpromptuUser.class
         );
         logger.info("Created music domain schema with {} types", schema.getDomainTypes().size());
         return schema;
@@ -81,6 +84,11 @@ public class PropositionConfiguration {
         return new InMemoryEntityResolver();
     }
 
+    @Bean
+    NamedEntityDataRepository namedEntityDataRepository(EmbeddingService embeddingService) {
+        return new InMemoryNamedEntityDataRepository(embeddingService);
+    }
+
     /**
      * The complete proposition extraction pipeline.
      */
@@ -107,15 +115,5 @@ public class PropositionConfiguration {
         return LlmPropositionReviser
                 .withLlm(impromptuProperties.propositionExtractionLlm())
                 .withAi(ai);
-    }
-
-    /**
-     * Async event listener that adapts conversations to the proposition pipeline.
-     */
-    @Bean
-    public ConversationPropositionExtraction propositionExtractor(
-            PropositionPipeline propositionPipeline,
-            DataDictionary musicSchema) {
-        return new ConversationPropositionExtraction(propositionPipeline, musicSchema);
     }
 }

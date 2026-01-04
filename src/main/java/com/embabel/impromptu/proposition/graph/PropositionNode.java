@@ -66,6 +66,9 @@ public class PropositionNode {
     /** Optional URI reference */
     private @Nullable String uri;
 
+    /** Vector embedding for similarity search */
+    private @Nullable List<Double> embedding;
+
     @JsonCreator
     public PropositionNode(
             @JsonProperty("id") String id,
@@ -175,6 +178,14 @@ public class PropositionNode {
 
     public void setUri(@Nullable String uri) {
         this.uri = uri;
+    }
+
+    public @Nullable List<Double> getEmbedding() {
+        return embedding;
+    }
+
+    public void setEmbedding(@Nullable List<Double> embedding) {
+        this.embedding = embedding;
     }
 
     @Override

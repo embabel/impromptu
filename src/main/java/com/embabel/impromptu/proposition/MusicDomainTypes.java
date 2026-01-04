@@ -95,16 +95,4 @@ public class MusicDomainTypes {
             this(name, null);
         }
     }
-
-    /**
-     * The user interacting with the chatbot - for user modeling.
-     */
-    public record ChatUser(
-            String identifier,
-            List<String> interests
-    ) {
-        public ChatUser(String identifier) {
-            this(identifier, List.of());
-        }
-    }
 }

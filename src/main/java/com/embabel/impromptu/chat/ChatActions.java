@@ -99,7 +99,8 @@ public class ChatActions {
         context.sendMessage(conversation.addMessage(assistantMessage));
 
         // Publish event for async proposition extraction (every 3rd exchange)
-        if (conversation.getMessages().size() % 3 == 0) {
+        // TODO fix windowing
+        if (conversation.getMessages().size() % 10 == 0) {
             eventPublisher.publishEvent(
                     new ConversationAnalysisRequestEvent(
                             this,

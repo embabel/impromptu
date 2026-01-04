@@ -15,11 +15,11 @@
  */
 package com.embabel.impromptu.proposition;
 
+import com.embabel.agent.rag.service.EntityIdentifier;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.common.core.types.SimilarityResult;
 import com.embabel.common.core.types.SimpleSimilaritySearchResult;
 import com.embabel.common.core.types.TextSimilaritySearchRequest;
-import com.embabel.dice.common.EntityRequest;
 import com.embabel.dice.proposition.Proposition;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.PropositionStatus;
@@ -95,6 +95,24 @@ public class DrivinePropositionRepository implements PropositionRepository {
     public @NonNull Proposition save(@NonNull Proposition proposition) {
         var view = PropositionView.fromDice(proposition);
         graphObjectManager.save(view, CascadeType.NONE);
+
+        // Set embedding using raw Cypher (like embabel-agent-rag-neo-drivine does)
+        var embedding = embeddingService.embed(proposition.getText());
+        var cypher = """
+                MATCH (p:Proposition {id: $id})
+                SET p.embedding = $embedding
+                RETURN count(p) AS updated
+                """;
+        var params = Map.of(
+                "id", proposition.getId(),
+                "embedding", embedding
+        );
+        try {
+            persistenceManager.execute(QuerySpecification.withStatement(cypher).bind(params));
+            logger.debug("Set embedding for proposition {}", proposition.getId());
+        } catch (Exception e) {
+            logger.warn("Failed to set embedding for proposition {}: {}", proposition.getId(), e.getMessage());
+        }
         return proposition;
     }
 
@@ -115,12 +133,12 @@ public class DrivinePropositionRepository implements PropositionRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public @NonNull List<Proposition> findByEntity(@NonNull EntityRequest request) {
+    public @NonNull List<Proposition> findByEntity(@NonNull EntityIdentifier identifier) {
         // TODO make this efficient with query
         return findAll().stream().filter(p ->
                 p.getMentions().stream().anyMatch(m ->
-                        m.getType().equalsIgnoreCase(request.getType()) &&
-                                request.getId().equals(m.getResolvedId())
+                        m.getType().equalsIgnoreCase(identifier.getType()) &&
+                                identifier.getId().equals(m.getResolvedId())
                 )
         ).toList();
     }
@@ -133,7 +151,10 @@ public class DrivinePropositionRepository implements PropositionRepository {
                 CALL db.index.vector.queryNodes($vectorIndex, $topK, $queryVector)
                 YIELD node AS p, score
                 WHERE score >= $similarityThreshold
-                RETURN p.id AS id, score
+                RETURN {
+                    id: p.id,
+                    score: score
+                } AS result
                 ORDER BY score DESC
                 """;
 
@@ -146,25 +167,29 @@ public class DrivinePropositionRepository implements PropositionRepository {
 
         logger.debug("Executing proposition vector search with query: {}", request.getQuery());
 
-        @SuppressWarnings("unchecked")
-        var rows = (List<Map<String, Object>>) (List<?>) persistenceManager.query(
-                QuerySpecification
-                        .withStatement(cypher)
-                        .bind(params)
-                        .transform(Map.class)
-        );
+        try {
+            var rows = persistenceManager.query(
+                    QuerySpecification
+                            .withStatement(cypher)
+                            .bind(params)
+                            .mapWith(new PropositionSimilarityMapper())
+            );
 
-        return rows.stream()
-                .<SimilarityResult<Proposition>>map(row -> {
-                    var id = (String) row.get("id");
-                    var score = ((Number) row.get("score")).doubleValue();
-                    var proposition = findById(id);
-                    return proposition != null
-                            ? new SimpleSimilaritySearchResult<>(proposition, score)
-                            : null;
-                })
-                .filter(r -> r != null)
-                .toList();
+            logger.debug("Vector search returned {} rows", rows.size());
+
+            return rows.stream()
+                    .<SimilarityResult<Proposition>>map(row -> {
+                        var proposition = findById(row.id());
+                        return proposition != null
+                                ? new SimpleSimilaritySearchResult<>(proposition, row.score())
+                                : null;
+                    })
+                    .filter(r -> r != null)
+                    .toList();
+        } catch (Exception e) {
+            logger.error("Vector search failed: {}", e.getMessage(), e);
+            return List.of();
+        }
     }
 
     @Override
