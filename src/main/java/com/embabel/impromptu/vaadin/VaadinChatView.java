@@ -554,9 +554,9 @@ public class VaadinChatView extends VerticalLayout {
                 var response = sessionData.responseQueue().poll(60, TimeUnit.SECONDS);
                 logger.info("Poll returned: {}", response != null ? "got response" : "null/timeout");
 
-                logger.info("About to call ui.access() with response: {}", response != null);
+                logger.debug("About to call ui.access() with response: {}", response != null);
                 ui.access(() -> {
-                    logger.info("Inside ui.access() callback");
+                    logger.debug("Inside ui.access() callback");
                     if (response != null) {
                         logger.info("Adding assistant message to UI");
                         addAssistantMessage(response.getContent());
