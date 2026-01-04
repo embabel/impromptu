@@ -5,7 +5,7 @@ import com.embabel.agent.core.DataDictionary;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.dice.common.EntityResolver;
-import com.embabel.dice.common.resolver.InMemoryEntityResolver;
+import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
 import com.embabel.dice.common.store.InMemoryNamedEntityDataRepository;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionExtractor;
@@ -28,7 +28,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  */
 @Configuration
 @EnableAsync
-public class PropositionConfiguration {
+class PropositionConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(PropositionConfiguration.class);
 
@@ -36,7 +36,7 @@ public class PropositionConfiguration {
      * Schema for the music domain - defines entity types the LLM will extract.
      */
     @Bean
-    public DataDictionary musicSchema() {
+    DataDictionary musicSchema() {
         // TODO must be able to look up anything with EntityResolver
         var schema = DataDictionary.fromClasses(
                 MusicDomainTypes.Composer.class,
@@ -56,7 +56,7 @@ public class PropositionConfiguration {
      * Embedding service for vector similarity search on propositions.
      */
     @Bean
-    public EmbeddingService propositionEmbeddingService(AiBuilder aiBuilder) {
+    EmbeddingService propositionEmbeddingService(AiBuilder aiBuilder) {
         return aiBuilder.ai().withDefaultEmbeddingService();
     }
 
@@ -64,7 +64,7 @@ public class PropositionConfiguration {
      * LLM-based proposition extractor using the dice library.
      */
     @Bean
-    public LlmPropositionExtractor llmPropositionExtractor(
+    LlmPropositionExtractor llmPropositionExtractor(
             AiBuilder aiBuilder,
             ImpromptuProperties impromptuProperties) {
         var ai = aiBuilder
@@ -78,10 +78,9 @@ public class PropositionConfiguration {
                 .withTemplate("dice/extract_impromptu_user_propositions");
     }
 
-    // TODO Use a real entity resolver that links to users and known entities
     @Bean
-    public EntityResolver entityResolver() {
-        return new InMemoryEntityResolver();
+    EntityResolver entityResolver(NamedEntityDataRepository repository) {
+        return new NamedEntityDataRepositoryEntityResolver(repository);
     }
 
     @Bean
@@ -93,7 +92,7 @@ public class PropositionConfiguration {
      * The complete proposition extraction pipeline.
      */
     @Bean
-    public PropositionPipeline propositionPipeline(
+    PropositionPipeline propositionPipeline(
             PropositionExtractor propositionExtractor,
             PropositionReviser propositionReviser,
             PropositionRepository propositionRepository
