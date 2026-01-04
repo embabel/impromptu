@@ -9,7 +9,7 @@ import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
-import com.embabel.dice.projection.memory.MemoryProjection;
+import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.projection.memory.MemoryScope;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.proposition.ConversationAnalysisRequestEvent;
@@ -19,6 +19,7 @@ import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.lang.NonNull;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -35,13 +36,13 @@ public class ChatActions {
     private final ToolishRag toolishRag;
     private final ImpromptuProperties properties;
     private final SpotifyService spotifyService;
-    private final MemoryProjection memoryProjection;
+    private final MemoryProjector memoryProjector;
     private final ApplicationEventPublisher eventPublisher;
 
     public ChatActions(
             SearchOperations searchOperations,
             SpotifyService spotifyService,
-            MemoryProjection memoryProjection,
+            MemoryProjector memoryProjector,
             ApplicationEventPublisher eventPublisher,
             ImpromptuProperties properties) {
         this.toolishRag = new ToolishRag(
@@ -50,7 +51,7 @@ public class ChatActions {
                 searchOperations)
                 .withHint(TryHyDE.usingConversationContext());
         this.spotifyService = spotifyService;
-        this.memoryProjection = memoryProjection;
+        this.memoryProjector = memoryProjector;
         this.properties = properties;
         this.eventPublisher = eventPublisher;
     }
@@ -71,22 +72,22 @@ public class ChatActions {
             trigger = UserMessage.class
     )
     void respond(
-            Conversation conversation,
+            @NonNull Conversation conversation,
             ImpromptuUser user,
             ActionContext context) {
-        logger.info("ChatActions.respond() called! Conversation has {} messages",
-                conversation != null ? conversation.getMessages().size() : "null");
+        logger.info("Conversation has {} messages", conversation.getMessages().size());
         List<Object> tools = new LinkedList<>();
         if (user.isSpotifyLinked()) {
             tools.add(new SpotifyTools(user, spotifyService));
         }
-        var userProfile = memoryProjection.projectUserProfile(
-                user.getId(), MemoryScope.global(user.getId())
+        var userPersonaSnapshot = memoryProjector.projectUserPersonaSnapshot(
+                user.getId(),
+                MemoryScope.global(user.getId())
         );
         var assistantMessage = context.
                 ai()
                 .withLlm(properties.chatLlm())
-                .withPromptElements(user, userProfile)
+                .withPromptElements(user, userPersonaSnapshot)
                 .withReference(toolishRag)
                 .withToolObjects(tools)
                 .withTemplate("impromptu_chat_response")
@@ -99,10 +100,11 @@ public class ChatActions {
 
         // Publish event for async proposition extraction (every 3rd exchange)
         if (conversation.getMessages().size() % 3 == 0) {
-            eventPublisher.publishEvent(new ConversationAnalysisRequestEvent(
-                    this,
-                    user,
-                    conversation));
+            eventPublisher.publishEvent(
+                    new ConversationAnalysisRequestEvent(
+                            this,
+                            user,
+                            conversation));
         }
     }
 }

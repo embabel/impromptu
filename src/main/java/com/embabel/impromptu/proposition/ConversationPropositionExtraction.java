@@ -24,14 +24,14 @@ import java.util.Map;
  * Adapts conversation exchanges to the dice proposition pipeline.
  * Created as a bean in PropositionConfiguration.
  */
-public class PropositionExtractor {
+public class ConversationPropositionExtraction {
 
-    private static final Logger logger = LoggerFactory.getLogger(PropositionExtractor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConversationPropositionExtraction.class);
 
     private final PropositionPipeline propositionPipeline;
     private final DataDictionary musicSchema;
 
-    public PropositionExtractor(
+    public ConversationPropositionExtraction(
             PropositionPipeline propositionPipeline,
             DataDictionary musicSchema) {
         this.propositionPipeline = propositionPipeline;

@@ -4,9 +4,9 @@ import com.embabel.agent.core.AgentPlatform;
 import com.embabel.agent.core.Verbosity;
 import com.embabel.chat.Chatbot;
 import com.embabel.chat.agent.AgentProcessChatbot;
-import com.embabel.dice.projection.memory.DefaultMemoryProjection;
-import com.embabel.dice.projection.memory.KeywordMatchingMemoryTypeClassifier;
-import com.embabel.dice.projection.memory.MemoryProjection;
+import com.embabel.dice.projection.memory.MemoryProjector;
+import com.embabel.dice.projection.memory.support.DefaultMemoryProjector;
+import com.embabel.dice.projection.memory.support.KeywordMatchingMemoryTypeClassifier;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.user.DrivineImpromptuUserService;
 import com.embabel.impromptu.user.ImpromptuUserService;
@@ -34,9 +34,10 @@ class ChatConfiguration {
     }
 
     @Bean
-    MemoryProjection memoryProjection(ImpromptuUserService userService,
-                                      PropositionRepository propositionRepository) {
-        return DefaultMemoryProjection
+    MemoryProjector memoryProjector(
+            ImpromptuUserService userService,
+            PropositionRepository propositionRepository) {
+        return DefaultMemoryProjector
                 .against(propositionRepository)
                 .withConfidenceThreshold(.6)
                 .withMemoryTypeClassifier(KeywordMatchingMemoryTypeClassifier.INSTANCE);

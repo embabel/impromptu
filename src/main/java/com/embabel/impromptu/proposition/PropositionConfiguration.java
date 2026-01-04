@@ -5,10 +5,12 @@ import com.embabel.agent.core.DataDictionary;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.resolver.InMemoryEntityResolver;
-import com.embabel.dice.pipeline.PropositionBuilders;
 import com.embabel.dice.pipeline.PropositionPipeline;
+import com.embabel.dice.proposition.PropositionExtractor;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.extraction.LlmPropositionExtractor;
+import com.embabel.dice.proposition.revision.LlmPropositionReviser;
+import com.embabel.dice.proposition.revision.PropositionReviser;
 import com.embabel.impromptu.ImpromptuProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,7 @@ public class PropositionConfiguration {
      */
     @Bean
     public DataDictionary musicSchema() {
+        // TODO must be able to look up anything with EntityResolver
         var schema = DataDictionary.fromClasses(
                 MusicDomainTypes.Composer.class,
                 MusicDomainTypes.MusicalWork.class,
@@ -72,6 +75,7 @@ public class PropositionConfiguration {
                 .withTemplate("dice/extract_impromptu_user_propositions");
     }
 
+    // TODO Use a real entity resolver that links to users and known entities
     @Bean
     public EntityResolver entityResolver() {
         return new InMemoryEntityResolver();
@@ -82,24 +86,36 @@ public class PropositionConfiguration {
      */
     @Bean
     public PropositionPipeline propositionPipeline(
-            LlmPropositionExtractor llmPropositionExtractor,
-            PropositionRepository propositionRepository,
-            EntityResolver entityResolver) {
+            PropositionExtractor propositionExtractor,
+            PropositionReviser propositionReviser,
+            PropositionRepository propositionRepository
+    ) {
         logger.info("Building proposition extraction pipeline");
-        return PropositionBuilders
-                .withExtractor(llmPropositionExtractor)
-                .withEntityResolver(entityResolver)
-                .withStore(propositionRepository)
-                .build();
+        return PropositionPipeline
+                .withExtractor(propositionExtractor)
+                .withRevision(propositionReviser, propositionRepository);
+    }
+
+    @Bean
+    PropositionReviser propositionReviser(
+            AiBuilder aiBuilder,
+            ImpromptuProperties impromptuProperties) {
+        var ai = aiBuilder
+                .withShowPrompts(impromptuProperties.showExtractionPrompts())
+                .withShowLlmResponses(impromptuProperties.showExtractionResponses())
+                .ai();
+        return LlmPropositionReviser
+                .withLlm(impromptuProperties.propositionExtractionLlm())
+                .withAi(ai);
     }
 
     /**
      * Async event listener that adapts conversations to the proposition pipeline.
      */
     @Bean
-    public PropositionExtractor propositionExtractor(
+    public ConversationPropositionExtraction propositionExtractor(
             PropositionPipeline propositionPipeline,
             DataDictionary musicSchema) {
-        return new PropositionExtractor(propositionPipeline, musicSchema);
+        return new ConversationPropositionExtraction(propositionPipeline, musicSchema);
     }
 }
