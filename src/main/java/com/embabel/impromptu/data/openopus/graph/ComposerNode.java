@@ -15,15 +15,19 @@
  */
 package com.embabel.impromptu.data.openopus.graph;
 
+import com.embabel.agent.core.CreationPermitted;
+import com.embabel.agent.rag.model.NamedEntity;
 import org.drivine.annotation.NodeFragment;
 import org.drivine.annotation.NodeId;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a composer in the graph database.
  * Linked to Epoch via OF_EPOCH relationship and to Works via COMPOSED relationship.
  */
-@NodeFragment(labels = {"Composer"})
+@NodeFragment(labels = {"Entity", "Composer"})
+@CreationPermitted(false)
 public record ComposerNode(
         @NodeId String id,
         String name,
@@ -32,5 +36,20 @@ public record ComposerNode(
         @Nullable String death,
         boolean popular,
         boolean recommended
-) {
+) implements NamedEntity {
+
+    @Override
+    public @NonNull String getId() {
+        return id;
+    }
+
+    @Override
+    public @NonNull String getName() {
+        return name;
+    }
+
+    @Override
+    public @NonNull String getDescription() {
+        return "Composer: " + completeName;
+    }
 }

@@ -21,7 +21,7 @@ import org.drivine.annotation.NodeId;
 /**
  * Represents a musical genre (e.g., "Orchestral", "Chamber", "Keyboard", "Stage").
  */
-@NodeFragment(labels = {"Genre"})
+@NodeFragment(labels = {"Entity", "Genre"})
 public record GenreNode(
         @NodeId String id,
         String name

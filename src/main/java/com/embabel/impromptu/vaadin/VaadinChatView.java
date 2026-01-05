@@ -558,7 +558,7 @@ public class VaadinChatView extends VerticalLayout {
                 ui.access(() -> {
                     logger.debug("Inside ui.access() callback");
                     if (response != null) {
-                        logger.info("Adding assistant message to UI");
+                        logger.debug("Adding assistant message to UI");
                         addAssistantMessage(response.getContent());
                     } else {
                         addErrorMessage("Response timed out");

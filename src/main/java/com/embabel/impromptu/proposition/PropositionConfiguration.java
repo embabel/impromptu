@@ -14,6 +14,8 @@ import com.embabel.dice.proposition.extraction.LlmPropositionExtractor;
 import com.embabel.dice.proposition.revision.LlmPropositionReviser;
 import com.embabel.dice.proposition.revision.PropositionReviser;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.data.openopus.graph.ComposerNode;
+import com.embabel.impromptu.data.openopus.graph.WorkNode;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.drivine.manager.PersistenceManager;
 import org.slf4j.Logger;
@@ -40,9 +42,9 @@ class PropositionConfiguration {
     @Bean
     @Primary
     DataDictionary musicSchema() {
-        // TODO must be able to look up anything with EntityResolver
         var schema = DataDictionary.fromClasses(
-                //ComposerNode.class,
+                ComposerNode.class,
+                WorkNode.class,
 //                MusicDomainTypes.Instrument.class,
                 MusicDomainTypes.MusicPlace.class,
 //                MusicDomainTypes.MusicalConcept.class,
@@ -77,6 +79,7 @@ class PropositionConfiguration {
                 .withLlm(impromptuProperties.propositionExtractionLlm())
                 .withAi(ai)
                 .withPropositionRepository(propositionRepository)
+                .withLockToSchema(true)
                 .withTemplate("dice/extract_impromptu_user_propositions");
     }
 

@@ -18,7 +18,7 @@ import java.time.Instant;
 /**
  * Mutable user class for Impromptu application.
  */
-@NodeFragment(labels = {"User"})
+@NodeFragment(labels = {"Entity", "User"})
 @CreationPermitted(false)
 public class ImpromptuUser implements User, NamedEntity, PromptContributor {
 

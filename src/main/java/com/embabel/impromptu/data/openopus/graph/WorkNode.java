@@ -15,15 +15,19 @@
  */
 package com.embabel.impromptu.data.openopus.graph;
 
+import com.embabel.agent.core.CreationPermitted;
+import com.embabel.agent.rag.model.NamedEntity;
 import org.drivine.annotation.NodeFragment;
 import org.drivine.annotation.NodeId;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a musical work in the graph database.
  * Linked to Composer via COMPOSED relationship and to Genre via OF_GENRE relationship.
  */
-@NodeFragment(labels = {"Work"})
+@NodeFragment(labels = {"Entity", "Work"})
+@CreationPermitted(false)
 public record WorkNode(
         @NodeId String id,
         String title,
@@ -31,5 +35,20 @@ public record WorkNode(
         @Nullable String searchTerms,
         boolean popular,
         boolean recommended
-) {
+) implements NamedEntity {
+
+    @Override
+    public @NonNull String getId() {
+        return id;
+    }
+
+    @Override
+    public @NonNull String getName() {
+        return title;
+    }
+
+    @Override
+    public @NonNull String getDescription() {
+        return "Work: " + title + (subtitle != null && !subtitle.isBlank() ? " - " + subtitle : "");
+    }
 }
