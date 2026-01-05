@@ -12,6 +12,7 @@ import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.ReferencesEntities;
+import com.embabel.impromptu.domain.MusicPlace;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,7 +141,7 @@ public class ConversationPropositionExtraction {
                     );
 
                     // TODO this is just diagnostic
-                    var allPlaces = entityRepository.findAll(MusicDomainTypes.MusicPlace.class);
+                    var allPlaces = entityRepository.findAll(MusicPlace.class);
                     var placesSb = new StringBuilder();
                     placesSb.append(String.format("Total known places in entity repository: %d", allPlaces.size()));
                     for (var place : allPlaces) {

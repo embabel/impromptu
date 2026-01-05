@@ -4,6 +4,15 @@
 MATCH (p:Proposition)
 DETACH DELETE p;
 
+// Delete Entity nodes that don't have the Reference label
+MATCH (e:Entity)
+  WHERE NOT e:Reference
+DETACH DELETE e;
+
+
+
+
+// DANGER ZONE
 
 // Clear the database. You were WARNED!!
 MATCH (n)

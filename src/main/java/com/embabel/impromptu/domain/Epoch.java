@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.data.openopus.graph;
+package com.embabel.impromptu.domain;
 
 import org.drivine.annotation.NodeFragment;
 import org.drivine.annotation.NodeId;
@@ -21,12 +21,12 @@ import org.drivine.annotation.NodeId;
 /**
  * Represents a musical epoch/period (e.g., "Baroque", "Romantic", "20th Century").
  */
-@NodeFragment(labels = {"Epoch"})
-public record EpochNode(
+@NodeFragment(labels = {"Epoch", "Entity", "Reference"})
+public record Epoch(
         @NodeId String id,
         String name
 ) {
-    public EpochNode(String name) {
+    public Epoch(String name) {
         this(name.toLowerCase().replace(" ", "-"), name);
     }
 }

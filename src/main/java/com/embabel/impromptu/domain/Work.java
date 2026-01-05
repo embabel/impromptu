@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.data.openopus.graph;
+package com.embabel.impromptu.domain;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
@@ -26,9 +26,9 @@ import org.jspecify.annotations.Nullable;
  * Represents a musical work in the graph database.
  * Linked to Composer via COMPOSED relationship and to Genre via OF_GENRE relationship.
  */
-@NodeFragment(labels = {"Entity", "Work"})
+@NodeFragment(labels = {"Entity", "Work", "Reference"})
 @CreationPermitted(false)
-public record WorkNode(
+public record Work(
         @NodeId String id,
         String title,
         @Nullable String subtitle,

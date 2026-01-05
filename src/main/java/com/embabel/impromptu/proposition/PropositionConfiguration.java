@@ -14,8 +14,9 @@ import com.embabel.dice.proposition.extraction.LlmPropositionExtractor;
 import com.embabel.dice.proposition.revision.LlmPropositionReviser;
 import com.embabel.dice.proposition.revision.PropositionReviser;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.data.openopus.graph.ComposerNode;
-import com.embabel.impromptu.data.openopus.graph.WorkNode;
+import com.embabel.impromptu.domain.Composer;
+import com.embabel.impromptu.domain.MusicPlace;
+import com.embabel.impromptu.domain.Work;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.drivine.manager.PersistenceManager;
 import org.slf4j.Logger;
@@ -43,10 +44,10 @@ class PropositionConfiguration {
     @Primary
     DataDictionary musicSchema() {
         var schema = DataDictionary.fromClasses(
-                ComposerNode.class,
-                WorkNode.class,
+                Composer.class,
+                Work.class,
 //                MusicDomainTypes.Instrument.class,
-                MusicDomainTypes.MusicPlace.class,
+                MusicPlace.class,
 //                MusicDomainTypes.MusicalConcept.class,
                 ImpromptuUser.class
         );

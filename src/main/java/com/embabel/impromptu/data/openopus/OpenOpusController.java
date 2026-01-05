@@ -18,6 +18,8 @@ package com.embabel.impromptu.data.openopus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.drivine.manager.PersistenceManager;
 import org.drivine.query.QuerySpecification;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -55,6 +57,7 @@ import java.util.regex.Pattern;
 @RequestMapping("/api/openopus")
 public class OpenOpusController {
 
+    private static final Logger logger = LoggerFactory.getLogger(OpenOpusController.class);
     private static final String OPEN_OPUS_API = "https://api.openopus.org/work/dump.json";
     private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^a-z0-9-]");
 
@@ -66,23 +69,32 @@ public class OpenOpusController {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Log to both server and stream to client.
+     */
+    private void log(PrintWriter writer, String message) {
+        logger.info(message);
+        writer.println(message);
+        writer.flush();
+    }
+
     @PostMapping(value = "/load", produces = MediaType.TEXT_PLAIN_VALUE)
     public StreamingResponseBody load() {
         return outputStream -> {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
 
             try {
-                writer.println("Fetching data from Open Opus API...");
-                writer.flush();
+                log(writer, "Fetching data from Open Opus API...");
 
                 try (InputStream is = URI.create(OPEN_OPUS_API).toURL().openStream()) {
                     OpenOpusDump dump = objectMapper.readValue(is, OpenOpusDump.class);
                     loadData(dump, writer);
                 }
 
-                writer.println("Done!");
+                log(writer, "Done!");
             } catch (Exception e) {
-                writer.println("Error: " + e.getMessage());
+                log(writer, "Error: " + e.getMessage());
+                logger.error("OpenOpus load failed", e);
             }
         };
     }
@@ -92,50 +104,48 @@ public class OpenOpusController {
         return outputStream -> {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
 
-            writer.println("Deleting all Open Opus data...");
-            writer.flush();
+            log(writer, "Deleting all Open Opus data...");
 
             persistenceManager.execute(QuerySpecification.withStatement(
                     "MATCH (c:Composer)-[r:COMPOSED]->(w:Work) DELETE r"));
-            writer.println("  Deleted COMPOSED relationships");
+            log(writer, "  Deleted COMPOSED relationships");
 
             persistenceManager.execute(QuerySpecification.withStatement(
                     "MATCH (w:Work)-[r:OF_GENRE]->(g:Genre) DELETE r"));
-            writer.println("  Deleted OF_GENRE relationships");
+            log(writer, "  Deleted OF_GENRE relationships");
 
             persistenceManager.execute(QuerySpecification.withStatement(
                     "MATCH (c:Composer)-[r:OF_EPOCH]->(e:Epoch) DELETE r"));
-            writer.println("  Deleted OF_EPOCH relationships");
+            log(writer, "  Deleted OF_EPOCH relationships");
 
             persistenceManager.execute(QuerySpecification.withStatement(
                     "MATCH (w:Work) DELETE w"));
-            writer.println("  Deleted Work nodes");
+            log(writer, "  Deleted Work nodes");
 
             persistenceManager.execute(QuerySpecification.withStatement(
                     "MATCH (c:Composer) DELETE c"));
-            writer.println("  Deleted Composer nodes");
+            log(writer, "  Deleted Composer nodes");
 
             persistenceManager.execute(QuerySpecification.withStatement(
                     "MATCH (g:Genre) DELETE g"));
-            writer.println("  Deleted Genre nodes");
+            log(writer, "  Deleted Genre nodes");
 
             persistenceManager.execute(QuerySpecification.withStatement(
                     "MATCH (e:Epoch) DELETE e"));
-            writer.println("  Deleted Epoch nodes");
+            log(writer, "  Deleted Epoch nodes");
 
-            writer.println("Done!");
+            log(writer, "Done!");
         };
     }
 
     private void loadData(OpenOpusDump dump, PrintWriter writer) {
         List<OpenOpusComposer> composers = dump.composers();
         if (composers == null || composers.isEmpty()) {
-            writer.println("No composers found in dump");
+            log(writer, "No composers found in dump");
             return;
         }
 
-        writer.println("Found " + composers.size() + " composers");
-        writer.flush();
+        log(writer, "Found " + composers.size() + " composers");
 
         // Collect unique epochs and genres
         Set<String> epochs = new HashSet<>();
@@ -156,28 +166,23 @@ public class OpenOpusController {
             }
         }
 
-        writer.println("Found " + workCount + " works, " + epochs.size() + " epochs, " + genres.size() + " genres");
-        writer.flush();
+        log(writer, "Found " + workCount + " works, " + epochs.size() + " epochs, " + genres.size() + " genres");
 
         // Create epochs
         createEpochs(epochs);
-        writer.println("Created " + epochs.size() + " epochs");
-        writer.flush();
+        log(writer, "Created " + epochs.size() + " epochs");
 
         // Create genres
         createGenres(genres);
-        writer.println("Created " + genres.size() + " genres");
-        writer.flush();
+        log(writer, "Created " + genres.size() + " genres");
 
         // Create composers
         createComposers(composers);
-        writer.println("Created " + composers.size() + " composers");
-        writer.flush();
+        log(writer, "Created " + composers.size() + " composers");
 
         // Create works in batches
         int worksCreated = createWorks(composers, writer);
-        writer.println("Created " + worksCreated + " works total");
-        writer.flush();
+        log(writer, "Created " + worksCreated + " works total");
     }
 
     private void createEpochs(Set<String> epochs) {
@@ -190,8 +195,9 @@ public class OpenOpusController {
         persistenceManager.execute(
                 QuerySpecification.withStatement("""
                         UNWIND $epochs AS epoch
-                        MERGE (e:Epoch {id: epoch.id})
-                        SET e.name = epoch.name
+                        MERGE (e:Entity:Epoch:Reference {id: epoch.id})
+                        SET e.name = epoch.name,
+                            e.primarySource = "openopus"
                         """)
                         .bind(Map.of("epochs", epochData))
         );
@@ -207,8 +213,9 @@ public class OpenOpusController {
         persistenceManager.execute(
                 QuerySpecification.withStatement("""
                         UNWIND $genres AS genre
-                        MERGE (g:Genre {id: genre.id})
-                        SET g.name = genre.name
+                        MERGE (g:Entity:Genre:Reference {id: genre.id})
+                        SET g.name = genre.name,
+                            g.primarySource = "openopus"
                         """)
                         .bind(Map.of("genres", genreData))
         );
@@ -233,13 +240,14 @@ public class OpenOpusController {
         persistenceManager.execute(
                 QuerySpecification.withStatement("""
                         UNWIND $composers AS c
-                        MERGE (composer:Composer {id: c.id})
+                        MERGE (composer:Entity:Composer:Reference {id: c.id})
                         SET composer.name = c.name,
                             composer.completeName = c.completeName,
                             composer.birth = c.birth,
                             composer.death = c.death,
                             composer.popular = c.popular,
-                            composer.recommended = c.recommended
+                            composer.recommended = c.recommended,
+                            composer.primarySource = "openopus"
                         """)
                         .bind(Map.of("composers", composerData))
         );
@@ -294,13 +302,14 @@ public class OpenOpusController {
             persistenceManager.execute(
                     QuerySpecification.withStatement("""
                             UNWIND $works AS w
-                            MATCH (composer:Composer {id: w.composerId})
-                            MERGE (work:Work {id: w.id})
+                            MATCH (composer:Entity:Composer:Reference {id: w.composerId})
+                            MERGE (work:Entity:Work:Reference {id: w.id})
                             SET work.title = w.title,
                                 work.subtitle = w.subtitle,
                                 work.searchTerms = w.searchTerms,
                                 work.popular = w.popular,
-                                work.recommended = w.recommended
+                                work.recommended = w.recommended,
+                                work.primarySource = "openopus"
                             MERGE (composer)-[:COMPOSED]->(work)
                             """)
                             .bind(Map.of("works", batch))
@@ -322,8 +331,7 @@ public class OpenOpusController {
                 );
             }
 
-            writer.println("  Created works " + i + "-" + Math.min(i + batchSize, workData.size()));
-            writer.flush();
+            log(writer, "  Created works " + i + "-" + Math.min(i + batchSize, workData.size()));
         }
 
         return workData.size();

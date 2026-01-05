@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.data.openopus.graph;
+package com.embabel.impromptu.domain;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
@@ -26,9 +26,9 @@ import org.jspecify.annotations.Nullable;
  * Represents a composer in the graph database.
  * Linked to Epoch via OF_EPOCH relationship and to Works via COMPOSED relationship.
  */
-@NodeFragment(labels = {"Entity", "Composer"})
+@NodeFragment(labels = {"Entity", "Composer", "Reference"})
 @CreationPermitted(false)
-public record ComposerNode(
+public record Composer(
         @NodeId String id,
         String name,
         String completeName,
