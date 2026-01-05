@@ -112,7 +112,7 @@ public class ConversationPropositionExtraction {
                         "Extracted {} propositions from conversation (resolved: {}, new: {})",
                         chunkPropositionResult.getPropositions().size(),
                         resolvedCount,
-                        chunkPropositionResult.getNewCount()
+                        chunkPropositionResult.getPropositionExtractionStats().getNewCount()
                 );
 
                 // Log a summary of what was learned
@@ -125,6 +125,10 @@ public class ConversationPropositionExtraction {
                 }
                 // Actually persist the extracted propositions and entities
                 chunkPropositionResult.persist(propositionRepository, entityRepository);
+                logger.info("Successfully persisted {} new propositions and {} new entities",
+                        chunkPropositionResult.getPropositionExtractionStats().getNewCount(),
+                        chunkPropositionResult.getEntityExtractionStats().getNewCount()
+                );
             }
         } catch (Exception e) {
             // Don't let extraction failures break the chat flow

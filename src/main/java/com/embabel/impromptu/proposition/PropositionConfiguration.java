@@ -2,11 +2,11 @@ package com.embabel.impromptu.proposition;
 
 import com.embabel.agent.api.common.AiBuilder;
 import com.embabel.agent.core.DataDictionary;
+import com.embabel.agent.rag.neo.drivine.DrivineNamedEntityDataRepository;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
-import com.embabel.dice.common.store.InMemoryNamedEntityDataRepository;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionExtractor;
 import com.embabel.dice.proposition.PropositionRepository;
@@ -15,6 +15,7 @@ import com.embabel.dice.proposition.revision.LlmPropositionReviser;
 import com.embabel.dice.proposition.revision.PropositionReviser;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.user.ImpromptuUser;
+import org.drivine.manager.PersistenceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -79,13 +80,20 @@ class PropositionConfiguration {
     }
 
     @Bean
-    EntityResolver entityResolver(NamedEntityDataRepository repository) {
-        return new NamedEntityDataRepositoryEntityResolver(repository);
+    NamedEntityDataRepository namedEntityDataRepository(
+            PersistenceManager persistenceManager,
+            EmbeddingService embeddingService,
+            ImpromptuProperties impromptuProperties) {
+        return new DrivineNamedEntityDataRepository(
+                persistenceManager,
+                impromptuProperties.neoRag(),
+                embeddingService
+        );
     }
 
     @Bean
-    NamedEntityDataRepository namedEntityDataRepository(EmbeddingService embeddingService) {
-        return new InMemoryNamedEntityDataRepository(embeddingService);
+    EntityResolver entityResolver(NamedEntityDataRepository repository) {
+        return new NamedEntityDataRepositoryEntityResolver(repository);
     }
 
     /**
