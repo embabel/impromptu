@@ -48,13 +48,15 @@ class RagConfiguration {
             PlatformTransactionManager platformTransactionManager,
             EmbeddingService embeddingService,
             ImpromptuProperties properties) {
-        return new DrivineStore(
+        var store = new DrivineStore(
                 persistenceManager,
                 properties.neoRag(),
                 embeddingService,
                 platformTransactionManager,
                 new DrivineCypherSearch(persistenceManager)
         );
+        store.provision();
+        return store;
     }
 
 }

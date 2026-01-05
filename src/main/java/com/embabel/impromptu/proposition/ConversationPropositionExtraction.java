@@ -8,7 +8,7 @@ import com.embabel.chat.SimpleMessageFormatter;
 import com.embabel.chat.WindowingConversationFormatter;
 import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.SourceAnalysisContext;
-import com.embabel.dice.common.resolver.InMemoryEntityResolver;
+import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.ReferencesEntities;
@@ -59,8 +59,7 @@ public class ConversationPropositionExtraction {
     }
 
     private EntityResolver entityResolverForUser(ImpromptuUser user) {
-        // TODO this is wrong
-        return new InMemoryEntityResolver();
+        return new NamedEntityDataRepositoryEntityResolver(entityRepository);
     }
 
     /**
@@ -104,27 +103,44 @@ public class ConversationPropositionExtraction {
                         .filter(ReferencesEntities::isFullyResolved)
                         .count();
 
-                logger.info(
-                        "Extracted {} propositions from conversation (resolved: {}, new: {})",
-                        chunkPropositionResult.getPropositions().size(),
+                // Build a pretty-printed summary of extracted propositions
+                var props = chunkPropositionResult.getPropositions();
+                var sb = new StringBuilder();
+                sb.append(String.format("Extracted %d propositions from conversation (resolved: %d, new: %d)",
+                        props.size(),
                         resolvedCount,
-                        chunkPropositionResult.getPropositionExtractionStats().getNewCount()
-                );
-
-                // Log a summary of what was learned
-                chunkPropositionResult.getPropositions().stream()
-                        .limit(3)
-                        .forEach(prop -> logger.debug("  - {} (confidence: {})", prop.getText(), prop.getConfidence()));
-
-                if (chunkPropositionResult.getPropositions().size() > 3) {
-                    logger.debug("  ... and {} more", chunkPropositionResult.getPropositions().size() - 3);
+                        chunkPropositionResult.getPropositionExtractionStats().getNewCount()));
+                for (var prop : props) {
+                    sb.append(String.format("%n  • %s (confidence: %.2f)", prop.getText(), prop.getConfidence()));
                 }
+                logger.info(sb.toString());
+                // Calculate actual counts based on what will be persisted
+                var propsToSave = chunkPropositionResult.propositionsToPersist();
+                var referencedEntityIds = propsToSave.stream()
+                        .flatMap(p -> p.getMentions().stream())
+                        .map(m -> m.getResolvedId())
+                        .filter(id -> id != null)
+                        .collect(java.util.stream.Collectors.toSet());
+                var newEntitiesToSave = chunkPropositionResult.newEntities().stream()
+                        .filter(e -> referencedEntityIds.contains(e.getId()))
+                        .count();
+
+                // Get revision stats for accurate logging
+                var stats = chunkPropositionResult.getPropositionExtractionStats();
+                var newProps = stats.getNewCount();
+                var updatedProps = stats.getMergedCount() + stats.getReinforcedCount();
+
                 // Actually persist the extracted propositions and entities
                 chunkPropositionResult.persist(propositionRepository, entityRepository);
-                logger.info("Successfully persisted {} new propositions and {} new entities",
-                        chunkPropositionResult.getPropositionExtractionStats().getNewCount(),
-                        chunkPropositionResult.getEntityExtractionStats().getNewCount()
-                );
+                if (newProps > 0 || updatedProps > 0 || newEntitiesToSave > 0) {
+                    logger.info("Persisted: {} new propositions, {} updated propositions, {} new entities",
+                            newProps,
+                            updatedProps,
+                            newEntitiesToSave
+                    );
+                } else {
+                    logger.info("No new data to persist (all propositions were duplicates)");
+                }
             }
         } catch (Exception e) {
             // Don't let extraction failures break the chat flow
