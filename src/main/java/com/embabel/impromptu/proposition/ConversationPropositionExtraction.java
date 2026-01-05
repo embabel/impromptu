@@ -88,16 +88,12 @@ public class ConversationPropositionExtraction {
                     )
             );
 
-            var context = new SourceAnalysisContext(
-                    musicSchema,
-                    entityResolverForUser(event.user),
-                    List.of(
-                            event.user.toKnownEntity()
-                    ),
-                    Map.of(
-                            // Whatever
-                    )
-            );
+            var context = SourceAnalysisContext
+                    .withContextId(event.user.currentContext())
+                    .withEntityResolver(entityResolverForUser(event.user))
+                    .withSchema(musicSchema)
+                    .withKnownEntities(List.of())
+                    .withTemplateModel(Map.of());
 
             logger.info("Extracting propositions from conversation exchange");
 

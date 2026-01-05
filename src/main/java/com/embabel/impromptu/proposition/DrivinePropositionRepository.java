@@ -211,6 +211,15 @@ public class DrivinePropositionRepository implements PropositionRepository {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public @NonNull List<Proposition> findByContextIdValue(@NonNull String contextIdValue) {
+        var whereClause = "proposition.contextId = '" + contextIdValue + "'";
+        return graphObjectManager.loadAll(PropositionView.class, whereClause).stream()
+                .map(PropositionView::toDice)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public boolean delete(@NonNull String id) {
         int deleted = graphObjectManager.delete(id, PropositionView.class);

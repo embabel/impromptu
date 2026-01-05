@@ -67,6 +67,7 @@ class PropositionConfiguration {
     @Bean
     LlmPropositionExtractor llmPropositionExtractor(
             AiBuilder aiBuilder,
+            PropositionRepository propositionRepository,
             ImpromptuProperties impromptuProperties) {
         var ai = aiBuilder
                 .withShowPrompts(impromptuProperties.showExtractionPrompts())
@@ -76,6 +77,7 @@ class PropositionConfiguration {
         return LlmPropositionExtractor
                 .withLlm(impromptuProperties.propositionExtractionLlm())
                 .withAi(ai)
+                .withPropositionRepository(propositionRepository)
                 .withTemplate("dice/extract_impromptu_user_propositions");
     }
 

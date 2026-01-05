@@ -24,7 +24,8 @@ public class ImpromptuUser implements User, PromptContributor {
     private String username;
     private String email;
 
-    // Spotify OAuth tokens
+    private String currentContextName;
+
     private @Nullable String spotifyAccessToken;
     private @Nullable String spotifyRefreshToken;
     private @Nullable Instant spotifyTokenExpiry;
@@ -40,6 +41,7 @@ public class ImpromptuUser implements User, PromptContributor {
         this.displayName = displayName;
         this.username = username;
         this.email = email;
+        this.currentContextName = "default";
     }
 
     @Override
@@ -48,7 +50,7 @@ public class ImpromptuUser implements User, PromptContributor {
     }
 
     @Override
-    public String getId() {
+    public @NonNull String getId() {
         return id;
     }
 
@@ -56,8 +58,29 @@ public class ImpromptuUser implements User, PromptContributor {
         this.id = id;
     }
 
+    /**
+     * The name of the context in which the user is working.
+     * Will be combined with user id to create a default context for propositions.
+     */
+    public @NonNull String getCurrentContextName() {
+        return currentContextName;
+    }
+
+    public void setCurrentContextName(@NonNull String currentContextName) {
+        this.currentContextName = currentContextName;
+    }
+
+    /**
+     * Get the full current context id for the user.
+     * This should be used to retrieve propositions
+     */
+    @NonNull
+    public String currentContext() {
+        return "%s_%s".formatted(id, currentContextName);
+    }
+
     @Override
-    public String getDisplayName() {
+    public @NonNull String getDisplayName() {
         return displayName;
     }
 
@@ -66,7 +89,7 @@ public class ImpromptuUser implements User, PromptContributor {
     }
 
     @Override
-    public String getUsername() {
+    public @NonNull String getUsername() {
         return username;
     }
 

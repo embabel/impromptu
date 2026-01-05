@@ -407,3 +407,13 @@ impromptu:
 ```
 
 No code changes required - just restart the application.
+
+## Miscellaneous
+
+### Killing a Stuck Server Process
+
+If your IDE dies or the server doesn't shut down cleanly, you may need to manually kill the process on port 8888:
+
+```bash
+lsof -ti :8888 | xargs kill -9
+```

@@ -69,6 +69,7 @@ public class PropositionView {
     public static PropositionView fromDice(Proposition p) {
         var propNode = new PropositionNode(
                 p.getId(),
+                p.getContextIdValue(),  // Java-friendly accessor
                 p.getText(),
                 p.getConfidence(),
                 p.getDecay(),
@@ -92,8 +93,9 @@ public class PropositionView {
         var diceMentions = mentions.stream()
                 .map(Mention::toDice)
                 .toList();
-        return new Proposition(
+        return Proposition.create(
                 proposition.getId(),
+                proposition.getContextId(),  // Java-friendly factory takes String
                 proposition.getText(),
                 diceMentions,
                 proposition.getConfidence(),

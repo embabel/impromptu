@@ -39,6 +39,9 @@ public class PropositionNode {
     @NodeId
     private String id;
 
+    /** The context in which this proposition is relevant */
+    private String contextId;
+
     /** The statement in natural language (e.g., "Jim is an expert in GOAP") */
     private String text;
 
@@ -72,6 +75,7 @@ public class PropositionNode {
     @JsonCreator
     public PropositionNode(
             @JsonProperty("id") String id,
+            @JsonProperty("contextId") String contextId,
             @JsonProperty("text") String text,
             @JsonProperty("confidence") double confidence,
             @JsonProperty("decay") double decay,
@@ -82,6 +86,7 @@ public class PropositionNode {
             @JsonProperty("status") PropositionStatus status,
             @JsonProperty("uri") @Nullable String uri) {
         this.id = id != null ? id : UUID.randomUUID().toString();
+        this.contextId = contextId != null ? contextId : "default";
         this.text = text;
         this.confidence = confidence;
         this.decay = decay;
@@ -94,7 +99,7 @@ public class PropositionNode {
     }
 
     public PropositionNode(String text, double confidence) {
-        this(UUID.randomUUID().toString(), text, confidence, 0.0, null, List.of(),
+        this(UUID.randomUUID().toString(), "default", text, confidence, 0.0, null, List.of(),
                 Instant.now(), Instant.now(), PropositionStatus.ACTIVE, null);
     }
 
@@ -106,6 +111,14 @@ public class PropositionNode {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getContextId() {
+        return contextId;
+    }
+
+    public void setContextId(String contextId) {
+        this.contextId = contextId;
     }
 
     public String getText() {
