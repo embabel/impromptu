@@ -138,6 +138,16 @@ public class ConversationPropositionExtraction {
                             updatedProps,
                             newEntitiesToSave
                     );
+
+                    // TODO this is just diagnostic
+                    var allPlaces = entityRepository.findAll(MusicDomainTypes.MusicPlace.class);
+                    var placesSb = new StringBuilder();
+                    placesSb.append(String.format("Total known places in entity repository: %d", allPlaces.size()));
+                    for (var place : allPlaces) {
+                        placesSb.append(String.format("%n  • %s", place.infoString(true, 1)));
+                    }
+                    logger.info(placesSb.toString());
+
                 } else {
                     logger.info("No new data to persist (all propositions were duplicates)");
                 }

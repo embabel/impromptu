@@ -1,9 +1,12 @@
 package com.embabel.impromptu.user;
 
 import com.embabel.agent.api.identity.User;
+import com.embabel.agent.core.CreationPermitted;
+import com.embabel.agent.rag.model.NamedEntity;
 import com.embabel.common.ai.prompt.PromptContributor;
 import com.embabel.dice.common.KnownEntity;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.drivine.annotation.NodeFragment;
 import org.drivine.annotation.NodeId;
@@ -16,7 +19,8 @@ import java.time.Instant;
  * Mutable user class for Impromptu application.
  */
 @NodeFragment(labels = {"User"})
-public class ImpromptuUser implements User, PromptContributor {
+@CreationPermitted(false)
+public class ImpromptuUser implements User, NamedEntity, PromptContributor {
 
     @NodeId
     private String id;
@@ -56,6 +60,23 @@ public class ImpromptuUser implements User, PromptContributor {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    @Override
+    public @NonNull String getName() {
+        return displayName;
+    }
+
+    @Override
+    public @NonNull String getDescription() {
+        return "User %s with username %s".formatted(displayName, username);
+    }
+
+    // TODO this is questionable, needed for Vaadin to not crash with serialization errors
+    @Override
+    @JsonIgnore
+    public java.util.Map<String, Object> getMetadata() {
+        return java.util.Map.of();
     }
 
     /**

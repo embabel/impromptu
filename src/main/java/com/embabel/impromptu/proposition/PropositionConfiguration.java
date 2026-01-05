@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
@@ -37,16 +38,14 @@ class PropositionConfiguration {
      * Schema for the music domain - defines entity types the LLM will extract.
      */
     @Bean
+    @Primary
     DataDictionary musicSchema() {
         // TODO must be able to look up anything with EntityResolver
         var schema = DataDictionary.fromClasses(
-                MusicDomainTypes.Composer.class,
-                MusicDomainTypes.MusicalWork.class,
-                MusicDomainTypes.Critic.class,
-                MusicDomainTypes.Genre.class,
-                MusicDomainTypes.Instrument.class,
+                //ComposerNode.class,
+//                MusicDomainTypes.Instrument.class,
                 MusicDomainTypes.MusicPlace.class,
-                MusicDomainTypes.MusicalConcept.class,
+//                MusicDomainTypes.MusicalConcept.class,
                 ImpromptuUser.class
         );
         logger.info("Created music domain schema with {} types", schema.getDomainTypes().size());
@@ -85,10 +84,12 @@ class PropositionConfiguration {
     NamedEntityDataRepository namedEntityDataRepository(
             PersistenceManager persistenceManager,
             EmbeddingService embeddingService,
+            DataDictionary dataDictionary,
             ImpromptuProperties impromptuProperties) {
         return new DrivineNamedEntityDataRepository(
                 persistenceManager,
                 impromptuProperties.neoRag(),
+                dataDictionary,
                 embeddingService
         );
     }
