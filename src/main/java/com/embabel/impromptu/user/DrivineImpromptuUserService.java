@@ -54,6 +54,7 @@ public class DrivineImpromptuUserService extends ImpromptuUserService {
         return graphObjectManager.load(id, ImpromptuUser.class);
     }
 
+    @Override
     @Transactional
     public ImpromptuUser save(ImpromptuUser user) {
         return graphObjectManager.save(user, CascadeType.NONE);

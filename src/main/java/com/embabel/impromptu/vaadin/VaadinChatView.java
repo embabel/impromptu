@@ -14,6 +14,7 @@ import com.embabel.impromptu.vaadin.components.ChatFooter;
 import com.embabel.impromptu.vaadin.components.ChatHeader;
 import com.embabel.impromptu.vaadin.components.ChatMessageBubble;
 import com.embabel.impromptu.vaadin.components.PropositionsPanel;
+import com.embabel.impromptu.vaadin.components.SpotifyPlayerPanel;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -115,6 +116,11 @@ public class VaadinChatView extends VerticalLayout {
         // Propositions panel
         propositionsPanel = new PropositionsPanel(propositionRepository);
         add(propositionsPanel);
+
+        // Spotify player (only if linked)
+        if (spotifyService.isLinked(user)) {
+            add(new SpotifyPlayerPanel(spotifyService, user));
+        }
 
         // Footer
         var neo4jConfig = new ChatFooter.Neo4jConfig(

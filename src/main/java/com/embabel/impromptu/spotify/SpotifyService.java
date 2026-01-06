@@ -255,10 +255,239 @@ public class SpotifyService {
                 .toList();
     }
 
-    // Record types for API responses
+    // ========== Spotify Connect API Methods ==========
+
+    /**
+     * Get available playback devices.
+     */
+    @SuppressWarnings("unchecked")
+    public List<SpotifyDevice> getDevices(ImpromptuUser user) {
+        String token = getValidAccessToken(user);
+
+        Map<String, Object> response = restClient.get()
+                .uri(SPOTIFY_API_BASE + "/me/player/devices")
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+
+        if (response == null || !response.containsKey("devices")) {
+            return List.of();
+        }
+
+        List<Map<String, Object>> devices = (List<Map<String, Object>>) response.get("devices");
+        return devices.stream()
+                .map(d -> new SpotifyDevice(
+                        (String) d.get("id"),
+                        (String) d.get("name"),
+                        (String) d.get("type"),
+                        Boolean.TRUE.equals(d.get("is_active")),
+                        d.get("volume_percent") instanceof Integer v ? v : 0
+                ))
+                .toList();
+    }
+
+    /**
+     * Get current playback state.
+     */
+    @SuppressWarnings("unchecked")
+    public PlaybackState getPlaybackState(ImpromptuUser user) {
+        String token = getValidAccessToken(user);
+
+        try {
+            Map<String, Object> response = restClient.get()
+                    .uri(SPOTIFY_API_BASE + "/me/player")
+                    .header("Authorization", "Bearer " + token)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<>() {});
+
+            if (response == null) {
+                return PlaybackState.inactive();
+            }
+
+            boolean isPlaying = Boolean.TRUE.equals(response.get("is_playing"));
+            int progressMs = response.get("progress_ms") instanceof Integer p ? p : 0;
+            int volumePercent = response.get("device") instanceof Map<?, ?> device
+                    ? (device.get("volume_percent") instanceof Integer v ? v : 0) : 0;
+
+            String deviceId = null;
+            String deviceName = null;
+            if (response.get("device") instanceof Map<?, ?> device) {
+                deviceId = (String) device.get("id");
+                deviceName = (String) device.get("name");
+            }
+
+            String trackName = null;
+            String artistName = null;
+            String albumName = null;
+            String albumImageUrl = null;
+            int durationMs = 0;
+
+            if (response.get("item") instanceof Map<?, ?> item) {
+                trackName = (String) item.get("name");
+                durationMs = item.get("duration_ms") instanceof Integer d ? d : 0;
+
+                if (item.get("artists") instanceof List<?> artists && !artists.isEmpty()) {
+                    if (artists.get(0) instanceof Map<?, ?> artist) {
+                        artistName = (String) artist.get("name");
+                    }
+                }
+
+                if (item.get("album") instanceof Map<?, ?> album) {
+                    albumName = (String) album.get("name");
+                    if (album.get("images") instanceof List<?> images && !images.isEmpty()) {
+                        if (images.get(0) instanceof Map<?, ?> image) {
+                            albumImageUrl = (String) image.get("url");
+                        }
+                    }
+                }
+            }
+
+            return new PlaybackState(
+                    true, isPlaying, deviceId, deviceName,
+                    trackName, artistName, albumName, albumImageUrl,
+                    progressMs, durationMs, volumePercent
+            );
+        } catch (Exception e) {
+            logger.debug("No active playback: {}", e.getMessage());
+            return PlaybackState.inactive();
+        }
+    }
+
+    /**
+     * Transfer playback to a specific device.
+     */
+    public void transferPlayback(ImpromptuUser user, String deviceId, boolean play) {
+        String token = getValidAccessToken(user);
+
+        Map<String, Object> body = Map.of(
+                "device_ids", List.of(deviceId),
+                "play", play
+        );
+
+        restClient.put()
+                .uri(SPOTIFY_API_BASE + "/me/player")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .toBodilessEntity();
+
+        logger.info("Transferred playback to device: {}", deviceId);
+    }
+
+    /**
+     * Start or resume playback.
+     */
+    public void play(ImpromptuUser user) {
+        String token = getValidAccessToken(user);
+
+        restClient.put()
+                .uri(SPOTIFY_API_BASE + "/me/player/play")
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    /**
+     * Start playback of a specific track or context.
+     */
+    public void play(ImpromptuUser user, String contextUri, List<String> trackUris) {
+        String token = getValidAccessToken(user);
+
+        var bodyBuilder = new java.util.HashMap<String, Object>();
+        if (contextUri != null) {
+            bodyBuilder.put("context_uri", contextUri);
+        }
+        if (trackUris != null && !trackUris.isEmpty()) {
+            bodyBuilder.put("uris", trackUris);
+        }
+
+        restClient.put()
+                .uri(SPOTIFY_API_BASE + "/me/player/play")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(bodyBuilder)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    /**
+     * Pause playback.
+     */
+    public void pause(ImpromptuUser user) {
+        String token = getValidAccessToken(user);
+
+        restClient.put()
+                .uri(SPOTIFY_API_BASE + "/me/player/pause")
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    /**
+     * Skip to next track.
+     */
+    public void skipToNext(ImpromptuUser user) {
+        String token = getValidAccessToken(user);
+
+        restClient.post()
+                .uri(SPOTIFY_API_BASE + "/me/player/next")
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    /**
+     * Skip to previous track.
+     */
+    public void skipToPrevious(ImpromptuUser user) {
+        String token = getValidAccessToken(user);
+
+        restClient.post()
+                .uri(SPOTIFY_API_BASE + "/me/player/previous")
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    /**
+     * Set playback volume.
+     */
+    public void setVolume(ImpromptuUser user, int volumePercent) {
+        String token = getValidAccessToken(user);
+        int volume = Math.max(0, Math.min(100, volumePercent));
+
+        restClient.put()
+                .uri(SPOTIFY_API_BASE + "/me/player/volume?volume_percent=" + volume)
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
+    // ========== Record types for API responses ==========
 
     public record SpotifyTokenResponse(String accessToken, String refreshToken, int expiresIn) {}
     public record SpotifyUser(String id, String displayName) {}
     public record SpotifyPlaylist(String id, String name, int trackCount) {}
     public record SpotifyTrack(String uri, String name, String artist) {}
+
+    public record SpotifyDevice(String id, String name, String type, boolean isActive, int volumePercent) {}
+
+    public record PlaybackState(
+            boolean isActive,
+            boolean isPlaying,
+            String deviceId,
+            String deviceName,
+            String trackName,
+            String artistName,
+            String albumName,
+            String albumImageUrl,
+            int progressMs,
+            int durationMs,
+            int volumePercent
+    ) {
+        public static PlaybackState inactive() {
+            return new PlaybackState(false, false, null, null, null, null, null, null, 0, 0, 0);
+        }
+    }
 }

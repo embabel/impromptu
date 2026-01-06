@@ -19,6 +19,11 @@ public abstract class ImpromptuUserService implements UserService<ImpromptuUser>
     protected abstract ImpromptuUser findOrCreate(String id, String displayName, String username, String email);
 
     /**
+     * Save/update a user.
+     */
+    public abstract ImpromptuUser save(ImpromptuUser user);
+
+    /**
      * Gets the authenticated user from Google OAuth, or an anonymous user if not authenticated.
      * Looks up existing user or provisions a new one.
      */

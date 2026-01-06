@@ -85,7 +85,7 @@ spring:
           spotify:
             client-id: ${SPOTIFY_CLIENT_ID:}
             client-secret: ${SPOTIFY_CLIENT_SECRET:}
-            scope: playlist-modify-public,playlist-modify-private,playlist-read-private,user-library-read
+            scope: playlist-modify-public,playlist-modify-private,playlist-read-private,user-library-read,user-read-playback-state,user-modify-playback-state,user-read-recently-played,user-top-read
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/callback/spotify"
         provider:

@@ -99,6 +99,9 @@ public class SpotifyLinkController {
             SpotifyService.SpotifyUser spotifyUser = spotifyService.getCurrentUser(user);
             user.setSpotifyUserId(spotifyUser.id());
 
+            // Persist the updated user with Spotify tokens
+            userService.save(user);
+
             logger.info("Successfully linked Spotify for user {} (Spotify: {})",
                     user.getId(), spotifyUser.displayName());
 
