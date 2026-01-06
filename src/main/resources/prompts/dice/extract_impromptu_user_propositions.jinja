@@ -3,24 +3,9 @@ from their conversation.
 Extract facts about the USER only -
 their preferences, knowledge, interests, and opinions about music.
 
-## Schema
+{% include "dice/schema_hints.jinja" %}
 
-Entity types:
-{% for domainType in model.context.schema.domainTypes %}
-    - {{ domainType.ownLabel }}: {{ domainType.description }}
-{% endfor %}
-
-Known entities:
-{% for entity in model.context.knownEntities %}
-    - {{ entity.name }} ({{ entity.labels() }}, id={{ entity.id }}) - {{ entity.description }}
-{% endfor %}
-
-{% if model.existingPropositions %}
-    Existing propositions (DO NOT duplicate):
-    {% for prop in model.existingPropositions %}
-        - {{ prop.text }}
-    {% endfor %}
-{% endif %}
+{% include "dice/existing_propositions.jinja" %}
 
 ## Extraction Rules
 
@@ -58,5 +43,3 @@ User: {{ user.name }}
 <conversation>
     {{ model.chunk.text }}
 </conversation>
-
-Extract propositions about what this user has expressed regarding music - their preferences, opinions, knowledge level, and interests. Consider assistant messages only to contextualize user statements; do not extract facts from assistant content unless the user explicitly agrees or responds to it.

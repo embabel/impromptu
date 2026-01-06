@@ -6,6 +6,7 @@ import com.embabel.agent.rag.neo.drivine.DrivineNamedEntityDataRepository;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.dice.common.EntityResolver;
+import com.embabel.dice.common.SchemaAdherence;
 import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionExtractor;
@@ -80,7 +81,7 @@ class PropositionConfiguration {
                 .withLlm(impromptuProperties.propositionExtractionLlm())
                 .withAi(ai)
                 .withPropositionRepository(propositionRepository)
-                .withLockToSchema(true)
+                .withSchemaAdherence(SchemaAdherence.DEFAULT)
                 .withTemplate("dice/extract_impromptu_user_propositions");
     }
 

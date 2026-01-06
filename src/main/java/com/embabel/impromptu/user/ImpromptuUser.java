@@ -4,7 +4,6 @@ import com.embabel.agent.api.identity.User;
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
 import com.embabel.common.ai.prompt.PromptContributor;
-import com.embabel.dice.common.KnownEntity;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -173,14 +172,5 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 '}';
-    }
-
-    public KnownEntity toKnownEntity() {
-        return new KnownEntity(
-                username,
-                "User",
-                "username %s with display name %s".formatted(username, displayName),
-                id
-        );
     }
 }

@@ -7,6 +7,7 @@ import com.embabel.chat.Conversation;
 import com.embabel.chat.SimpleMessageFormatter;
 import com.embabel.chat.WindowingConversationFormatter;
 import com.embabel.dice.common.EntityResolver;
+import com.embabel.dice.common.KnownEntity;
 import com.embabel.dice.common.SourceAnalysisContext;
 import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
@@ -20,7 +21,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -93,7 +93,7 @@ public class ConversationPropositionExtraction {
                     .withEntityResolver(entityResolverForUser(event.user))
                     .withSchema(musicSchema)
                     .withKnownEntities(
-                            List.of(event.user)
+                            KnownEntity.asCurrentUser(event.user)
                     )
                     .withPromptVariables(Map.of(
                             "user", event.user
