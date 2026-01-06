@@ -30,7 +30,10 @@ impromptu:
 
   voice:
     persona: impromptu
-    max-words: 120
+    max-words: 70
+    tts-model: tts-1
+    tts-voice: nova
+    openai-api-key: ${OPENAI_API_KEY:}
 
   objective: music
 

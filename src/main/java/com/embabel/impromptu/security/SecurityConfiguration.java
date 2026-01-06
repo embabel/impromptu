@@ -32,6 +32,11 @@ class SecurityConfiguration extends VaadinWebSecurity {
         // Let Vaadin configure its defaults first
         super.configure(http);
 
+        // Allow voice APIs for authenticated users (disable CSRF for these endpoints)
+        http.csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/tts/**", "/api/stt/**")
+        );
+
         // Configure OAuth2 login - use our Vaadin login view as the login page
         http.oauth2Login(oauth2 -> oauth2
                 .loginPage("/")

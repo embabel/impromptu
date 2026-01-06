@@ -15,6 +15,7 @@ import com.embabel.impromptu.vaadin.components.ChatHeader;
 import com.embabel.impromptu.vaadin.components.ChatMessageBubble;
 import com.embabel.impromptu.vaadin.components.PropositionsPanel;
 import com.embabel.impromptu.vaadin.components.SpotifyPlayerPanel;
+import com.embabel.impromptu.vaadin.components.VoiceControl;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -57,6 +58,7 @@ public class VaadinChatView extends VerticalLayout {
     private PropositionsPanel propositionsPanel;
     private TextField inputField;
     private Button sendButton;
+    private VoiceControl voiceControl;
 
     public VaadinChatView(
             Chatbot chatbot,
@@ -156,9 +158,14 @@ public class VaadinChatView extends VerticalLayout {
         var inputSection = new HorizontalLayout();
         inputSection.setWidthFull();
         inputSection.setPadding(false);
+        inputSection.setAlignItems(Alignment.CENTER);
+
+        // Voice control
+        voiceControl = new VoiceControl();
+        voiceControl.setOnSpeechRecognized(this::onVoiceInput);
 
         inputField = new TextField();
-        inputField.setPlaceholder("Type your message...");
+        inputField.setPlaceholder("Type or click mic to speak...");
         inputField.setWidthFull();
         inputField.setClearButtonVisible(true);
         inputField.addKeyPressListener(Key.ENTER, e -> sendMessage());
@@ -167,10 +174,17 @@ public class VaadinChatView extends VerticalLayout {
         sendButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         sendButton.addClickListener(e -> sendMessage());
 
-        inputSection.add(inputField, sendButton);
+        inputSection.add(voiceControl, inputField, sendButton);
         inputSection.setFlexGrow(1, inputField);
 
         return inputSection;
+    }
+
+    private void onVoiceInput(String text) {
+        if (text != null && !text.isBlank()) {
+            inputField.setValue(text);
+            sendMessage();
+        }
     }
 
     private void sendMessage() {
@@ -206,7 +220,10 @@ public class VaadinChatView extends VerticalLayout {
 
                 ui.access(() -> {
                     if (response != null) {
-                        messagesLayout.add(ChatMessageBubble.assistant(persona, response.getContent()));
+                        var content = response.getContent();
+                        messagesLayout.add(ChatMessageBubble.assistant(persona, content));
+                        // Speak the response if voice output is enabled
+                        voiceControl.speak(content);
                     } else {
                         messagesLayout.add(ChatMessageBubble.error("Response timed out"));
                     }
