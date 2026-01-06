@@ -79,6 +79,15 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     }
 
     /**
+     * Return labels matching the @NodeFragment annotation.
+     * This ensures EntityIdentifier.forUser() can find propositions mentioning this user.
+     */
+    @Override
+    public java.util.Set<String> labels() {
+        return java.util.Set.of("Entity", "User");
+    }
+
+    /**
      * The name of the context in which the user is working.
      * Will be combined with user id to create a default context for propositions.
      */

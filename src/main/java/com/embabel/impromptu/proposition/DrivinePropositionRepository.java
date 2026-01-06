@@ -137,10 +137,26 @@ public class DrivinePropositionRepository implements PropositionRepository {
         // TODO make this efficient with query
         return findAll().stream().filter(p ->
                 p.getMentions().stream().anyMatch(m ->
-                        m.getType().equalsIgnoreCase(identifier.getType()) &&
+                        isTypeCompatible(m.getType(), identifier.getType()) &&
                                 identifier.getId().equals(m.getResolvedId())
                 )
         ).toList();
+    }
+
+    /**
+     * Check if a mention type is compatible with an identifier type.
+     * Handles cases where the stored type is a class name (e.g., "ImpromptuUser")
+     * but the identifier uses a label (e.g., "User").
+     */
+    private boolean isTypeCompatible(String mentionType, String identifierType) {
+        if (mentionType.equalsIgnoreCase(identifierType)) {
+            return true;
+        }
+        // Handle User variants - stored as "ImpromptuUser" but queried as "User"
+        if ("User".equalsIgnoreCase(identifierType)) {
+            return mentionType.toLowerCase().contains("user");
+        }
+        return false;
     }
 
     @Override
