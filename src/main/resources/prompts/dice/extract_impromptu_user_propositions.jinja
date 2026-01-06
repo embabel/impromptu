@@ -1,36 +1,62 @@
-{% include "dice/extract_propositions.jinja" %}
+You are extracting propositions about a music enthusiast
+from their conversation.
+Extract facts about the USER only -
+their preferences, knowledge, interests, and opinions about music.
 
-USE THIS FOCUS:
+## Schema
 
-Extract facts about the user and the user's musical preferences:
+Entity types:
+{% for domainType in model.context.schema.domainTypes %}
+    - {{ domainType.ownLabel }}: {{ domainType.description }}
+{% endfor %}
 
-- The user's level of knowledge
-- Composers, works, genres, and historical periods mentioned
-- The users's preferences or opinions expressed about such things
-- Musical concepts or terms discussed
-- What topics the user is interested in or asking about
+Known entities:
+{% for entity in model.context.knownEntities %}
+    - {{ entity.name }} ({{ entity.labels() }}, id={{ entity.id }}) - {{ entity.description }}
+{% endfor %}
 
-For user interests, create propositions like "The user dislikes Baroque music"
-or "The user is interested in learning about Romantic composers" or "The user's favorite composer is Messiaen".
-based on what they are asking about.
+{% if model.existingPropositions %}
+    Existing propositions (DO NOT duplicate):
+    {% for prop in model.existingPropositions %}
+        - {{ prop.text }}
+    {% endfor %}
+{% endif %}
 
-You are not noting known facts from general knowledge:
-GOOD: "The user discussed Brahms in detail"
-BAD: "Brahms was a Romantic composer"
-GOOD: "The user enjoys atonal music"
-BAD: "Atonal music lacks a tonal center"
+## Extraction Rules
 
-DO NOT ADD ANYTHING NOT SUPPORTED BY THE CONVERSATION TEXT.
-THE FACTS MUST BE ABOUT THE USER AND WHAT THEY HAVE EXPRESSED
-or can reasonably be inferred. E.g. the assistant may have discussed
-a topic and the user made no comment on that topic - that is NOT a fact about the user.
-Consider assistant content ONLY to contextualize user statements.
-DO NOT DRAW ANY PROPOSITIONS FROM ASSISTANT CONTENT UNLESS THE USER RESPONDS TO IT
-AND AGREES OR DISAGREES.
+1. **User-centric**: Extract facts about the user, not general music knowledge
+2. **Single fact per proposition**: One subject, one object maximum
+3. **Schema-bound**: {% if model.lockToSchema %}Only use entity types from the schema{% else %}Prefer schema types but
+    include important non-schema facts{% endif %}
+4. **No inference beyond evidence**: Only extract what the text explicitly supports
+5. **No overlap**: Each fact should be distinct
 
-DO NOT GUESS. For example if the user says "I love Beethoven's 5th Symphony"
-it does not mean they love all Beethoven's works or his string quartets.
+## Confidence & Decay
 
-DO NOT HAVE OVERLAPPING FACTS.
+- **High confidence**: Explicit statements ("I love Bach")
+- **Lower confidence**: Implied preferences (asking many questions about a topic)
+- **Low decay**: Stable preferences (favorite composer, genre preferences)
+- **High decay**: Transient states (current listening, mood)
 
-The user's name is "{{ user.name }}".
+## Examples
+
+GOOD propositions:
+- "The user enjoys Brahms's piano music"
+- "The user is interested in learning about Romantic composers"
+- "The user discussed Wagner's operas in detail"
+- "The user dislikes atonal music"
+
+BAD propositions (do not extract):
+- "Brahms was a Romantic composer" (general knowledge, not about user)
+- "Atonal music lacks a tonal center" (definition, not user fact)
+- "The user loves all of Beethoven's works" (overgeneralization from liking one piece)
+
+## Input
+
+User: {{ user.name }}
+
+<conversation>
+    {{ model.chunk.text }}
+</conversation>
+
+Extract propositions about what this user has expressed regarding music - their preferences, opinions, knowledge level, and interests. Consider assistant messages only to contextualize user statements; do not extract facts from assistant content unless the user explicitly agrees or responds to it.

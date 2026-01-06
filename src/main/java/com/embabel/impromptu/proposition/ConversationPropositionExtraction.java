@@ -92,8 +92,12 @@ public class ConversationPropositionExtraction {
                     .withContextId(event.user.currentContext())
                     .withEntityResolver(entityResolverForUser(event.user))
                     .withSchema(musicSchema)
-                    .withKnownEntities(List.of())
-                    .withTemplateModel(Map.of());
+                    .withKnownEntities(
+                            List.of(event.user)
+                    )
+                    .withPromptVariables(Map.of(
+                            "user", event.user
+                    ));
 
             logger.info("Extracting propositions from conversation exchange");
 
@@ -155,8 +159,7 @@ public class ConversationPropositionExtraction {
             }
         } catch (Exception e) {
             // Don't let extraction failures break the chat flow
-            logger.warn("Failed to extract propositions: {}", e.getMessage());
-            logger.debug("Extraction error details", e);
+            logger.warn("Failed to extract propositions", e);
         }
     }
 
