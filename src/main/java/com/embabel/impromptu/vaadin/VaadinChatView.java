@@ -126,7 +126,8 @@ public class VaadinChatView extends VerticalLayout {
     /**
      * Lazily creates the chat session on first message send.
      */
-    private record SessionData(ChatSession chatSession, BlockingQueue<Message> responseQueue) {}
+    private record SessionData(ChatSession chatSession, BlockingQueue<Message> responseQueue) {
+    }
 
     private SessionData getOrCreateSession() {
         var vaadinSession = VaadinSession.getCurrent();
@@ -192,10 +193,10 @@ public class VaadinChatView extends VerticalLayout {
                 var userMessage = new UserMessage(text);
                 logger.info("Sending user message to chatSession: {}", text);
                 sessionData.chatSession().onUserMessage(userMessage);
-                logger.info("onUserMessage returned, waiting for response from queue...");
+                logger.debug("onUserMessage returned, waiting for response from queue...");
 
                 var response = sessionData.responseQueue().poll(60, TimeUnit.SECONDS);
-                logger.info("Poll returned: {}", response != null ? "got response" : "null/timeout");
+                logger.debug("Poll returned: {}", response != null ? "got response" : "null/timeout");
 
                 ui.access(() -> {
                     if (response != null) {

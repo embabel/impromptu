@@ -6,6 +6,8 @@ import com.embabel.agent.rag.neo.drivine.DrivineNamedEntityDataRepository;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.dice.common.EntityResolver;
+import com.embabel.dice.common.KnowledgeType;
+import com.embabel.dice.common.Relations;
 import com.embabel.dice.common.SchemaAdherence;
 import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
@@ -54,6 +56,15 @@ class PropositionConfiguration {
         );
         logger.info("Created music domain schema with {} types", schema.getDomainTypes().size());
         return schema;
+    }
+
+    @Bean
+    Relations relations() {
+        return Relations.empty()
+                .withPredicatesForSubject(
+                        ImpromptuUser.class, KnowledgeType.SEMANTIC,
+                        "loves", "likes", "dislikes", "knows", "is_interested_in"
+                );
     }
 
     /**

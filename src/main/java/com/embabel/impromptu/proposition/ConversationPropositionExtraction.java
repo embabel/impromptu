@@ -8,12 +8,13 @@ import com.embabel.chat.SimpleMessageFormatter;
 import com.embabel.chat.WindowingConversationFormatter;
 import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.KnownEntity;
+import com.embabel.dice.common.Relations;
 import com.embabel.dice.common.SourceAnalysisContext;
 import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
+import com.embabel.dice.proposition.EntityMention;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.ReferencesEntities;
-import com.embabel.impromptu.domain.MusicPlace;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Async listener that extracts propositions from chat conversations.
@@ -34,19 +36,22 @@ public class ConversationPropositionExtraction {
     private static final Logger logger = LoggerFactory.getLogger(ConversationPropositionExtraction.class);
 
     private final PropositionPipeline propositionPipeline;
-    private final DataDictionary musicSchema;
+    private final DataDictionary dataDictionary;
+    private final Relations relations;
     private final PropositionRepository propositionRepository;
     private final NamedEntityDataRepository entityRepository;
 
     public ConversationPropositionExtraction(
             PropositionPipeline propositionPipeline,
-            DataDictionary musicSchema,
+            DataDictionary dataDictionary,
+            Relations relations,
             PropositionRepository propositionRepository,
             NamedEntityDataRepository entityRepository) {
         this.propositionRepository = propositionRepository;
         this.entityRepository = entityRepository;
+        this.relations = relations;
         this.propositionPipeline = propositionPipeline;
-        this.musicSchema = musicSchema;
+        this.dataDictionary = dataDictionary;
     }
 
     /**
@@ -91,7 +96,8 @@ public class ConversationPropositionExtraction {
             var context = SourceAnalysisContext
                     .withContextId(event.user.currentContext())
                     .withEntityResolver(entityResolverForUser(event.user))
-                    .withSchema(musicSchema)
+                    .withSchema(dataDictionary)
+                    .withRelations(relations)
                     .withKnownEntities(
                             KnownEntity.asCurrentUser(event.user)
                     )
@@ -108,23 +114,13 @@ public class ConversationPropositionExtraction {
                         .filter(ReferencesEntities::isFullyResolved)
                         .count();
 
-                // Build a pretty-printed summary of extracted propositions
-                var props = chunkPropositionResult.getPropositions();
-                var sb = new StringBuilder();
-                sb.append(String.format("Extracted %d propositions from conversation (resolved: %d, new: %d)",
-                        props.size(),
-                        resolvedCount,
-                        chunkPropositionResult.getPropositionExtractionStats().getNewCount()));
-                for (var prop : props) {
-                    sb.append(String.format("%n  • %s (confidence: %.2f)", prop.getText(), prop.getConfidence()));
-                }
-                logger.info(sb.toString());
+                logger.info(chunkPropositionResult.infoString(true, 1));
                 // Calculate actual counts based on what will be persisted
                 var propsToSave = chunkPropositionResult.propositionsToPersist();
                 var referencedEntityIds = propsToSave.stream()
                         .flatMap(p -> p.getMentions().stream())
-                        .map(m -> m.getResolvedId())
-                        .filter(id -> id != null)
+                        .map(EntityMention::getResolvedId)
+                        .filter(Objects::nonNull)
                         .collect(java.util.stream.Collectors.toSet());
                 var newEntitiesToSave = chunkPropositionResult.newEntities().stream()
                         .filter(e -> referencedEntityIds.contains(e.getId()))
@@ -135,7 +131,6 @@ public class ConversationPropositionExtraction {
                 var newProps = stats.getNewCount();
                 var updatedProps = stats.getMergedCount() + stats.getReinforcedCount();
 
-                // Actually persist the extracted propositions and entities
                 chunkPropositionResult.persist(propositionRepository, entityRepository);
                 if (newProps > 0 || updatedProps > 0 || newEntitiesToSave > 0) {
                     logger.info("Persisted: {} new propositions, {} updated propositions, {} new entities",
@@ -143,16 +138,6 @@ public class ConversationPropositionExtraction {
                             updatedProps,
                             newEntitiesToSave
                     );
-
-                    // TODO this is just diagnostic
-                    var allPlaces = entityRepository.findAll(MusicPlace.class);
-                    var placesSb = new StringBuilder();
-                    placesSb.append(String.format("Total known places in entity repository: %d", allPlaces.size()));
-                    for (var place : allPlaces) {
-                        placesSb.append(String.format("%n  • %s", place.infoString(true, 1)));
-                    }
-                    logger.info(placesSb.toString());
-
                 } else {
                     logger.info("No new data to persist (all propositions were duplicates)");
                 }
@@ -162,6 +147,7 @@ public class ConversationPropositionExtraction {
             logger.warn("Failed to extract propositions", e);
         }
     }
+
 
     private String buildExtractionText(Conversation conversation) {
         // TODO deal with hardcoding

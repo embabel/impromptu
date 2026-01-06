@@ -15,6 +15,7 @@
  */
 package com.embabel.impromptu.domain;
 
+import com.embabel.agent.core.CreationPermitted;
 import org.drivine.annotation.NodeFragment;
 import org.drivine.annotation.NodeId;
 
@@ -22,6 +23,7 @@ import org.drivine.annotation.NodeId;
  * Represents a musical epoch/period (e.g., "Baroque", "Romantic", "20th Century").
  */
 @NodeFragment(labels = {"Epoch", "Entity", "Reference"})
+@CreationPermitted(false)
 public record Epoch(
         @NodeId String id,
         String name
