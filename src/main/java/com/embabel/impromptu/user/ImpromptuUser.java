@@ -27,6 +27,13 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     private String username;
     private String email;
 
+    // Location data from IP geolocation
+    private @Nullable String countryCode;
+    private @Nullable String city;
+    private @Nullable String timezone;
+    private @Nullable Double latitude;
+    private @Nullable Double longitude;
+
     private String currentContextName;
 
     private @Nullable String spotifyAccessToken;
@@ -133,6 +140,48 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    // Location getters and setters
+
+    public @Nullable String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(@Nullable String countryCode) {
+        this.countryCode = countryCode;
+    }
+
+    public @Nullable String getCity() {
+        return city;
+    }
+
+    public void setCity(@Nullable String city) {
+        this.city = city;
+    }
+
+    public @Nullable String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(@Nullable String timezone) {
+        this.timezone = timezone;
+    }
+
+    public @Nullable Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(@Nullable Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public @Nullable Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(@Nullable Double longitude) {
+        this.longitude = longitude;
     }
 
     // Spotify getters and setters

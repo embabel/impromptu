@@ -14,6 +14,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 class SecurityConfiguration extends VaadinWebSecurity {
 
+    private final LocationCapturingAuthenticationSuccessHandler successHandler;
+
+    SecurityConfiguration(LocationCapturingAuthenticationSuccessHandler successHandler) {
+        this.successHandler = successHandler;
+    }
+
     @Override
     public void configure(WebSecurity web) throws Exception {
         // Allow unauthenticated access to data loading API
@@ -29,9 +35,7 @@ class SecurityConfiguration extends VaadinWebSecurity {
         // Configure OAuth2 login - use our Vaadin login view as the login page
         http.oauth2Login(oauth2 -> oauth2
                 .loginPage("/")
-                .successHandler((request, response, authentication) -> {
-                    response.sendRedirect("/chat");
-                })
+                .successHandler(successHandler)
                 .permitAll()
         );
 
