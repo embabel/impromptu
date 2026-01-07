@@ -21,6 +21,7 @@ import com.embabel.impromptu.domain.Composer;
 import com.embabel.impromptu.domain.MusicPlace;
 import com.embabel.impromptu.domain.Work;
 import com.embabel.impromptu.user.ImpromptuUser;
+import org.drivine.manager.GraphObjectManager;
 import org.drivine.manager.PersistenceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,14 +69,6 @@ class PropositionConfiguration {
     }
 
     /**
-     * Embedding service for vector similarity search on propositions.
-     */
-    @Bean
-    EmbeddingService propositionEmbeddingService(AiBuilder aiBuilder) {
-        return aiBuilder.ai().withDefaultEmbeddingService();
-    }
-
-    /**
      * LLM-based proposition extractor using the dice library.
      */
     @Bean
@@ -100,13 +93,15 @@ class PropositionConfiguration {
     NamedEntityDataRepository namedEntityDataRepository(
             PersistenceManager persistenceManager,
             EmbeddingService embeddingService,
+            GraphObjectManager graphObjectManager,
             DataDictionary dataDictionary,
             ImpromptuProperties impromptuProperties) {
         return new DrivineNamedEntityDataRepository(
                 persistenceManager,
                 impromptuProperties.neoRag(),
                 dataDictionary,
-                embeddingService
+                embeddingService,
+                graphObjectManager
         );
     }
 
