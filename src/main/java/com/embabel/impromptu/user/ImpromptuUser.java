@@ -41,6 +41,9 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     private @Nullable Instant spotifyTokenExpiry;
     private @Nullable String spotifyUserId;
 
+    // User preferences
+    private boolean voiceEnabled = false;
+
     @JsonCreator
     public ImpromptuUser(
             @JsonProperty("id") String id,
@@ -220,6 +223,16 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
 
     public boolean isSpotifyLinked() {
         return spotifyAccessToken != null && spotifyRefreshToken != null;
+    }
+
+    // Voice preferences
+
+    public boolean isVoiceEnabled() {
+        return voiceEnabled;
+    }
+
+    public void setVoiceEnabled(boolean voiceEnabled) {
+        this.voiceEnabled = voiceEnabled;
     }
 
     @Override

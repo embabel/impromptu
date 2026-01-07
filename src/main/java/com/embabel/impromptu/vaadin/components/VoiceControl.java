@@ -26,7 +26,7 @@ public class VoiceControl extends HorizontalLayout {
     private final Button speakerButton;
     private boolean isListening = false;
     private boolean isSpeaking = false;
-    private boolean autoSpeak = true;
+    private boolean autoSpeak = false;
 
     private Consumer<String> onSpeechRecognized;
 
@@ -42,7 +42,7 @@ public class VoiceControl extends HorizontalLayout {
         micButton.addClickListener(e -> toggleListening());
 
         // Speaker button (toggle auto-speak)
-        speakerButton = new Button(createSpeakerIcon(true));
+        speakerButton = new Button(createSpeakerIcon(false));
         speakerButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         speakerButton.getElement().setAttribute("title", "Toggle voice responses");
         speakerButton.addClickListener(e -> toggleAutoSpeak());
@@ -133,6 +133,16 @@ public class VoiceControl extends HorizontalLayout {
      */
     public boolean isAutoSpeakEnabled() {
         return autoSpeak;
+    }
+
+    /**
+     * Set the initial auto-speak state (e.g., from user preferences).
+     */
+    public void setAutoSpeak(boolean enabled) {
+        this.autoSpeak = enabled;
+        speakerButton.setIcon(createSpeakerIcon(enabled));
+        speakerButton.getElement().setAttribute("title",
+            enabled ? "Voice responses on - click to mute" : "Voice responses off - click to enable");
     }
 
     // Callbacks from JavaScript

@@ -168,9 +168,10 @@ public class VaadinChatView extends VerticalLayout {
         inputSection.setPadding(false);
         inputSection.setAlignItems(Alignment.CENTER);
 
-        // Voice control
+        // Voice control - initialize from user preferences
         voiceControl = new VoiceControl();
         voiceControl.setOnSpeechRecognized(this::onVoiceInput);
+        voiceControl.setAutoSpeak(userService.getAuthenticatedUser().isVoiceEnabled());
 
         inputField = new TextField();
         inputField.setPlaceholder("Type or click mic to speak...");
