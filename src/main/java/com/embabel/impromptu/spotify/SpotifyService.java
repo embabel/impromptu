@@ -9,6 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -25,8 +27,19 @@ public class SpotifyService {
     private static final Logger logger = LoggerFactory.getLogger(SpotifyService.class);
     private static final String SPOTIFY_API_BASE = "https://api.spotify.com/v1";
     private static final String SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token";
+    private static final int TIMEOUT_MS = 10_000; // 10 second timeout
 
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient;
+
+    public SpotifyService() {
+        // Configure RestClient with timeouts to prevent blocking on network issues
+        var requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(TIMEOUT_MS);
+        requestFactory.setReadTimeout(TIMEOUT_MS);
+        this.restClient = RestClient.builder()
+                .requestFactory(requestFactory)
+                .build();
+    }
 
     @Value("${spring.security.oauth2.client.registration.spotify.client-id:}")
     private String clientId;

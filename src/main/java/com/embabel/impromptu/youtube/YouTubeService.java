@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -23,8 +24,18 @@ public class YouTubeService {
 
     private static final Logger logger = LoggerFactory.getLogger(YouTubeService.class);
     private static final String YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
+    private static final int TIMEOUT_MS = 10_000; // 10 second timeout
 
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient;
+
+    public YouTubeService() {
+        var requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(TIMEOUT_MS);
+        requestFactory.setReadTimeout(TIMEOUT_MS);
+        this.restClient = RestClient.builder()
+                .requestFactory(requestFactory)
+                .build();
+    }
 
     @Value("${youtube.api-key:}")
     private String apiKey;

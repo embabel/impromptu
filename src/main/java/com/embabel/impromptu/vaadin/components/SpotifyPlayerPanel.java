@@ -45,6 +45,7 @@ public class SpotifyPlayerPanel extends VerticalLayout {
 
     private PlaybackState currentState = PlaybackState.inactive();
     private boolean isExpanded = false;
+    private boolean isConnected = true;
 
     public SpotifyPlayerPanel(SpotifyService spotifyService, ImpromptuUser user) {
         this.spotifyService = spotifyService;
@@ -226,14 +227,28 @@ public class SpotifyPlayerPanel extends VerticalLayout {
                 var devices = spotifyService.getDevices(user);
 
                 ui.access(() -> {
+                    setConnected(true);
                     updatePlaybackState(state);
                     updateDevices(devices, state.deviceId());
                 });
             } catch (Exception e) {
                 logger.warn("Failed to refresh Spotify state: {}", e.getMessage());
-                ui.access(() -> updatePlaybackState(PlaybackState.inactive()));
+                ui.access(() -> setConnected(false));
             }
         }).start();
+    }
+
+    private void setConnected(boolean connected) {
+        this.isConnected = connected;
+        if (!connected) {
+            headerTrackInfo.setText("• Disconnected");
+            headerTrackInfo.getStyle().set("color", "var(--lumo-error-text-color)");
+            contentLayout.setVisible(false);
+            isExpanded = false;
+            expandCollapseButton.setIcon(VaadinIcon.CHEVRON_DOWN.create());
+        } else {
+            headerTrackInfo.getStyle().set("color", "var(--lumo-secondary-text-color)");
+        }
     }
 
     private void updatePlaybackState(PlaybackState state) {
