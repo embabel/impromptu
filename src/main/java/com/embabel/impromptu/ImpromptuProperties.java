@@ -19,6 +19,7 @@ public record ImpromptuProperties(
         String embeddingService,
         String objective,
         @NestedConfigurationProperty Voice voice,
+        @NestedConfigurationProperty Extraction extraction,
         @NestedConfigurationProperty NeoRagServiceProperties neoRag,
         @NestedConfigurationProperty LlmOptions propositionExtractionLlm,
         boolean showExtractionPrompts,
@@ -29,5 +30,24 @@ public record ImpromptuProperties(
             String persona,
             int maxWords
     ) {
+    }
+
+    /**
+     * Configuration for proposition extraction from conversations.
+     *
+     * @param windowSize      number of messages to include in each extraction window
+     * @param overlapSize     number of messages to overlap for context continuity
+     * @param triggerInterval extract propositions every N messages (0 = manual only)
+     */
+    public record Extraction(
+            int windowSize,
+            int overlapSize,
+            int triggerInterval
+    ) {
+        public Extraction {
+            if (windowSize <= 0) windowSize = 10;
+            if (overlapSize < 0) overlapSize = 2;
+            if (triggerInterval < 0) triggerInterval = 10;
+        }
     }
 }

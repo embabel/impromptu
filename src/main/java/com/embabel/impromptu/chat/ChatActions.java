@@ -56,6 +56,9 @@ public class ChatActions {
         this.eventPublisher = eventPublisher;
     }
 
+    /**
+     * Bind user to AgentProcess. Will run once at the start of the process.
+     */
     @Action
     ImpromptuUser bindUser(OperationContext context) {
         var forUser = context.getProcessContext().getProcessOptions().getIdentities().getForUser();
@@ -67,6 +70,9 @@ public class ChatActions {
         }
     }
 
+    /**
+     * Invoked for each user message in the conversation.
+     */
     @Action(
             canRerun = true,
             trigger = UserMessage.class
@@ -98,9 +104,9 @@ public class ChatActions {
                 ));
         context.sendMessage(conversation.addMessage(assistantMessage));
 
-        // Publish event for async proposition extraction (every 3rd exchange)
-        // TODO fix windowing
-        if (conversation.getMessages().size() % 10 == 0) {
+        // Publish event for async proposition extraction at configured interval
+        var triggerInterval = properties.extraction().triggerInterval();
+        if (triggerInterval > 0 && conversation.getMessages().size() % triggerInterval == 0) {
             eventPublisher.publishEvent(
                     new ConversationAnalysisRequestEvent(
                             this,
@@ -108,4 +114,5 @@ public class ChatActions {
                             conversation));
         }
     }
+
 }

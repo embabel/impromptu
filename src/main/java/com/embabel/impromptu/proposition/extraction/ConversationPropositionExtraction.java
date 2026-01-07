@@ -15,6 +15,7 @@ import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.ReferencesEntities;
+import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
@@ -42,18 +43,21 @@ public class ConversationPropositionExtraction {
     private final Relations relations;
     private final PropositionRepository propositionRepository;
     private final NamedEntityDataRepository entityRepository;
+    private final ImpromptuProperties properties;
 
     public ConversationPropositionExtraction(
             PropositionPipeline propositionPipeline,
             DataDictionary dataDictionary,
             Relations relations,
             PropositionRepository propositionRepository,
-            NamedEntityDataRepository entityRepository) {
+            NamedEntityDataRepository entityRepository,
+            ImpromptuProperties properties) {
         this.propositionRepository = propositionRepository;
         this.entityRepository = entityRepository;
         this.relations = relations;
         this.propositionPipeline = propositionPipeline;
         this.dataDictionary = dataDictionary;
+        this.properties = properties;
     }
 
     /**
@@ -153,8 +157,8 @@ public class ConversationPropositionExtraction {
 
 
     private String buildExtractionText(Conversation conversation) {
-        // TODO deal with hardcoding
-        return new WindowingConversationFormatter(SimpleMessageFormatter.INSTANCE, 10)
+        var windowSize = properties.extraction().windowSize();
+        return new WindowingConversationFormatter(SimpleMessageFormatter.INSTANCE, windowSize)
                 .format(conversation);
     }
 }

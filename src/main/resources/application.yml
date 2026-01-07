@@ -35,6 +35,11 @@ impromptu:
     tts-voice: nova
     openai-api-key: ${OPENAI_API_KEY:}
 
+  extraction:
+    window-size: 10
+    overlap-size: 2
+    trigger-interval: 10
+
   objective: music
 
   show-extraction-prompts: true
