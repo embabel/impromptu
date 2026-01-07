@@ -46,6 +46,15 @@ impromptu:
   show-extraction-responses: false
   embedding-service: text-embedding-3-small
 
+# YouTube Data API v3
+# To set up:
+# 1. Go to https://console.cloud.google.com/
+# 2. Enable the YouTube Data API v3
+# 3. Create an API key (no OAuth needed for search)
+# 4. Set YOUTUBE_API_KEY environment variable
+youtube:
+  api-key: ${YOUTUBE_API_KEY:}
+
 embabel:
 
   agent:

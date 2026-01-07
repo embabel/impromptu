@@ -17,6 +17,9 @@ import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.spotify.SpotifyTools;
 import com.embabel.impromptu.user.ImpromptuUser;
+import com.embabel.impromptu.youtube.YouTubePendingPlayback;
+import com.embabel.impromptu.youtube.YouTubeService;
+import com.embabel.impromptu.youtube.YouTubeTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,12 +40,16 @@ public class ChatActions {
     private final ToolishRag toolishRag;
     private final ImpromptuProperties properties;
     private final SpotifyService spotifyService;
+    private final YouTubeService youTubeService;
+    private final YouTubePendingPlayback youTubePendingPlayback;
     private final MemoryProjector memoryProjector;
     private final ApplicationEventPublisher eventPublisher;
 
     public ChatActions(
             SearchOperations searchOperations,
             SpotifyService spotifyService,
+            YouTubeService youTubeService,
+            YouTubePendingPlayback youTubePendingPlayback,
             MemoryProjector memoryProjector,
             ApplicationEventPublisher eventPublisher,
             ImpromptuProperties properties) {
@@ -52,6 +59,8 @@ public class ChatActions {
                 searchOperations)
                 .withHint(TryHyDE.usingConversationContext());
         this.spotifyService = spotifyService;
+        this.youTubeService = youTubeService;
+        this.youTubePendingPlayback = youTubePendingPlayback;
         this.memoryProjector = memoryProjector;
         this.properties = properties;
         this.eventPublisher = eventPublisher;
@@ -91,6 +100,9 @@ public class ChatActions {
         List<Object> tools = new LinkedList<>();
         if (user.isSpotifyLinked()) {
             tools.add(new SpotifyTools(user, spotifyService));
+        }
+        if (youTubeService.isConfigured()) {
+            tools.add(new YouTubeTools(user, youTubeService, youTubePendingPlayback));
         }
         var userPersonaSnapshot = memoryProjector.projectUserPersonaSnapshot(
                 user.getId(),

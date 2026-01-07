@@ -13,6 +13,8 @@ import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.user.ImpromptuUserService;
 import com.embabel.impromptu.vaadin.components.*;
+import com.embabel.impromptu.youtube.YouTubePendingPlayback;
+import com.embabel.impromptu.youtube.YouTubeService;
 import com.embabel.web.vaadin.components.EntityCard;
 import com.embabel.web.vaadin.components.PropositionsPanel;
 import com.vaadin.flow.component.Key;
@@ -53,6 +55,8 @@ public class VaadinChatView extends VerticalLayout {
     private final ImpromptuUserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private final NamedEntityDataRepository entityRepository;
+    private final YouTubeService youTubeService;
+    private final YouTubePendingPlayback youTubePendingPlayback;
     private final String persona;
 
     private VerticalLayout messagesLayout;
@@ -60,6 +64,7 @@ public class VaadinChatView extends VerticalLayout {
     private TextField inputField;
     private Button sendButton;
     private VoiceControl voiceControl;
+    private YouTubePlayerPanel youTubePlayerPanel;
 
     public VaadinChatView(
             Chatbot chatbot,
@@ -69,6 +74,8 @@ public class VaadinChatView extends VerticalLayout {
             NamedEntityDataRepository entityRepository,
             ImpromptuUserService userService,
             SpotifyService spotifyService,
+            YouTubeService youTubeService,
+            YouTubePendingPlayback youTubePendingPlayback,
             ApplicationEventPublisher eventPublisher,
             @Value("${database.datasources.neo.host:localhost}") String neo4jHost,
             @Value("${database.datasources.neo.port:7687}") int neo4jPort,
@@ -79,6 +86,8 @@ public class VaadinChatView extends VerticalLayout {
         this.userService = userService;
         this.eventPublisher = eventPublisher;
         this.entityRepository = entityRepository;
+        this.youTubeService = youTubeService;
+        this.youTubePendingPlayback = youTubePendingPlayback;
         this.persona = properties.voice() != null ? properties.voice().persona() : "Assistant";
 
         setSizeFull();
@@ -126,6 +135,12 @@ public class VaadinChatView extends VerticalLayout {
         // Spotify player (only if linked)
         if (spotifyService.isLinked(user)) {
             add(new SpotifyPlayerPanel(spotifyService, user));
+        }
+
+        // YouTube player (always available if configured)
+        if (youTubeService.isConfigured()) {
+            youTubePlayerPanel = new YouTubePlayerPanel(youTubeService);
+            add(youTubePlayerPanel);
         }
 
         // Footer
@@ -237,6 +252,9 @@ public class VaadinChatView extends VerticalLayout {
                     sendButton.setEnabled(true);
                     inputField.focus();
 
+                    // Check for pending YouTube playback
+                    checkPendingYouTubePlayback();
+
                     // Refresh propositions after a delay
                     propositionsPanel.scheduleRefresh(ui, 2000);
                 });
@@ -271,6 +289,20 @@ public class VaadinChatView extends VerticalLayout {
 
     private void scrollToBottom() {
         messagesLayout.getElement().executeJs("this.scrollTop = this.scrollHeight");
+    }
+
+    /**
+     * Check for pending YouTube playback requests from LLM tools.
+     */
+    private void checkPendingYouTubePlayback() {
+        if (youTubePlayerPanel == null) return;
+
+        var user = userService.getAuthenticatedUser();
+        var video = youTubePendingPlayback.consumePendingVideo(user.getId());
+        if (video != null) {
+            logger.info("Loading pending YouTube video: {} - {}", video.videoId(), video.title());
+            youTubePlayerPanel.loadVideo(video.videoId(), video.title(), video.channelTitle());
+        }
     }
 
     /**
