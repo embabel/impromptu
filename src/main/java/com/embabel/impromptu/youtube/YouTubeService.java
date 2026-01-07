@@ -55,6 +55,7 @@ public class YouTubeService {
         String url = YOUTUBE_API_BASE + "/search"
                 + "?part=snippet"
                 + "&type=video"
+                + "&videoEmbeddable=true"
                 + "&maxResults=" + maxResults
                 + "&q=" + URLEncoder.encode(query, StandardCharsets.UTF_8)
                 + "&key=" + apiKey;

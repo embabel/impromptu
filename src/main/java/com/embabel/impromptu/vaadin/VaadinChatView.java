@@ -6,6 +6,7 @@ import com.embabel.agent.api.channel.OutputChannelEvent;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.chat.*;
+import com.embabel.common.util.StringTrimmingUtilsKt;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
@@ -348,7 +349,8 @@ public class VaadinChatView extends VerticalLayout {
                 var msg = msgEvent.getMessage();
                 logger.info("MessageOutputChannelEvent received, message type: {}", msg.getClass().getSimpleName());
                 if (msg instanceof AssistantMessage) {
-                    logger.info("Queueing AssistantMessage: {}", msg.getContent().substring(0, Math.min(50, msg.getContent().length())));
+                    logger.info("Queueing AssistantMessage: {}",
+                            StringTrimmingUtilsKt.trim(msg.getContent(), 80, 3, "..."));
                     queue.offer(msg);
                 }
             }

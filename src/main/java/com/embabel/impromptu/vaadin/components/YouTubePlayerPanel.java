@@ -1,12 +1,11 @@
 package com.embabel.impromptu.vaadin.components;
 
 import com.embabel.impromptu.youtube.YouTubeService;
-import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.ClientCallable;
-import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -15,70 +14,50 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * YouTube player panel using IFrame Player API.
- * Premium subscribers see no ads (detected via cookies).
+ * Minimal YouTube panel that opens videos in a new tab.
+ * Shows current video info with a link to open on YouTube.
+ * This avoids embedding restrictions and preserves YouTube Premium benefits.
  */
-public class YouTubePlayerPanel extends VerticalLayout {
+public class YouTubePlayerPanel extends HorizontalLayout {
 
     private static final Logger logger = LoggerFactory.getLogger(YouTubePlayerPanel.class);
 
-    private final YouTubeService youTubeService;
-    private final String playerId;
-
-    private final Div playerContainer;
+    private final Image thumbnail;
     private final Span titleLabel;
     private final Span channelLabel;
-    private final Button playPauseButton;
-    private final Div noVideoMessage;
-    private final HorizontalLayout controlsLayout;
+    private final Button openButton;
+    private final Anchor youtubeLink;
 
     private String currentVideoId;
     private String currentTitle;
-    private boolean isPlaying = false;
 
     public YouTubePlayerPanel(YouTubeService youTubeService) {
-        this.youTubeService = youTubeService;
-        this.playerId = "yt-player-" + System.currentTimeMillis();
-
+        setWidthFull();
         setPadding(true);
         setSpacing(true);
-        setWidthFull();
+        setAlignItems(Alignment.CENTER);
+        setVisible(false); // Hidden until a video is loaded
         getStyle()
                 .set("background", "var(--lumo-contrast-5pct)")
                 .set("border-radius", "var(--lumo-border-radius-l)");
 
-        // Header
-        var header = new HorizontalLayout();
-        header.setWidthFull();
-        header.setJustifyContentMode(JustifyContentMode.BETWEEN);
-        header.setAlignItems(Alignment.CENTER);
-
-        var title = new Span("YouTube");
-        title.getStyle()
+        // YouTube brand
+        var brandLabel = new Span("YouTube");
+        brandLabel.getStyle()
                 .set("font-weight", "bold")
-                .set("color", "#FF0000"); // YouTube red
+                .set("color", "#FF0000")
+                .set("min-width", "60px");
 
-        header.add(title);
-        add(header);
-
-        // No video message
-        noVideoMessage = new Div();
-        noVideoMessage.setText("No video loaded. Ask me to play something on YouTube!");
-        noVideoMessage.getStyle()
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("font-size", "var(--lumo-font-size-s)")
-                .set("padding", "var(--lumo-space-m) 0");
-
-        // Player container (will hold the iframe)
-        playerContainer = new Div();
-        playerContainer.setId(playerId);
-        playerContainer.setWidthFull();
-        playerContainer.getStyle()
-                .set("aspect-ratio", "16/9")
-                .set("background", "#000")
-                .set("border-radius", "var(--lumo-border-radius-m)")
-                .set("overflow", "hidden");
-        playerContainer.setVisible(false);
+        // Thumbnail
+        thumbnail = new Image();
+        thumbnail.setWidth("80px");
+        thumbnail.setHeight("45px");
+        thumbnail.getStyle()
+                .set("border-radius", "var(--lumo-border-radius-s)")
+                .set("object-fit", "cover")
+                .set("cursor", "pointer");
+        thumbnail.addClickListener(e -> openInNewTab());
+        thumbnail.setVisible(false);
 
         // Video info
         var infoLayout = new VerticalLayout();
@@ -91,7 +70,8 @@ public class YouTubePlayerPanel extends VerticalLayout {
                 .set("font-size", "var(--lumo-font-size-s)")
                 .set("white-space", "nowrap")
                 .set("overflow", "hidden")
-                .set("text-overflow", "ellipsis");
+                .set("text-overflow", "ellipsis")
+                .set("max-width", "300px");
 
         channelLabel = new Span();
         channelLabel.getStyle()
@@ -100,208 +80,87 @@ public class YouTubePlayerPanel extends VerticalLayout {
 
         infoLayout.add(titleLabel, channelLabel);
 
-        // Controls
-        controlsLayout = new HorizontalLayout();
-        controlsLayout.setSpacing(true);
-        controlsLayout.setAlignItems(Alignment.CENTER);
-        controlsLayout.setVisible(false);
+        // Hidden anchor for link (we'll use button click instead)
+        youtubeLink = new Anchor();
+        youtubeLink.setTarget("_blank");
+        youtubeLink.getStyle().set("display", "none");
 
-        playPauseButton = new Button(VaadinIcon.PLAY.create());
-        playPauseButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        playPauseButton.addClickListener(e -> togglePlayPause());
+        // Open button
+        openButton = new Button("Watch", VaadinIcon.EXTERNAL_LINK.create());
+        openButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+        openButton.addClickListener(e -> openInNewTab());
+        openButton.getStyle().set("margin-left", "auto");
 
-        var stopButton = new Button(VaadinIcon.STOP.create());
-        stopButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        stopButton.addClickListener(e -> stop());
-
-        controlsLayout.add(playPauseButton, stopButton, infoLayout);
-
-        add(noVideoMessage, playerContainer, controlsLayout);
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        // Initialize YouTube IFrame API
-        initYouTubeApi();
-    }
-
-    private void initYouTubeApi() {
-        getElement().executeJs("""
-            // Load YouTube IFrame API if not already loaded
-            if (!window.YT) {
-                var tag = document.createElement('script');
-                tag.src = 'https://www.youtube.com/iframe_api';
-                var firstScriptTag = document.getElementsByTagName('script')[0];
-                firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-            }
-
-            // Store player reference on window
-            window.ytPlayers = window.ytPlayers || {};
-            """);
+        add(brandLabel, thumbnail, infoLayout, youtubeLink, openButton);
+        setFlexGrow(1, infoLayout);
     }
 
     /**
-     * Load and play a video by ID.
+     * Load a video - shows info and opens in new tab.
      */
     public void loadVideo(String videoId, String title, String channelTitle) {
+        loadVideo(videoId, title, channelTitle, null);
+    }
+
+    /**
+     * Load a video with optional thumbnail.
+     */
+    public void loadVideo(String videoId, String title, String channelTitle, String thumbnailUrl) {
         this.currentVideoId = videoId;
         this.currentTitle = title;
-
-        noVideoMessage.setVisible(false);
-        playerContainer.setVisible(true);
-        controlsLayout.setVisible(true);
 
         titleLabel.setText(title);
         channelLabel.setText(channelTitle);
 
-        // Create or update the YouTube player
-        getElement().executeJs("""
-            var containerId = $0;
-            var videoId = $1;
-            var component = this;
+        String url = "https://www.youtube.com/watch?v=" + videoId;
+        youtubeLink.setHref(url);
 
-            function createPlayer() {
-                // Clear existing content
-                var container = document.getElementById(containerId);
-                if (!container) return;
-                container.innerHTML = '';
-
-                // Create player
-                window.ytPlayers[containerId] = new YT.Player(containerId, {
-                    videoId: videoId,
-                    playerVars: {
-                        'autoplay': 1,
-                        'modestbranding': 1,
-                        'rel': 0,
-                        'fs': 1
-                    },
-                    events: {
-                        'onStateChange': function(event) {
-                            // -1: unstarted, 0: ended, 1: playing, 2: paused, 3: buffering
-                            component.$server.onPlayerStateChange(event.data);
-                        },
-                        'onReady': function(event) {
-                            event.target.playVideo();
-                        }
-                    }
-                });
-            }
-
-            // Wait for API to be ready
-            if (window.YT && window.YT.Player) {
-                createPlayer();
-            } else {
-                window.onYouTubeIframeAPIReady = function() {
-                    createPlayer();
-                };
-            }
-            """, playerId, videoId);
-
-        isPlaying = true;
-        updatePlayPauseButton();
-        logger.info("Loading YouTube video: {} - {}", videoId, title);
-    }
-
-    @ClientCallable
-    public void onPlayerStateChange(int state) {
-        // -1: unstarted, 0: ended, 1: playing, 2: paused, 3: buffering
-        isPlaying = (state == 1 || state == 3);
-        getUI().ifPresent(ui -> ui.access(this::updatePlayPauseButton));
-    }
-
-    private void togglePlayPause() {
-        if (currentVideoId == null) return;
-
-        getElement().executeJs("""
-            var player = window.ytPlayers[$0];
-            if (player && player.getPlayerState) {
-                var state = player.getPlayerState();
-                if (state === 1) {
-                    player.pauseVideo();
-                } else {
-                    player.playVideo();
-                }
-            }
-            """, playerId);
-
-        isPlaying = !isPlaying;
-        updatePlayPauseButton();
-    }
-
-    private void stop() {
-        if (currentVideoId == null) return;
-
-        getElement().executeJs("""
-            var player = window.ytPlayers[$0];
-            if (player && player.stopVideo) {
-                player.stopVideo();
-            }
-            """, playerId);
-
-        isPlaying = false;
-        updatePlayPauseButton();
-    }
-
-    /**
-     * Play the video.
-     */
-    public void play() {
-        if (currentVideoId == null) return;
-
-        getElement().executeJs("""
-            var player = window.ytPlayers[$0];
-            if (player && player.playVideo) {
-                player.playVideo();
-            }
-            """, playerId);
-
-        isPlaying = true;
-        updatePlayPauseButton();
-    }
-
-    /**
-     * Pause the video.
-     */
-    public void pause() {
-        if (currentVideoId == null) return;
-
-        getElement().executeJs("""
-            var player = window.ytPlayers[$0];
-            if (player && player.pauseVideo) {
-                player.pauseVideo();
-            }
-            """, playerId);
-
-        isPlaying = false;
-        updatePlayPauseButton();
-    }
-
-    private void updatePlayPauseButton() {
-        if (isPlaying) {
-            playPauseButton.setIcon(VaadinIcon.PAUSE.create());
+        if (thumbnailUrl != null && !thumbnailUrl.isEmpty()) {
+            thumbnail.setSrc(thumbnailUrl);
+            thumbnail.setVisible(true);
         } else {
-            playPauseButton.setIcon(VaadinIcon.PLAY.create());
+            // Use YouTube's default thumbnail
+            thumbnail.setSrc("https://img.youtube.com/vi/" + videoId + "/mqdefault.jpg");
+            thumbnail.setVisible(true);
+        }
+
+        setVisible(true);
+
+        // Auto-open in new tab
+        openInNewTab();
+
+        logger.info("YouTube video ready: {} - {}", videoId, title);
+    }
+
+    private void openInNewTab() {
+        if (currentVideoId != null) {
+            // Use regular watch URL (embed has restrictions)
+            // User can click fullscreen on video for clean viewing
+            String url = "https://www.youtube.com/watch?v=" + currentVideoId + "&autoplay=1";
+            // Open as popup window sized to 60% of screen
+            // Using a named window so subsequent videos reuse the same popup
+            UI.getCurrent().getPage().executeJs("""
+                    var w = Math.round(screen.width * 0.6);
+                    var h = Math.round(screen.height * 0.6);
+                    var left = Math.round((screen.width - w) / 2);
+                    var top = Math.round((screen.height - h) / 2);
+                    window.open($0, 'youtube_player',
+                        'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top +
+                        ',menubar=no,toolbar=no,location=no,status=no,resizable=yes');
+                    """,
+                    url
+            );
         }
     }
 
-    /**
-     * Get the currently playing video ID.
-     */
     public String getCurrentVideoId() {
         return currentVideoId;
     }
 
-    /**
-     * Get the currently playing video title.
-     */
     public String getCurrentTitle() {
         return currentTitle;
     }
 
-    /**
-     * Check if a video is currently loaded.
-     */
     public boolean hasVideo() {
         return currentVideoId != null;
     }

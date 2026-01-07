@@ -8,7 +8,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -20,8 +19,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Spotify Connect player panel for controlling playback on remote devices.
- * Shows now playing info, transport controls, and device selector.
+ * Collapsible Spotify Connect player panel for controlling playback.
+ * Starts collapsed, auto-expands when playback is active.
  */
 public class SpotifyPlayerPanel extends VerticalLayout {
 
@@ -30,7 +29,12 @@ public class SpotifyPlayerPanel extends VerticalLayout {
     private final SpotifyService spotifyService;
     private final ImpromptuUser user;
 
-    // UI Components
+    // Header components (always visible)
+    private final Span headerTrackInfo;
+    private final Button expandCollapseButton;
+
+    // Collapsible content
+    private final VerticalLayout contentLayout;
     private final Image albumArt;
     private final Span trackName;
     private final Span artistName;
@@ -38,52 +42,81 @@ public class SpotifyPlayerPanel extends VerticalLayout {
     private final Button playPauseButton;
     private final Button nextButton;
     private final ComboBox<SpotifyDevice> deviceSelector;
-    private final Button refreshButton;
-    private final Div noPlaybackMessage;
-    private final HorizontalLayout playerContent;
 
     private PlaybackState currentState = PlaybackState.inactive();
+    private boolean isExpanded = false;
 
     public SpotifyPlayerPanel(SpotifyService spotifyService, ImpromptuUser user) {
         this.spotifyService = spotifyService;
         this.user = user;
 
         setPadding(true);
-        setSpacing(true);
+        setSpacing(false);
         setWidthFull();
         getStyle()
                 .set("background", "var(--lumo-contrast-5pct)")
                 .set("border-radius", "var(--lumo-border-radius-l)");
 
-        // Header with title and refresh
+        // Header (always visible, clickable to expand/collapse)
         var header = new HorizontalLayout();
         header.setWidthFull();
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
         header.setAlignItems(Alignment.CENTER);
+        header.getStyle().set("cursor", "pointer");
+        header.addClickListener(e -> toggleExpanded());
 
-        var title = new Span("Spotify");
-        title.getStyle()
+        var titleRow = new HorizontalLayout();
+        titleRow.setAlignItems(Alignment.CENTER);
+        titleRow.setSpacing(true);
+
+        var brandLabel = new Span("Spotify");
+        brandLabel.getStyle()
                 .set("font-weight", "bold")
                 .set("color", "#1DB954"); // Spotify green
 
-        refreshButton = new Button(VaadinIcon.REFRESH.create());
+        headerTrackInfo = new Span();
+        headerTrackInfo.getStyle()
+                .set("font-size", "var(--lumo-font-size-s)")
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("max-width", "300px")
+                .set("overflow", "hidden")
+                .set("text-overflow", "ellipsis")
+                .set("white-space", "nowrap");
+
+        titleRow.add(brandLabel, headerTrackInfo);
+
+        var headerButtons = new HorizontalLayout();
+        headerButtons.setSpacing(false);
+        headerButtons.setAlignItems(Alignment.CENTER);
+
+        var refreshButton = new Button(VaadinIcon.REFRESH.create());
         refreshButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        refreshButton.addClickListener(e -> refresh());
+        refreshButton.addClickListener(e -> {
+            e.getSource().getElement().executeJs("event.stopPropagation()");
+            refresh();
+        });
         refreshButton.getElement().setAttribute("title", "Refresh");
 
-        header.add(title, refreshButton);
+        expandCollapseButton = new Button(VaadinIcon.CHEVRON_DOWN.create());
+        expandCollapseButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+        expandCollapseButton.addClickListener(e -> {
+            e.getSource().getElement().executeJs("event.stopPropagation()");
+            toggleExpanded();
+        });
+
+        headerButtons.add(refreshButton, expandCollapseButton);
+        header.add(titleRow, headerButtons);
         add(header);
 
-        // No playback message
-        noPlaybackMessage = new Div();
-        noPlaybackMessage.setText("No active playback. Start playing on any Spotify device to control it here.");
-        noPlaybackMessage.getStyle()
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("font-size", "var(--lumo-font-size-s)")
-                .set("padding", "var(--lumo-space-m) 0");
+        // Collapsible content
+        contentLayout = new VerticalLayout();
+        contentLayout.setPadding(false);
+        contentLayout.setSpacing(true);
+        contentLayout.setWidthFull();
+        contentLayout.setVisible(false); // Start collapsed
 
-        // Player content (hidden when no playback)
-        playerContent = new HorizontalLayout();
+        // Player content row
+        var playerContent = new HorizontalLayout();
         playerContent.setWidthFull();
         playerContent.setSpacing(true);
         playerContent.setAlignItems(Alignment.CENTER);
@@ -108,7 +141,7 @@ public class SpotifyPlayerPanel extends VerticalLayout {
                 .set("white-space", "nowrap")
                 .set("overflow", "hidden")
                 .set("text-overflow", "ellipsis")
-                .set("max-width", "150px");
+                .set("max-width", "200px");
 
         artistName = new Span();
         artistName.getStyle()
@@ -117,7 +150,7 @@ public class SpotifyPlayerPanel extends VerticalLayout {
                 .set("white-space", "nowrap")
                 .set("overflow", "hidden")
                 .set("text-overflow", "ellipsis")
-                .set("max-width", "150px");
+                .set("max-width", "200px");
 
         trackInfo.add(trackName, artistName);
 
@@ -153,13 +186,31 @@ public class SpotifyPlayerPanel extends VerticalLayout {
             }
         });
 
-        add(noPlaybackMessage, playerContent, deviceSelector);
-
-        // Initial state
-        playerContent.setVisible(false);
+        contentLayout.add(playerContent, deviceSelector);
+        add(contentLayout);
 
         // Initial refresh
         refresh();
+    }
+
+    private void toggleExpanded() {
+        isExpanded = !isExpanded;
+        contentLayout.setVisible(isExpanded);
+        expandCollapseButton.setIcon(isExpanded
+                ? VaadinIcon.CHEVRON_UP.create()
+                : VaadinIcon.CHEVRON_DOWN.create());
+    }
+
+    public void expand() {
+        if (!isExpanded) {
+            toggleExpanded();
+        }
+    }
+
+    public void collapse() {
+        if (isExpanded) {
+            toggleExpanded();
+        }
     }
 
     /**
@@ -180,9 +231,7 @@ public class SpotifyPlayerPanel extends VerticalLayout {
                 });
             } catch (Exception e) {
                 logger.warn("Failed to refresh Spotify state: {}", e.getMessage());
-                ui.access(() -> {
-                    updatePlaybackState(PlaybackState.inactive());
-                });
+                ui.access(() -> updatePlaybackState(PlaybackState.inactive()));
             }
         }).start();
     }
@@ -191,13 +240,16 @@ public class SpotifyPlayerPanel extends VerticalLayout {
         this.currentState = state;
 
         if (!state.isActive() || state.trackName() == null) {
-            noPlaybackMessage.setVisible(true);
-            playerContent.setVisible(false);
+            headerTrackInfo.setText("");
+            trackName.setText("");
+            artistName.setText("");
+            albumArt.setVisible(false);
+            playPauseButton.setIcon(VaadinIcon.PLAY.create());
             return;
         }
 
-        noPlaybackMessage.setVisible(false);
-        playerContent.setVisible(true);
+        // Update header with current track
+        headerTrackInfo.setText("• " + state.trackName());
 
         trackName.setText(state.trackName());
         artistName.setText(state.artistName() != null ? state.artistName() : "");
@@ -210,17 +262,19 @@ public class SpotifyPlayerPanel extends VerticalLayout {
         }
 
         // Update play/pause button
+        playPauseButton.setIcon(state.isPlaying()
+                ? VaadinIcon.PAUSE.create()
+                : VaadinIcon.PLAY.create());
+
+        // Auto-expand when playing
         if (state.isPlaying()) {
-            playPauseButton.setIcon(VaadinIcon.PAUSE.create());
-        } else {
-            playPauseButton.setIcon(VaadinIcon.PLAY.create());
+            expand();
         }
     }
 
     private void updateDevices(List<SpotifyDevice> devices, String activeDeviceId) {
         deviceSelector.setItems(devices);
 
-        // Select active device
         devices.stream()
                 .filter(d -> d.id().equals(activeDeviceId))
                 .findFirst()
@@ -236,7 +290,6 @@ public class SpotifyPlayerPanel extends VerticalLayout {
                 } else {
                     spotifyService.play(user);
                 }
-                // Brief delay then refresh
                 Thread.sleep(300);
                 if (ui != null) {
                     ui.access(this::refresh);
