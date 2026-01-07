@@ -5,6 +5,7 @@ import com.embabel.agent.api.annotation.Condition;
 import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.OperationContext;
+import com.embabel.agent.api.common.ToolObject;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
@@ -26,7 +27,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -97,12 +97,12 @@ public class ChatActions {
             ConversationAnalysisRequestEvent.LastAnalysis lastAnalysis,
             ActionContext context) {
         logger.info("Conversation has {} messages", conversation.getMessages().size());
-        List<Object> tools = new LinkedList<>();
+        var tools = new LinkedList<ToolObject>();
         if (user.isSpotifyLinked()) {
-            tools.add(new SpotifyTools(user, spotifyService));
+            tools.add(new ToolObject(new SpotifyTools(user, spotifyService)).withPrefix("spotify"));
         }
         if (youTubeService.isConfigured()) {
-            tools.add(new YouTubeTools(user, youTubeService, youTubePendingPlayback));
+            tools.add(new ToolObject(new YouTubeTools(user, youTubeService, youTubePendingPlayback)).withPrefix("youtube"));
         }
         var userPersonaSnapshot = memoryProjector.projectUserPersonaSnapshot(
                 user.getId(),
