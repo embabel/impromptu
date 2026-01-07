@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Actions for Spotify playlist management.
- * These actions are available to the chatbot when the user has linked their Spotify account.
+ * LLM tools for Spotify integration.
+ * These tools are available to the chatbot when the user has linked their Spotify account.
  *
  */
 public record SpotifyTools(

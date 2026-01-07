@@ -1,6 +1,7 @@
 package com.embabel.impromptu.chat;
 
 import com.embabel.agent.api.annotation.Action;
+import com.embabel.agent.api.annotation.Condition;
 import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.OperationContext;
@@ -58,9 +59,11 @@ public class ChatActions {
 
     /**
      * Bind user to AgentProcess. Will run once at the start of the process.
+     * Also record that there has been a null last analysis
      */
     @Action
     ImpromptuUser bindUser(OperationContext context) {
+        context.addObject(ConversationAnalysisRequestEvent.LastAnalysis.NONE);
         var forUser = context.getProcessContext().getProcessOptions().getIdentities().getForUser();
         if (forUser instanceof ImpromptuUser iu) {
             return iu;
@@ -72,6 +75,8 @@ public class ChatActions {
 
     /**
      * Invoked for each user message in the conversation.
+     * Returns AnalyzedAt if it requests proposition analysis.
+     * This will record the window
      */
     @Action(
             canRerun = true,
@@ -80,6 +85,7 @@ public class ChatActions {
     void respond(
             @NonNull Conversation conversation,
             ImpromptuUser user,
+            ConversationAnalysisRequestEvent.LastAnalysis lastAnalysis,
             ActionContext context) {
         logger.info("Conversation has {} messages", conversation.getMessages().size());
         List<Object> tools = new LinkedList<>();
@@ -103,16 +109,31 @@ public class ChatActions {
                         "objective", properties.objective()
                 ));
         context.sendMessage(conversation.addMessage(assistantMessage));
+    }
 
-        // Publish event for async proposition extraction at configured interval
+    @Condition
+    boolean shouldAnalyze(Conversation conversation, ConversationAnalysisRequestEvent.LastAnalysis lastAnalysis) {
         var triggerInterval = properties.extraction().triggerInterval();
-        if (triggerInterval > 0 && conversation.getMessages().size() % triggerInterval == 0) {
-            eventPublisher.publishEvent(
-                    new ConversationAnalysisRequestEvent(
-                            this,
-                            user,
-                            conversation));
+        if (triggerInterval > 0) {
+            int lastAnalyzedAt = lastAnalysis.messageCount() != null ? lastAnalysis.messageCount() : 0;
+            int currentCount = conversation.getMessages().size();
+            return currentCount - lastAnalyzedAt >= triggerInterval;
         }
+        return false;
+    }
+
+    @Action(
+            canRerun = true,
+            pre = "shouldAnalyze"
+    )
+    ConversationAnalysisRequestEvent.LastAnalysis analyze(Conversation conversation, ImpromptuUser user, ConversationAnalysisRequestEvent.LastAnalysis lastAnalysis) {
+        eventPublisher.publishEvent(
+                new ConversationAnalysisRequestEvent(
+                        this,
+                        user,
+                        conversation,
+                        lastAnalysis));
+        return new ConversationAnalysisRequestEvent.LastAnalysis(conversation.getMessages().size());
     }
 
 }

@@ -262,7 +262,8 @@ public class VaadinChatView extends VerticalLayout {
         var user = userService.getAuthenticatedUser();
         var conversation = sessionData.chatSession().getConversation();
         logger.info("Publishing ConversationAnalysisRequestEvent for user: {}", user.getDisplayName());
-        eventPublisher.publishEvent(new ConversationAnalysisRequestEvent(this, user, conversation));
+        eventPublisher.publishEvent(new ConversationAnalysisRequestEvent(
+                this, user, conversation, ConversationAnalysisRequestEvent.LastAnalysis.NONE));
 
         // Schedule a refresh of propositions after analysis
         getUI().ifPresent(ui -> propositionsPanel.scheduleRefresh(ui, 2000));

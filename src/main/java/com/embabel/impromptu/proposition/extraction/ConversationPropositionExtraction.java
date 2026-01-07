@@ -88,8 +88,8 @@ public class ConversationPropositionExtraction {
                 return;
             }
 
-            // Build context for extraction: combine user question and assistant response
-            var extractionText = buildExtractionText(event.conversation);
+            // Build context for extraction using window based on last analysis
+            var extractionText = buildExtractionText(event.conversation, event.lastAnalysis);
 
             var chunk = Chunk.create(
                     extractionText,
@@ -156,9 +156,26 @@ public class ConversationPropositionExtraction {
     }
 
 
-    private String buildExtractionText(Conversation conversation) {
-        var windowSize = properties.extraction().windowSize();
-        return new WindowingConversationFormatter(SimpleMessageFormatter.INSTANCE, windowSize)
-                .format(conversation);
+    /**
+     * Build extraction text from the conversation using a window based on last analysis.
+     * If there was a prior analysis, start from (lastMessageCount - overlapSize) to maintain context.
+     * Otherwise, use the configured window size from the end.
+     */
+    private String buildExtractionText(
+            Conversation conversation,
+            ConversationAnalysisRequestEvent.LastAnalysis lastAnalysis) {
+        var extraction = properties.extraction();
+        int startIndex = lastAnalysis.messageCount() != null
+                ? Math.max(0, lastAnalysis.messageCount() - extraction.overlapSize())
+                : 0;
+
+        logger.debug("Extracting from index {} (total: {})",
+                startIndex, conversation.getMessages().size());
+
+        return new WindowingConversationFormatter(
+                SimpleMessageFormatter.INSTANCE,
+                extraction.windowSize(),
+                startIndex
+        ).format(conversation);
     }
 }
