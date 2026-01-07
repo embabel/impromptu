@@ -16,19 +16,11 @@
 package com.embabel.impromptu.domain;
 
 import com.embabel.agent.core.CreationPermitted;
-import org.drivine.annotation.NodeFragment;
-import org.drivine.annotation.NodeId;
+import com.embabel.agent.rag.model.NamedEntity;
 
 /**
  * Represents a musical epoch/period (e.g., "Baroque", "Romantic", "20th Century").
  */
-@NodeFragment(labels = {"Epoch", "Entity", "Reference"})
 @CreationPermitted(false)
-public record Epoch(
-        @NodeId String id,
-        String name
-) {
-    public Epoch(String name) {
-        this(name.toLowerCase().replace(" ", "-"), name);
-    }
+public interface Epoch extends NamedEntity {
 }

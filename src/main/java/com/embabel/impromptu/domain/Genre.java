@@ -15,18 +15,12 @@
  */
 package com.embabel.impromptu.domain;
 
-import org.drivine.annotation.NodeFragment;
-import org.drivine.annotation.NodeId;
+import com.embabel.agent.core.CreationPermitted;
+import com.embabel.agent.rag.model.NamedEntity;
 
 /**
  * Represents a musical genre (e.g., "Orchestral", "Chamber", "Keyboard", "Stage").
  */
-@NodeFragment(labels = {"Entity", "Genre", "Reference"})
-public record Genre(
-        @NodeId String id,
-        String name
-) {
-    public Genre(String name) {
-        this(name.toLowerCase().replace(" ", "-"), name);
-    }
+@CreationPermitted(false)
+public interface Genre extends NamedEntity {
 }

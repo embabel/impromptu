@@ -17,39 +17,21 @@ package com.embabel.impromptu.domain;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
-import org.drivine.annotation.NodeFragment;
-import org.drivine.annotation.NodeId;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a composer in the graph database.
  * Linked to Epoch via OF_EPOCH relationship and to Works via COMPOSED relationship.
  */
-@NodeFragment(labels = {"Entity", "Composer", "Reference"})
 @CreationPermitted(false)
-public record Composer(
-        @NodeId String id,
-        String name,
-        String completeName,
-        @Nullable String birth,
-        @Nullable String death,
-        boolean popular,
-        boolean recommended
-) implements NamedEntity {
+public interface Composer extends NamedEntity {
+    String getCompleteName();
 
-    @Override
-    public @NonNull String getId() {
-        return id;
-    }
+    @Nullable String getBirth();
 
-    @Override
-    public @NonNull String getName() {
-        return name;
-    }
+    @Nullable String getDeath();
 
-    @Override
-    public @NonNull String getDescription() {
-        return "Composer: " + completeName;
-    }
+    boolean isPopular();
+
+    boolean isRecommended();
 }

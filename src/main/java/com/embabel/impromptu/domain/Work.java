@@ -17,38 +17,21 @@ package com.embabel.impromptu.domain;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
-import org.drivine.annotation.NodeFragment;
-import org.drivine.annotation.NodeId;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a musical work in the graph database.
  * Linked to Composer via COMPOSED relationship and to Genre via OF_GENRE relationship.
  */
-@NodeFragment(labels = {"Entity", "Work", "Reference"})
 @CreationPermitted(false)
-public record Work(
-        @NodeId String id,
-        String title,
-        @Nullable String subtitle,
-        @Nullable String searchTerms,
-        boolean popular,
-        boolean recommended
-) implements NamedEntity {
+public interface Work extends NamedEntity {
+    String getTitle();
 
-    @Override
-    public @NonNull String getId() {
-        return id;
-    }
+    @Nullable String getSubtitle();
 
-    @Override
-    public @NonNull String getName() {
-        return title;
-    }
+    @Nullable String getSearchTerms();
 
-    @Override
-    public @NonNull String getDescription() {
-        return "Work: " + title + (subtitle != null && !subtitle.isBlank() ? " - " + subtitle : "");
-    }
+    boolean isPopular();
+
+    boolean isRecommended();
 }
