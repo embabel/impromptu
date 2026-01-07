@@ -255,6 +255,191 @@ public class SpotifyService {
                 .toList();
     }
 
+    /**
+     * Search for tracks with detailed info for classical music matching.
+     */
+    @SuppressWarnings("unchecked")
+    public List<SpotifyTrackDetails> searchTracksDetailed(ImpromptuUser user, String query, int limit) {
+        String token = getValidAccessToken(user);
+
+        String url = SPOTIFY_API_BASE + "/search?type=track&limit=" + limit + "&q=" +
+                URLEncoder.encode(query, StandardCharsets.UTF_8);
+
+        Map<String, Object> response = restClient.get()
+                .uri(url)
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+
+        Map<String, Object> tracks = (Map<String, Object>) response.get("tracks");
+        List<Map<String, Object>> items = (List<Map<String, Object>>) tracks.get("items");
+
+        return items.stream()
+                .map(item -> {
+                    List<Map<String, Object>> artists = (List<Map<String, Object>>) item.get("artists");
+                    String primaryArtist = artists.isEmpty() ? "Unknown" : (String) artists.get(0).get("name");
+                    List<String> allArtists = artists.stream()
+                            .map(a -> (String) a.get("name"))
+                            .toList();
+
+                    Map<String, Object> album = (Map<String, Object>) item.get("album");
+                    String albumName = album != null ? (String) album.get("name") : "";
+                    String albumId = album != null ? (String) album.get("id") : null;
+                    int trackNumber = item.get("track_number") instanceof Integer t ? t : 1;
+                    int discNumber = item.get("disc_number") instanceof Integer d ? d : 1;
+
+                    return new SpotifyTrackDetails(
+                            (String) item.get("uri"),
+                            (String) item.get("name"),
+                            primaryArtist,
+                            allArtists,
+                            albumName,
+                            albumId,
+                            trackNumber,
+                            discNumber
+                    );
+                })
+                .toList();
+    }
+
+    /**
+     * Get all tracks from an album.
+     */
+    @SuppressWarnings("unchecked")
+    public List<AlbumTrack> getAlbumTracks(ImpromptuUser user, String albumId) {
+        String token = getValidAccessToken(user);
+
+        String url = SPOTIFY_API_BASE + "/albums/" + albumId + "/tracks?limit=50";
+
+        Map<String, Object> response = restClient.get()
+                .uri(url)
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+
+        List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
+
+        return items.stream()
+                .map(item -> {
+                    List<Map<String, Object>> artists = (List<Map<String, Object>>) item.get("artists");
+                    String primaryArtist = artists.isEmpty() ? "Unknown" : (String) artists.get(0).get("name");
+                    int trackNumber = item.get("track_number") instanceof Integer t ? t : 1;
+                    int discNumber = item.get("disc_number") instanceof Integer d ? d : 1;
+
+                    return new AlbumTrack(
+                            (String) item.get("uri"),
+                            (String) item.get("name"),
+                            primaryArtist,
+                            trackNumber,
+                            discNumber
+                    );
+                })
+                .sorted((a, b) -> {
+                    int discCmp = Integer.compare(a.discNumber(), b.discNumber());
+                    return discCmp != 0 ? discCmp : Integer.compare(a.trackNumber(), b.trackNumber());
+                })
+                .toList();
+    }
+
+    /**
+     * Find all movement tracks for a classical work starting from a given track.
+     * Looks for patterns like "I.", "II.", "1.", "2.", "Allegro", "Adagio" etc.
+     */
+    public List<AlbumTrack> findWorkMovements(List<AlbumTrack> albumTracks, AlbumTrack startTrack, String workQuery) {
+        List<AlbumTrack> movements = new java.util.ArrayList<>();
+        movements.add(startTrack);
+
+        int startIdx = -1;
+        for (int i = 0; i < albumTracks.size(); i++) {
+            if (albumTracks.get(i).uri().equals(startTrack.uri())) {
+                startIdx = i;
+                break;
+            }
+        }
+
+        if (startIdx < 0) return movements;
+
+        // Extract work identifier from the first track (e.g., "Sonata No. 1", "Op. 78")
+        String workPattern = extractWorkPattern(startTrack.name());
+
+        // Look at subsequent tracks on the same disc
+        for (int i = startIdx + 1; i < albumTracks.size(); i++) {
+            AlbumTrack track = albumTracks.get(i);
+
+            // Stop if we hit a different disc
+            if (track.discNumber() != startTrack.discNumber()) break;
+
+            // Check if this track is a movement of the same work
+            if (isMovementOfSameWork(track.name(), workPattern, startTrack.name())) {
+                movements.add(track);
+            } else {
+                // Stop when we hit a track that doesn't match
+                break;
+            }
+        }
+
+        return movements;
+    }
+
+    /**
+     * Extract a work identifier pattern from a track name.
+     * E.g., "Violin Sonata No. 1 in G major, Op. 78: I. Vivace" -> "Sonata No. 1|Op. 78"
+     */
+    private String extractWorkPattern(String trackName) {
+        var patterns = new java.util.ArrayList<String>();
+
+        // Look for "No. X" pattern
+        var noMatch = java.util.regex.Pattern.compile("No\\.?\\s*(\\d+)", java.util.regex.Pattern.CASE_INSENSITIVE)
+                .matcher(trackName);
+        if (noMatch.find()) {
+            patterns.add("No\\.?\\s*" + noMatch.group(1));
+        }
+
+        // Look for "Op. X" pattern
+        var opMatch = java.util.regex.Pattern.compile("Op\\.?\\s*(\\d+)", java.util.regex.Pattern.CASE_INSENSITIVE)
+                .matcher(trackName);
+        if (opMatch.find()) {
+            patterns.add("Op\\.?\\s*" + opMatch.group(1));
+        }
+
+        // Look for key signature
+        var keyMatch = java.util.regex.Pattern.compile("in\\s+([A-G](?:#|b)?\\s*(?:major|minor|Major|Minor)?)", java.util.regex.Pattern.CASE_INSENSITIVE)
+                .matcher(trackName);
+        if (keyMatch.find()) {
+            patterns.add(java.util.regex.Pattern.quote(keyMatch.group(1)));
+        }
+
+        return String.join("|", patterns);
+    }
+
+    /**
+     * Check if a track name indicates it's a movement of the same work.
+     */
+    private boolean isMovementOfSameWork(String trackName, String workPattern, String firstTrackName) {
+        // Must have movement indicator (Roman or Arabic numeral, or tempo marking)
+        boolean hasMovementIndicator = trackName.matches(".*(?:^|[:\\s])(?:I{1,3}V?|IV|V?I{0,3}|[1-9])\\..*") ||
+                trackName.matches(".*(?:Allegro|Adagio|Andante|Presto|Largo|Moderato|Vivace|Scherzo|Finale|Menuet|Rondo).*");
+
+        if (!hasMovementIndicator) return false;
+
+        // If we have a work pattern, check it matches
+        if (!workPattern.isEmpty()) {
+            return java.util.regex.Pattern.compile(workPattern, java.util.regex.Pattern.CASE_INSENSITIVE)
+                    .matcher(trackName).find();
+        }
+
+        // Fallback: check for shared significant words
+        String[] firstWords = firstTrackName.toLowerCase().split("[^a-z]+");
+        String trackLower = trackName.toLowerCase();
+        int matches = 0;
+        for (String word : firstWords) {
+            if (word.length() > 3 && trackLower.contains(word)) {
+                matches++;
+            }
+        }
+        return matches >= 2;
+    }
+
     // ========== Spotify Connect API Methods ==========
 
     /**
@@ -472,6 +657,75 @@ public class SpotifyService {
     public record SpotifyTrack(String uri, String name, String artist) {}
 
     public record SpotifyDevice(String id, String name, String type, boolean isActive, int volumePercent) {}
+
+    /**
+     * Album track info for movement grouping.
+     */
+    public record AlbumTrack(
+            String uri,
+            String name,
+            String artist,
+            int trackNumber,
+            int discNumber
+    ) {}
+
+    /**
+     * Extended track info for better classical music matching.
+     */
+    public record SpotifyTrackDetails(
+            String uri,
+            String name,
+            String artist,
+            List<String> allArtists,
+            String albumName,
+            String albumId,
+            int trackNumber,
+            int discNumber
+    ) {
+        /**
+         * Score how well this track matches the query terms.
+         * Higher score = better match.
+         */
+        public int scoreMatch(String query) {
+            String queryLower = query.toLowerCase();
+            String[] terms = queryLower.split("\\s+");
+
+            // Build searchable text from all fields
+            String searchable = (name + " " + artist + " " + albumName + " " +
+                    String.join(" ", allArtists)).toLowerCase();
+
+            int score = 0;
+            for (String term : terms) {
+                if (term.length() < 3) continue; // Skip short words like "in", "no"
+                if (searchable.contains(term)) {
+                    score += 10;
+                    // Bonus for exact word match
+                    if (searchable.matches(".*\\b" + java.util.regex.Pattern.quote(term) + "\\b.*")) {
+                        score += 5;
+                    }
+                }
+            }
+
+            // Bonus for composer in artist field (classical convention)
+            String[] composerNames = {"brahms", "beethoven", "mozart", "schumann", "bach", "chopin",
+                    "tchaikovsky", "haydn", "schubert", "mendelssohn", "dvorak", "liszt", "wagner"};
+            for (String composer : composerNames) {
+                if (queryLower.contains(composer) && artist.toLowerCase().contains(composer)) {
+                    score += 20; // Strong signal - composer as "artist"
+                }
+            }
+
+            return score;
+        }
+
+        public AlbumTrack toAlbumTrack() {
+            return new AlbumTrack(uri, name, artist, trackNumber, discNumber);
+        }
+
+        public String displayString() {
+            return name + " by " + artist + " (from " + albumName + ")";
+        }
+    }
 
     public record PlaybackState(
             boolean isActive,
