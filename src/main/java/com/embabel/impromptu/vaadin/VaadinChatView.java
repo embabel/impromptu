@@ -4,7 +4,9 @@ import com.embabel.agent.api.channel.MessageOutputChannelEvent;
 import com.embabel.agent.api.channel.OutputChannel;
 import com.embabel.agent.api.channel.OutputChannelEvent;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
+import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.chat.*;
+import com.embabel.dice.proposition.EntityMention;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.proposition.ConversationAnalysisRequestEvent;
@@ -15,10 +17,12 @@ import com.embabel.impromptu.vaadin.components.ChatHeader;
 import com.embabel.impromptu.vaadin.components.ChatMessageBubble;
 import com.embabel.impromptu.vaadin.components.SpotifyPlayerPanel;
 import com.embabel.impromptu.vaadin.components.VoiceControl;
+import com.embabel.web.vaadin.components.EntityCard;
 import com.embabel.web.vaadin.components.PropositionsPanel;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
@@ -52,6 +56,7 @@ public class VaadinChatView extends VerticalLayout {
     private final Chatbot chatbot;
     private final ImpromptuUserService userService;
     private final ApplicationEventPublisher eventPublisher;
+    private final NamedEntityDataRepository entityRepository;
     private final String persona;
 
     private VerticalLayout messagesLayout;
@@ -65,6 +70,7 @@ public class VaadinChatView extends VerticalLayout {
             ImpromptuProperties properties,
             DrivineStore searchOperations,
             PropositionRepository propositionRepository,
+            NamedEntityDataRepository entityRepository,
             ImpromptuUserService userService,
             SpotifyService spotifyService,
             ApplicationEventPublisher eventPublisher,
@@ -76,6 +82,7 @@ public class VaadinChatView extends VerticalLayout {
         this.chatbot = chatbot;
         this.userService = userService;
         this.eventPublisher = eventPublisher;
+        this.entityRepository = entityRepository;
         this.persona = properties.voice() != null ? properties.voice().persona() : "Assistant";
 
         setSizeFull();
@@ -117,6 +124,7 @@ public class VaadinChatView extends VerticalLayout {
 
         // Propositions panel
         propositionsPanel = new PropositionsPanel(propositionRepository);
+        propositionsPanel.setOnMentionClick(this::showEntityDetail);
         add(propositionsPanel);
 
         // Spotify player (only if linked)
@@ -265,6 +273,38 @@ public class VaadinChatView extends VerticalLayout {
 
     private void scrollToBottom() {
         messagesLayout.getElement().executeJs("this.scrollTop = this.scrollHeight");
+    }
+
+    /**
+     * Show entity detail dialog when a mention is clicked.
+     */
+    private void showEntityDetail(EntityMention mention) {
+        if (mention.getResolvedId() == null) {
+            return;
+        }
+
+        var entity = entityRepository.findEntityById(mention.getResolvedId());
+        if (entity == null) {
+            logger.warn("Entity not found: {}", mention.getResolvedId());
+            com.vaadin.flow.component.notification.Notification.show(
+                    "Entity not found: " + mention.getResolvedId(),
+                    3000,
+                    com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
+            );
+            return;
+        }
+
+        var dialog = new Dialog();
+        dialog.setHeaderTitle(entity.getName());
+        dialog.setWidth("400px");
+
+        var content = new VerticalLayout();
+        content.setPadding(false);
+        content.add(new EntityCard(entity));
+
+        dialog.add(content);
+        dialog.getFooter().add(new Button("Close", e -> dialog.close()));
+        dialog.open();
     }
 
     /**

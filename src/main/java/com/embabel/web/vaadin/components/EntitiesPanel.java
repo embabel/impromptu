@@ -1,8 +1,6 @@
 package com.embabel.web.vaadin.components;
 
-import com.embabel.dice.proposition.EntityMention;
-import com.embabel.dice.proposition.Proposition;
-import com.embabel.dice.proposition.PropositionRepository;
+import com.embabel.agent.rag.model.NamedEntity;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.details.Details;
@@ -14,50 +12,59 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.util.Comparator;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
- * Collapsible panel showing the knowledge base of extracted propositions.
+ * Collapsible panel showing entities.
+ * Generic component that works with any source of NamedEntity.
  */
-public class PropositionsPanel extends Details {
+public class EntitiesPanel extends Details {
 
-    private final PropositionRepository propositionRepository;
-    private final VerticalLayout propositionsContent;
-    private final Span propositionCountSpan;
-    private Consumer<EntityMention> onMentionClick;
+    private final Supplier<List<? extends NamedEntity>> entitySupplier;
+    private final VerticalLayout entitiesContent;
+    private final Span entityCountSpan;
+    private Consumer<NamedEntity> onEntityClick;
 
-    public PropositionsPanel(PropositionRepository propositionRepository) {
-        this.propositionRepository = propositionRepository;
+    /**
+     * Create an entities panel.
+     *
+     * @param title          The panel title
+     * @param entitySupplier Supplier that returns the list of entities to display
+     */
+    public EntitiesPanel(String title, Supplier<List<? extends NamedEntity>> entitySupplier) {
+        this.entitySupplier = entitySupplier;
 
         // Header with count and refresh button
         var headerLayout = new HorizontalLayout();
         headerLayout.setAlignItems(VerticalLayout.Alignment.CENTER);
         headerLayout.setSpacing(true);
 
-        var titleSpan = new Span("Knowledge Base");
+        var titleSpan = new Span(title);
         titleSpan.getStyle()
                 .set("font-weight", "bold")
                 .set("font-size", "var(--lumo-font-size-m)");
 
-        propositionCountSpan = new Span("(0 propositions)");
-        propositionCountSpan.getStyle()
+        entityCountSpan = new Span("(0 entities)");
+        entityCountSpan.getStyle()
                 .set("color", "var(--lumo-secondary-text-color)")
                 .set("font-size", "var(--lumo-font-size-s)");
 
         var refreshButton = new Button(VaadinIcon.REFRESH.create());
         refreshButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        refreshButton.getElement().setAttribute("title", "Refresh propositions");
+        refreshButton.getElement().setAttribute("title", "Refresh entities");
         refreshButton.addClickListener(e -> refresh());
 
-        headerLayout.add(titleSpan, propositionCountSpan, refreshButton);
+        headerLayout.add(titleSpan, entityCountSpan, refreshButton);
 
-        // Content area for propositions
-        propositionsContent = new VerticalLayout();
-        propositionsContent.setPadding(false);
-        propositionsContent.setSpacing(true);
-        propositionsContent.setWidthFull();
+        // Content area for entities
+        entitiesContent = new VerticalLayout();
+        entitiesContent.setPadding(false);
+        entitiesContent.setSpacing(true);
+        entitiesContent.setWidthFull();
 
-        var contentScroller = new Scroller(propositionsContent);
+        var contentScroller = new Scroller(entitiesContent);
         contentScroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
         contentScroller.setHeight("200px");
         contentScroller.setWidthFull();
@@ -81,45 +88,45 @@ public class PropositionsPanel extends Details {
     }
 
     /**
-     * Refresh the propositions list from the repository.
+     * Set the handler for entity clicks.
+     */
+    public void setOnEntityClick(Consumer<NamedEntity> handler) {
+        this.onEntityClick = handler;
+    }
+
+    /**
+     * Refresh the entities list from the supplier.
      */
     public void refresh() {
-        propositionsContent.removeAll();
+        entitiesContent.removeAll();
 
-        var propositions = propositionRepository.findAll();
-        propositionCountSpan.setText("(" + propositions.size() + " propositions)");
+        var entities = entitySupplier.get();
+        entityCountSpan.setText("(" + entities.size() + " entities)");
 
-        if (propositions.isEmpty()) {
-            var emptyMessage = new Span("No propositions extracted yet. Start a conversation to build the knowledge base.");
+        if (entities.isEmpty()) {
+            var emptyMessage = new Span("No entities found.");
             emptyMessage.getStyle()
                     .set("color", "var(--lumo-secondary-text-color)")
                     .set("font-style", "italic")
                     .set("padding", "var(--lumo-space-m)");
-            propositionsContent.add(emptyMessage);
+            entitiesContent.add(emptyMessage);
             return;
         }
 
-        // Sort by created time (newest first)
-        propositions.stream()
-                .sorted(Comparator.comparing(Proposition::getCreated).reversed())
-                .forEach(prop -> {
-                    var card = new PropositionCard(prop);
-                    if (onMentionClick != null) {
-                        card.setOnMentionClick(onMentionClick);
+        // Sort by name
+        entities.stream()
+                .sorted(Comparator.comparing(NamedEntity::getName))
+                .forEach(entity -> {
+                    var card = new EntityCard(entity);
+                    if (onEntityClick != null) {
+                        card.addEntityClickListener(e -> onEntityClick.accept(entity));
                     }
-                    propositionsContent.add(card);
+                    entitiesContent.add(card);
                 });
     }
 
     /**
-     * Set the handler for mention clicks in proposition cards.
-     */
-    public void setOnMentionClick(Consumer<EntityMention> handler) {
-        this.onMentionClick = handler;
-    }
-
-    /**
-     * Schedule a refresh after a delay (for async proposition extraction).
+     * Schedule a refresh after a delay.
      */
     public void scheduleRefresh(com.vaadin.flow.component.UI ui, long delayMs) {
         new Thread(() -> {
