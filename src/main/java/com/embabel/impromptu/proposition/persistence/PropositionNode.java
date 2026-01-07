@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.proposition.graph;
+package com.embabel.impromptu.proposition.persistence;
 
 import com.embabel.dice.proposition.PropositionStatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -39,37 +39,59 @@ public class PropositionNode {
     @NodeId
     private String id;
 
-    /** The context in which this proposition is relevant */
+    /**
+     * The context in which this proposition is relevant
+     */
     private String contextId;
 
-    /** The statement in natural language (e.g., "Jim is an expert in GOAP") */
+    /**
+     * The statement in natural language (e.g., "Jim is an expert in GOAP")
+     */
     private String text;
 
-    /** LLM-generated certainty (0.0-1.0) */
+    /**
+     * LLM-generated certainty (0.0-1.0)
+     */
     private double confidence;
 
-    /** Staleness rate (0.0-1.0). High decay = information becomes stale quickly */
+    /**
+     * Staleness rate (0.0-1.0). High decay = information becomes stale quickly
+     */
     private double decay;
 
-    /** LLM explanation for why this was extracted */
+    /**
+     * LLM explanation for why this was extracted
+     */
     private @Nullable String reasoning;
 
-    /** Chunk IDs that support this proposition */
+    /**
+     * Chunk IDs that support this proposition
+     */
     private List<String> grounding;
 
-    /** When the proposition was first created */
+    /**
+     * When the proposition was first created
+     */
     private Instant created;
 
-    /** When the proposition was last updated */
+    /**
+     * When the proposition was last updated
+     */
     private Instant revised;
 
-    /** Current lifecycle status */
+    /**
+     * Current lifecycle status
+     */
     private PropositionStatus status;
 
-    /** Optional URI reference */
+    /**
+     * Optional URI reference
+     */
     private @Nullable String uri;
 
-    /** Vector embedding for similarity search */
+    /**
+     * Vector embedding for similarity search
+     */
     private @Nullable List<Double> embedding;
 
     @JsonCreator

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.proposition;
+package com.embabel.impromptu.proposition.persistence;
 
 import org.drivine.mapper.RowMapper;
 import org.jspecify.annotations.NonNull;
@@ -24,7 +24,7 @@ import java.util.Map;
  * Maps Neo4j vector search results to proposition ID and score pairs.
  * Uses Drivine's RowMapper interface which properly handles Neo4j driver value types.
  */
-public class PropositionSimilarityMapper implements RowMapper<PropositionSimilarityResult> {
+class PropositionSimilarityMapper implements RowMapper<PropositionSimilarityResult> {
 
     @Override
     public @NonNull PropositionSimilarityResult map(@NonNull Map<String, ?> row) {

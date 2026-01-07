@@ -13,18 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.proposition.graph;
+package com.embabel.impromptu.proposition.persistence;
 
 /**
- * The role an entity mention plays in a proposition.
+ * Intermediate result from vector similarity search containing proposition ID and score.
  */
-public enum MentionRole {
-    /** The subject of the statement (e.g., "Jim" in "Jim knows Neo4j") */
-    SUBJECT,
-
-    /** The object of the statement (e.g., "Neo4j" in "Jim knows Neo4j") */
-    OBJECT,
-
-    /** Other mention that doesn't fit subject/object pattern */
-    OTHER
+record PropositionSimilarityResult(String id, double score) {
 }

@@ -12,7 +12,7 @@ import com.embabel.chat.UserMessage;
 import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.projection.memory.MemoryScope;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.proposition.ConversationAnalysisRequestEvent;
+import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.spotify.SpotifyTools;
 import com.embabel.impromptu.user.ImpromptuUser;

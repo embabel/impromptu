@@ -1,4 +1,4 @@
-package com.embabel.impromptu.proposition;
+package com.embabel.impromptu.proposition.extraction;
 
 import com.embabel.agent.core.DataDictionary;
 import com.embabel.agent.rag.model.Chunk;
@@ -15,12 +15,14 @@ import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.ReferencesEntities;
+import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.Objects;
@@ -57,8 +59,10 @@ public class ConversationPropositionExtraction {
     /**
      * Async event listener for conversation exchanges.
      * Extracts propositions in a separate thread to avoid blocking chat responses.
+     * Transaction is managed within the async thread.
      */
     @Async
+    @Transactional
     @EventListener
     public void onConversationExchange(ConversationAnalysisRequestEvent event) {
         extractPropositions(event);
@@ -72,7 +76,6 @@ public class ConversationPropositionExtraction {
      * Extract propositions from a conversation.
      * This builds up a knowledge base from the dialogue.
      */
-    // TODO needs to be transactional
     public void extractPropositions(ConversationAnalysisRequestEvent event) {
         try {
             var messages = event.conversation.getMessages();

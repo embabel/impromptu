@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.proposition;
+package com.embabel.impromptu.proposition.persistence;
 
 import com.embabel.agent.rag.service.EntityIdentifier;
 import com.embabel.common.ai.model.EmbeddingService;
@@ -23,7 +23,6 @@ import com.embabel.common.core.types.TextSimilaritySearchRequest;
 import com.embabel.dice.proposition.Proposition;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.PropositionStatus;
-import com.embabel.impromptu.proposition.graph.PropositionView;
 import jakarta.annotation.PostConstruct;
 import org.drivine.manager.CascadeType;
 import org.drivine.manager.GraphObjectManager;

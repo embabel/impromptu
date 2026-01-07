@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.proposition.graph;
+package com.embabel.impromptu.proposition.persistence;
 
 import com.embabel.dice.proposition.Proposition;
 import org.drivine.annotation.Direction;

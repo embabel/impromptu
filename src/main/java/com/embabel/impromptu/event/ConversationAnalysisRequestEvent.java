@@ -1,4 +1,4 @@
-package com.embabel.impromptu.proposition;
+package com.embabel.impromptu.event;
 
 import com.embabel.chat.Conversation;
 import com.embabel.impromptu.user.ImpromptuUser;

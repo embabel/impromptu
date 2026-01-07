@@ -21,6 +21,7 @@ import com.embabel.dice.proposition.MentionRole;
 import com.embabel.dice.proposition.Proposition;
 import com.embabel.dice.proposition.PropositionStatus;
 import com.embabel.impromptu.TestDrivineConfiguration;
+import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
 import org.drivine.manager.GraphObjectManager;
 import org.drivine.manager.PersistenceManager;
 import org.drivine.query.QuerySpecification;

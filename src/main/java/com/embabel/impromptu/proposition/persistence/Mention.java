@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.proposition.graph;
+package com.embabel.impromptu.proposition.persistence;
 
 import com.embabel.dice.proposition.EntityMention;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -34,16 +34,24 @@ public class Mention {
     @NodeId
     private String id;
 
-    /** The text as it appears in the proposition (e.g., "Jim") */
+    /**
+     * The text as it appears in the proposition (e.g., "Jim")
+     */
     private String span;
 
-    /** The entity type label from schema (e.g., "Person", "Technology") */
+    /**
+     * The entity type label from schema (e.g., "Person", "Technology")
+     */
     private String type;
 
-    /** Entity ID if resolved, null if unresolved */
+    /**
+     * Entity ID if resolved, null if unresolved
+     */
     private @Nullable String resolvedId;
 
-    /** The role this entity plays in the proposition */
+    /**
+     * The role this entity plays in the proposition
+     */
     private MentionRole role;
 
     @JsonCreator
