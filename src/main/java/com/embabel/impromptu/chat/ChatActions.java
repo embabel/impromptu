@@ -6,6 +6,7 @@ import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.OperationContext;
 import com.embabel.agent.api.common.ToolObject;
+import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
@@ -114,6 +115,7 @@ public class ChatActions {
                 .withPromptElements(user, userPersonaSnapshot)
                 .withReference(toolishRag)
                 .withToolObjects(tools)
+                .withToolGroup(CoreToolGroups.WEB)
                 .withTemplate("impromptu_chat_response")
                 .respondWithSystemPrompt(conversation, Map.of(
                         "properties", properties,

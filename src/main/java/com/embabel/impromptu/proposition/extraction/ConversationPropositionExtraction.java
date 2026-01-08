@@ -1,16 +1,18 @@
 package com.embabel.impromptu.proposition.extraction;
 
 import com.embabel.agent.core.DataDictionary;
-import com.embabel.agent.rag.model.Chunk;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
-import com.embabel.chat.Conversation;
-import com.embabel.chat.SimpleMessageFormatter;
-import com.embabel.chat.WindowingConversationFormatter;
+import com.embabel.chat.Message;
 import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.KnownEntity;
 import com.embabel.dice.common.Relations;
 import com.embabel.dice.common.SourceAnalysisContext;
 import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
+import com.embabel.dice.incremental.ChunkHistoryStore;
+import com.embabel.dice.incremental.ConversationSource;
+import com.embabel.dice.incremental.IncrementalAnalyzer;
+import com.embabel.dice.incremental.MessageFormatter;
+import com.embabel.dice.incremental.WindowConfig;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.dice.proposition.PropositionRepository;
@@ -30,40 +32,50 @@ import java.util.Objects;
 
 /**
  * Async listener that extracts propositions from chat conversations.
- * Adapts conversation exchanges to the dice proposition pipeline.
- * Created as a bean in PropositionConfiguration.
+ * Uses IncrementalAnalyzer for windowed, deduplicated processing.
  */
 @Service
 public class ConversationPropositionExtraction {
 
     private static final Logger logger = LoggerFactory.getLogger(ConversationPropositionExtraction.class);
 
-    private final PropositionPipeline propositionPipeline;
+    private final IncrementalAnalyzer<Message> analyzer;
     private final DataDictionary dataDictionary;
     private final Relations relations;
     private final PropositionRepository propositionRepository;
     private final NamedEntityDataRepository entityRepository;
-    private final ImpromptuProperties properties;
 
     public ConversationPropositionExtraction(
             PropositionPipeline propositionPipeline,
+            ChunkHistoryStore chunkHistoryStore,
             DataDictionary dataDictionary,
             Relations relations,
             PropositionRepository propositionRepository,
             NamedEntityDataRepository entityRepository,
             ImpromptuProperties properties) {
+        this.dataDictionary = dataDictionary;
+        this.relations = relations;
         this.propositionRepository = propositionRepository;
         this.entityRepository = entityRepository;
-        this.relations = relations;
-        this.propositionPipeline = propositionPipeline;
-        this.dataDictionary = dataDictionary;
-        this.properties = properties;
+
+        // Configure analyzer with properties
+        var extraction = properties.extraction();
+        var config = new WindowConfig(
+                extraction.windowSize(),
+                extraction.overlapSize(),
+                extraction.triggerInterval()
+        );
+        this.analyzer = new IncrementalAnalyzer<>(
+                propositionPipeline,
+                chunkHistoryStore,
+                MessageFormatter.INSTANCE,
+                config
+        );
     }
 
     /**
      * Async event listener for conversation exchanges.
      * Extracts propositions in a separate thread to avoid blocking chat responses.
-     * Transaction is managed within the async thread.
      */
     @Async
     @Transactional
@@ -78,28 +90,19 @@ public class ConversationPropositionExtraction {
 
     /**
      * Extract propositions from a conversation.
-     * This builds up a knowledge base from the dialogue.
+     * The analyzer decides if there's enough new content to process.
      */
     public void extractPropositions(ConversationAnalysisRequestEvent event) {
+        logger.info("Starting proposition extraction for conversation with {} messages",
+                event.conversation.getMessages().size());
         try {
             var messages = event.conversation.getMessages();
             if (messages.size() < 2) {
-                logger.debug("Not enough messages for extraction");
+                logger.info("Not enough messages for extraction (need at least 2)");
                 return;
             }
 
-            // Build context for extraction using window based on last analysis
-            var extractionText = buildExtractionText(event.conversation, event.lastAnalysis);
-
-            var chunk = Chunk.create(
-                    extractionText,
-                    event.conversation.getId(),
-                    Map.of(
-                            "source", "conversation",
-                            "conversationId", event.conversation.getId()
-                    )
-            );
-
+            // Build context for extraction
             var context = SourceAnalysisContext
                     .withContextId(event.user.currentContext())
                     .withEntityResolver(entityResolverForUser(event.user))
@@ -112,70 +115,54 @@ public class ConversationPropositionExtraction {
                             "user", event.user
                     ));
 
-            logger.info("Extracting propositions from conversation exchange");
+            // Wrap conversation as incremental source and analyze
+            var source = new ConversationSource(event.conversation);
+            var result = analyzer.analyze(source, context);
 
-            var chunkPropositionResult = propositionPipeline.processChunk(chunk, context);
+            if (result == null) {
+                logger.info("Analysis skipped (not ready or already processed)");
+                return;
+            }
 
-            if (!chunkPropositionResult.getPropositions().isEmpty()) {
-                var resolvedCount = chunkPropositionResult.getPropositions().stream()
-                        .filter(ReferencesEntities::isFullyResolved)
-                        .count();
+            if (result.getPropositions().isEmpty()) {
+                logger.info("Analysis completed but no propositions extracted");
+                return;
+            }
+            var resolvedCount = result.getPropositions().stream()
+                    .filter(ReferencesEntities::isFullyResolved)
+                    .count();
 
-                logger.info(chunkPropositionResult.infoString(true, 1));
-                // Calculate actual counts based on what will be persisted
-                var propsToSave = chunkPropositionResult.propositionsToPersist();
-                var referencedEntityIds = propsToSave.stream()
-                        .flatMap(p -> p.getMentions().stream())
-                        .map(EntityMention::getResolvedId)
-                        .filter(Objects::nonNull)
-                        .collect(java.util.stream.Collectors.toSet());
-                var newEntitiesToSave = chunkPropositionResult.newEntities().stream()
-                        .filter(e -> referencedEntityIds.contains(e.getId()))
-                        .count();
+            logger.info(result.infoString(true, 1));
 
-                // Get revision stats for accurate logging
-                var stats = chunkPropositionResult.getPropositionExtractionStats();
-                var newProps = stats.getNewCount();
-                var updatedProps = stats.getMergedCount() + stats.getReinforcedCount();
+            // Calculate actual counts based on what will be persisted
+            var propsToSave = result.propositionsToPersist();
+            var referencedEntityIds = propsToSave.stream()
+                    .flatMap(p -> p.getMentions().stream())
+                    .map(EntityMention::getResolvedId)
+                    .filter(Objects::nonNull)
+                    .collect(java.util.stream.Collectors.toSet());
+            var newEntitiesToSave = result.newEntities().stream()
+                    .filter(e -> referencedEntityIds.contains(e.getId()))
+                    .count();
 
-                chunkPropositionResult.persist(propositionRepository, entityRepository);
-                if (newProps > 0 || updatedProps > 0 || newEntitiesToSave > 0) {
-                    logger.info("Persisted: {} new propositions, {} updated propositions, {} new entities",
-                            newProps,
-                            updatedProps,
-                            newEntitiesToSave
-                    );
-                } else {
-                    logger.info("No new data to persist (all propositions were duplicates)");
-                }
+            // Get revision stats for accurate logging
+            var stats = result.getPropositionExtractionStats();
+            var newProps = stats.getNewCount();
+            var updatedProps = stats.getMergedCount() + stats.getReinforcedCount();
+
+            result.persist(propositionRepository, entityRepository);
+            if (newProps > 0 || updatedProps > 0 || newEntitiesToSave > 0) {
+                logger.info("Persisted: {} new propositions, {} updated propositions, {} new entities",
+                        newProps,
+                        updatedProps,
+                        newEntitiesToSave
+                );
+            } else {
+                logger.info("No new data to persist (all propositions were duplicates)");
             }
         } catch (Exception e) {
             // Don't let extraction failures break the chat flow
             logger.warn("Failed to extract propositions", e);
         }
-    }
-
-
-    /**
-     * Build extraction text from the conversation using a window based on last analysis.
-     * If there was a prior analysis, start from (lastMessageCount - overlapSize) to maintain context.
-     * Otherwise, use the configured window size from the end.
-     */
-    private String buildExtractionText(
-            Conversation conversation,
-            ConversationAnalysisRequestEvent.LastAnalysis lastAnalysis) {
-        var extraction = properties.extraction();
-        int startIndex = lastAnalysis.messageCount() != null
-                ? Math.max(0, lastAnalysis.messageCount() - extraction.overlapSize())
-                : 0;
-
-        logger.debug("Extracting from index {} (total: {})",
-                startIndex, conversation.getMessages().size());
-
-        return new WindowingConversationFormatter(
-                SimpleMessageFormatter.INSTANCE,
-                extraction.windowSize(),
-                startIndex
-        ).format(conversation);
     }
 }

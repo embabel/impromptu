@@ -115,6 +115,17 @@ public class DrivinePropositionRepository implements PropositionRepository {
         return proposition;
     }
 
+
+    // TODO shouldn't we narrow by context in nearly all cases
+    @Override
+    @Transactional(readOnly = true)
+    public @NonNull List<Proposition> findByMinLevel(int minLevel) {
+        return findAll().stream()
+                // TODO make this efficient with query
+                .filter(p -> p.getLevel() >= minLevel)
+                .toList();
+    }
+
     @Override
     @Transactional(readOnly = true)
     public @Nullable Proposition findById(@NonNull String id) {

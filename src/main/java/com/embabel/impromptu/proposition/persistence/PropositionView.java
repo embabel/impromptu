@@ -105,6 +105,9 @@ public class PropositionView {
                 proposition.getCreated(),
                 proposition.getRevised(),
                 proposition.getStatus(),
+                0,
+                // TODO empty sourceIds seems wrong
+                List.of(),
                 Map.of(),
                 proposition.getUri()
         );

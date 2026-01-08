@@ -1,3 +1,30 @@
+# =============================================================================
+# Required Environment Variables / API Keys
+# =============================================================================
+#
+# Neo4j Database (optional - defaults provided for local dev):
+#   NEO4J_HOST, NEO4J_PORT, NEO4J_USERNAME, NEO4J_PASSWORD, NEO4J_DATABASE, NEO4J_HTTP_PORT
+#
+# OpenAI API (required for LLM, TTS, and embeddings):
+#   OPENAI_API_KEY - Get from https://platform.openai.com/api-keys
+#
+# Google OAuth2 (required for user authentication):
+#   GOOGLE_CLIENT_ID - Get from https://console.cloud.google.com/apis/credentials
+#   GOOGLE_CLIENT_SECRET
+#
+# Spotify (optional - for playlist management):
+#   SPOTIFY_CLIENT_ID - Get from https://developer.spotify.com/dashboard
+#   SPOTIFY_CLIENT_SECRET
+#
+# YouTube Data API v3 (optional - for video search):
+#   YOUTUBE_API_KEY - Get from https://console.cloud.google.com/apis/credentials
+#                     Enable "YouTube Data API v3" first
+#
+# Brave Search MCP (optional - for web search):
+#   BRAVE_API_KEY - Get from https://brave.com/search/api/
+#
+# =============================================================================
+
 database:
   datasources:
     neo:
@@ -72,6 +99,42 @@ server:
   port: 8888  # Double the 88 piano keys
 
 spring:
+
+  # MCP (Model Context Protocol) tools
+  # Wikipedia MCP provides tools to search and read Wikipedia articles
+  # Requires Docker to be running
+  ai:
+    mcp:
+      client:
+        enabled: true
+        name: impromptu
+        version: 1.0.0
+        request-timeout: 30s
+        type: SYNC
+        stdio:
+          connections:
+            # Wikipedia MCP - search and read Wikipedia articles
+            # Workaround: wikipedia-mcp prints a startup banner to stdout which breaks
+            # the MCP stdio protocol. We filter to only pass JSON lines.
+            # See: https://github.com/Rudra-ravi/wikipedia-mcp/issues/39
+            wikipedia-mcp:
+              command: sh
+              args:
+                - -c
+                - "docker run -i --rm mcp/wikipedia-mcp | grep --line-buffered '^{'"
+            # Brave Search MCP - web search via Brave Search API
+            # Requires BRAVE_API_KEY from https://brave.com/search/api/
+            brave-search-mcp:
+              command: docker
+              args:
+                - run
+                - -i
+                - --rm
+                - -e
+                - BRAVE_API_KEY
+                - mcp/brave-search
+              env:
+                BRAVE_API_KEY: ${BRAVE_API_KEY}
 
   # Google OAuth2 Configuration
   # To set up Google OAuth2:
