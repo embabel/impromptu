@@ -104,34 +104,34 @@ public class OpenOpusController {
         return outputStream -> {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
 
-            log(writer, "Deleting all Open Opus data...");
+            log(writer, "Deleting Open Opus data (primarySource='openopus')...");
 
             persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (c:Composer)-[r:COMPOSED]->(w:Work) DELETE r"));
+                    "MATCH (c:Composer {primarySource: 'openopus'})-[r:COMPOSED]->(w:Work) DELETE r"));
             log(writer, "  Deleted COMPOSED relationships");
 
             persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (w:Work)-[r:OF_GENRE]->(g:Genre) DELETE r"));
+                    "MATCH (w:Work {primarySource: 'openopus'})-[r:OF_GENRE]->(g:Genre) DELETE r"));
             log(writer, "  Deleted OF_GENRE relationships");
 
             persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (c:Composer)-[r:OF_EPOCH]->(e:Epoch) DELETE r"));
+                    "MATCH (c:Composer {primarySource: 'openopus'})-[r:OF_EPOCH]->(e:Epoch) DELETE r"));
             log(writer, "  Deleted OF_EPOCH relationships");
 
             persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (w:Work) DELETE w"));
+                    "MATCH (w:Work {primarySource: 'openopus'}) DELETE w"));
             log(writer, "  Deleted Work nodes");
 
             persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (c:Composer) DELETE c"));
+                    "MATCH (c:Composer {primarySource: 'openopus'}) DELETE c"));
             log(writer, "  Deleted Composer nodes");
 
             persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (g:Genre) DELETE g"));
+                    "MATCH (g:Genre {primarySource: 'openopus'}) DELETE g"));
             log(writer, "  Deleted Genre nodes");
 
             persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (e:Epoch) DELETE e"));
+                    "MATCH (e:Epoch {primarySource: 'openopus'}) DELETE e"));
             log(writer, "  Deleted Epoch nodes");
 
             log(writer, "Done!");
@@ -276,6 +276,7 @@ public class OpenOpusController {
             if (composer.works() == null) continue;
 
             String composerId = toComposerId(composer);
+            String composerName = composer.name();
             int workIndex = 0;
 
             for (OpenOpusWork work : composer.works()) {
@@ -283,6 +284,7 @@ public class OpenOpusController {
                 data.put("id", toWorkId(composer, work, workIndex++));
                 data.put("title", work.title());
                 data.put("subtitle", work.subtitle());
+                data.put("description", buildWorkDescription(composerName, work));
                 data.put("searchTerms", work.searchTerms());
                 data.put("popular", work.isPopular());
                 data.put("recommended", work.isRecommended());
@@ -295,7 +297,7 @@ public class OpenOpusController {
 
         if (workData.isEmpty()) return 0;
 
-        int batchSize = 1000;
+        int batchSize = 200;
         for (int i = 0; i < workData.size(); i += batchSize) {
             List<Map<String, Object>> batch = workData.subList(i, Math.min(i + batchSize, workData.size()));
 
@@ -306,6 +308,7 @@ public class OpenOpusController {
                             MERGE (work:Entity:Work:Reference {id: w.id})
                             SET work.title = w.title,
                                 work.subtitle = w.subtitle,
+                                work.description = w.description,
                                 work.searchTerms = w.searchTerms,
                                 work.popular = w.popular,
                                 work.recommended = w.recommended,
@@ -353,5 +356,15 @@ public class OpenOpusController {
 
     private String toWorkId(OpenOpusComposer composer, OpenOpusWork work, int index) {
         return toComposerId(composer) + "-" + toId(work.title()) + "-" + index;
+    }
+
+    private String buildWorkDescription(String composerName, OpenOpusWork work) {
+        var sb = new StringBuilder();
+        sb.append("composer:").append(composerName);
+        sb.append(" work:").append(work.title());
+        if (work.subtitle() != null && !work.subtitle().isBlank()) {
+            sb.append(", ").append(work.subtitle());
+        }
+        return sb.toString();
     }
 }

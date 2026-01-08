@@ -97,6 +97,9 @@ embabel:
 
 server:
   port: 8888  # Double the 88 piano keys
+  servlet:
+    async:
+      timeout: 600000  # 10 minutes for long-running operations like OpenOpus load
 
 spring:
 
