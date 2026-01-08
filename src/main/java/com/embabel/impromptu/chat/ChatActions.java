@@ -13,7 +13,8 @@ import com.embabel.agent.rag.tools.TryHyDE;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
 import com.embabel.dice.projection.memory.MemoryProjector;
-import com.embabel.dice.projection.memory.MemoryScope;
+import com.embabel.dice.proposition.PropositionQuery;
+import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.spotify.SpotifyService;
@@ -44,6 +45,7 @@ public class ChatActions {
     private final YouTubeService youTubeService;
     private final YouTubePendingPlayback youTubePendingPlayback;
     private final MemoryProjector memoryProjector;
+    private final PropositionRepository propositionRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     public ChatActions(
@@ -52,6 +54,7 @@ public class ChatActions {
             YouTubeService youTubeService,
             YouTubePendingPlayback youTubePendingPlayback,
             MemoryProjector memoryProjector,
+            PropositionRepository propositionRepository,
             ApplicationEventPublisher eventPublisher,
             ImpromptuProperties properties) {
         this.toolishRag = new ToolishRag(
@@ -62,6 +65,7 @@ public class ChatActions {
         this.spotifyService = spotifyService;
         this.youTubeService = youTubeService;
         this.youTubePendingPlayback = youTubePendingPlayback;
+        this.propositionRepository = propositionRepository;
         this.memoryProjector = memoryProjector;
         this.properties = properties;
         this.eventPublisher = eventPublisher;
@@ -105,10 +109,11 @@ public class ChatActions {
         if (youTubeService.isConfigured()) {
             tools.add(new ToolObject(new YouTubeTools(user, youTubeService, youTubePendingPlayback)).withPrefix("youtube"));
         }
-        var userPersonaSnapshot = memoryProjector.projectUserPersonaSnapshot(
-                user.getId(),
-                MemoryScope.global(user.getId())
-        );
+        var userPersonaSnapshot = memoryProjector.project(
+                propositionRepository.query(
+                        PropositionQuery.againstContext(user.currentContext())
+                ));
+
         var assistantMessage = context.
                 ai()
                 .withLlm(properties.chatLlm())
