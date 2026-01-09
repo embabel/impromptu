@@ -301,7 +301,8 @@ public class OpenOpusController {
                                     UNWIND $works AS w
                                     MATCH (composer:__Entity__:Composer:Reference {id: w.composerId})
                                     MERGE (work:__Entity__:Work:Reference {id: w.id})
-                                    SET work.title = w.title,
+                                    SET work.name = w.title,
+                                        work.title = w.title,
                                         work.subtitle = w.subtitle,
                                         work.description = w.description,
                                         work.searchTerms = w.searchTerms,
