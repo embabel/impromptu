@@ -633,6 +633,46 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   font-size: var(--lumo-font-size-l);
 }
 
+/* Reduce whitespace in markdown-rendered content */
+.chat-bubble-text > div {
+  margin: 0;
+  padding: 0;
+}
+
+.chat-bubble-text > div > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+.chat-bubble-text p {
+  margin: 0 0 0.5em 0;
+}
+
+.chat-bubble-text p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-bubble-text ul,
+.chat-bubble-text ol {
+  margin: 0.25em 0;
+  padding-left: 1.5em;
+}
+
+.chat-bubble-text li {
+  margin: 0.15em 0;
+}
+
+.chat-bubble-text h1,
+.chat-bubble-text h2,
+.chat-bubble-text h3,
+.chat-bubble-text h4 {
+  margin: 0.5em 0 0.25em 0;
+}
+
+.chat-bubble-text pre,
+.chat-bubble-text code {
+  margin: 0.25em 0;
+}
+
 .chat-bubble-error {
   background: var(--lumo-error-color-10pct);
   border-left: 3px solid var(--lumo-error-color);

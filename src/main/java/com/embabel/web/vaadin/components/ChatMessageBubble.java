@@ -49,8 +49,8 @@ public class ChatMessageBubble extends Div {
         if (markdown == null || markdown.isBlank()) {
             return "";
         }
-        var document = MARKDOWN_PARSER.parse(markdown);
-        return HTML_RENDERER.render(document);
+        var document = MARKDOWN_PARSER.parse(markdown.strip());
+        return HTML_RENDERER.render(document).strip();
     }
 
     /**
