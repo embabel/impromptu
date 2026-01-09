@@ -22,8 +22,8 @@ class SecurityConfiguration extends VaadinWebSecurity {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        // Allow unauthenticated access to data loading API
-        web.ignoring().requestMatchers("/api/openopus/**");
+        // Allow unauthenticated access to data loading APIs
+        web.ignoring().requestMatchers("/api/openopus/**", "/api/documents/**");
         super.configure(web);
     }
 

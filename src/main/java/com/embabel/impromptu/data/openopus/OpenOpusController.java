@@ -33,12 +33,7 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -194,11 +189,11 @@ public class OpenOpusController {
 
         persistenceManager.execute(
                 QuerySpecification.withStatement("""
-                        UNWIND $epochs AS epoch
-                        MERGE (e:Entity:Epoch:Reference {id: epoch.id})
-                        SET e.name = epoch.name,
-                            e.primarySource = "openopus"
-                        """)
+                                UNWIND $epochs AS epoch
+                                MERGE (e:__Entity__:Epoch:Reference {id: epoch.id})
+                                SET e.name = epoch.name,
+                                    e.primarySource = "openopus"
+                                """)
                         .bind(Map.of("epochs", epochData))
         );
     }
@@ -212,11 +207,11 @@ public class OpenOpusController {
 
         persistenceManager.execute(
                 QuerySpecification.withStatement("""
-                        UNWIND $genres AS genre
-                        MERGE (g:Entity:Genre:Reference {id: genre.id})
-                        SET g.name = genre.name,
-                            g.primarySource = "openopus"
-                        """)
+                                UNWIND $genres AS genre
+                                MERGE (g:__Entity__:Genre:Reference {id: genre.id})
+                                SET g.name = genre.name,
+                                    g.primarySource = "openopus"
+                                """)
                         .bind(Map.of("genres", genreData))
         );
     }
@@ -239,16 +234,16 @@ public class OpenOpusController {
 
         persistenceManager.execute(
                 QuerySpecification.withStatement("""
-                        UNWIND $composers AS c
-                        MERGE (composer:Entity:Composer:Reference {id: c.id})
-                        SET composer.name = c.name,
-                            composer.completeName = c.completeName,
-                            composer.birth = c.birth,
-                            composer.death = c.death,
-                            composer.popular = c.popular,
-                            composer.recommended = c.recommended,
-                            composer.primarySource = "openopus"
-                        """)
+                                UNWIND $composers AS c
+                                MERGE (composer:__Entity__:Composer:Reference {id: c.id})
+                                SET composer.name = c.name,
+                                    composer.completeName = c.completeName,
+                                    composer.birth = c.birth,
+                                    composer.death = c.death,
+                                    composer.popular = c.popular,
+                                    composer.recommended = c.recommended,
+                                    composer.primarySource = "openopus"
+                                """)
                         .bind(Map.of("composers", composerData))
         );
 
@@ -259,11 +254,11 @@ public class OpenOpusController {
         if (!composersWithEpoch.isEmpty()) {
             persistenceManager.execute(
                     QuerySpecification.withStatement("""
-                            UNWIND $composers AS c
-                            MATCH (composer:Composer {id: c.id})
-                            MATCH (epoch:Epoch {id: c.epochId})
-                            MERGE (composer)-[:OF_EPOCH]->(epoch)
-                            """)
+                                    UNWIND $composers AS c
+                                    MATCH (composer:Composer {id: c.id})
+                                    MATCH (epoch:Epoch {id: c.epochId})
+                                    MERGE (composer)-[:OF_EPOCH]->(epoch)
+                                    """)
                             .bind(Map.of("composers", composersWithEpoch))
             );
         }
@@ -303,18 +298,18 @@ public class OpenOpusController {
 
             persistenceManager.execute(
                     QuerySpecification.withStatement("""
-                            UNWIND $works AS w
-                            MATCH (composer:Entity:Composer:Reference {id: w.composerId})
-                            MERGE (work:Entity:Work:Reference {id: w.id})
-                            SET work.title = w.title,
-                                work.subtitle = w.subtitle,
-                                work.description = w.description,
-                                work.searchTerms = w.searchTerms,
-                                work.popular = w.popular,
-                                work.recommended = w.recommended,
-                                work.primarySource = "openopus"
-                            MERGE (composer)-[:COMPOSED]->(work)
-                            """)
+                                    UNWIND $works AS w
+                                    MATCH (composer:__Entity__:Composer:Reference {id: w.composerId})
+                                    MERGE (work:__Entity__:Work:Reference {id: w.id})
+                                    SET work.title = w.title,
+                                        work.subtitle = w.subtitle,
+                                        work.description = w.description,
+                                        work.searchTerms = w.searchTerms,
+                                        work.popular = w.popular,
+                                        work.recommended = w.recommended,
+                                        work.primarySource = "openopus"
+                                    MERGE (composer)-[:COMPOSED]->(work)
+                                    """)
                             .bind(Map.of("works", batch))
             );
 
@@ -325,11 +320,11 @@ public class OpenOpusController {
             if (!worksWithGenre.isEmpty()) {
                 persistenceManager.execute(
                         QuerySpecification.withStatement("""
-                                UNWIND $works AS w
-                                MATCH (work:Work {id: w.id})
-                                MATCH (genre:Genre {id: w.genreId})
-                                MERGE (work)-[:OF_GENRE]->(genre)
-                                """)
+                                        UNWIND $works AS w
+                                        MATCH (work:Work {id: w.id})
+                                        MATCH (genre:Genre {id: w.genreId})
+                                        MERGE (work)-[:OF_GENRE]->(genre)
+                                        """)
                                 .bind(Map.of("works", worksWithGenre))
                 );
             }

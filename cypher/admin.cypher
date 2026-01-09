@@ -5,10 +5,9 @@ MATCH (p:Proposition)
 DETACH DELETE p;
 
 // Delete Entity nodes that don't have the Reference label
-MATCH (e:Entity)
+MATCH (e:__Entity__)
   WHERE NOT e:Reference
 DETACH DELETE e;
-
 
 
 
