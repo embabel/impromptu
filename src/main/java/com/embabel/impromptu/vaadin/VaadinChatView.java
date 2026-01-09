@@ -72,6 +72,7 @@ public class VaadinChatView extends VerticalLayout {
     private final String persona;
 
     private VerticalLayout messagesLayout;
+    private Scroller messagesScroller;
     private PropositionsPanel propositionsPanel;
     private TextField inputField;
     private Button sendButton;
@@ -139,12 +140,12 @@ public class VaadinChatView extends VerticalLayout {
         messagesLayout.setPadding(false);
         messagesLayout.setSpacing(true);
 
-        var scroller = new Scroller(messagesLayout);
-        scroller.setSizeFull();
-        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
-        scroller.addClassName("chat-scroller");
-        add(scroller);
-        setFlexGrow(1, scroller);
+        messagesScroller = new Scroller(messagesLayout);
+        messagesScroller.setSizeFull();
+        messagesScroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        messagesScroller.addClassName("chat-scroller");
+        add(messagesScroller);
+        setFlexGrow(1, messagesScroller);
 
         // Input section
         add(createInputSection());
@@ -422,7 +423,7 @@ public class VaadinChatView extends VerticalLayout {
     }
 
     private void scrollToBottom() {
-        messagesLayout.getElement().executeJs("this.scrollTop = this.scrollHeight");
+        messagesScroller.getElement().executeJs("this.scrollTop = this.scrollHeight");
     }
 
     /**
