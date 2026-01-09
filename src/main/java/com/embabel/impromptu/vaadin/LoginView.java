@@ -49,7 +49,11 @@ public class LoginView extends VerticalLayout {
         loginLink.setRouterIgnore(true);
         loginLink.addClassName("login-button");
 
-        container.add(image, title, subtitle, loginLink);
+        // Copyright footer
+        var copyright = new Paragraph("© 2025 Embabel Software, Inc.");
+        copyright.addClassName("login-copyright");
+
+        container.add(image, title, subtitle, loginLink, copyright);
         add(container);
     }
 }

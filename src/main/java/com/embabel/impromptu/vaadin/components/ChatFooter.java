@@ -75,6 +75,14 @@ public class ChatFooter extends HorizontalLayout {
         var statsText = new Span(String.format("%,d chunks | %,d documents", chunkCount, documentCount));
         statsText.addClassName("footer-stats");
 
-        add(logo, poweredBy, embabelLink, separator, neo4jLink, separator2, analyzeButton, statsText);
+        // Separator
+        var separator3 = new Span("|");
+        separator3.addClassName("footer-separator");
+
+        // Copyright
+        var copyright = new Span("© 2025 Embabel Software, Inc.");
+        copyright.addClassName("footer-copyright");
+
+        add(logo, poweredBy, embabelLink, separator, neo4jLink, separator2, analyzeButton, statsText, separator3, copyright);
     }
 }

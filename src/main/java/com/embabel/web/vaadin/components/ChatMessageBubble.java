@@ -1,13 +1,20 @@
 package com.embabel.web.vaadin.components;
 
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 
 /**
  * Chat message bubble component with sender name and text content.
  * Styled differently for user vs assistant messages.
+ * Assistant messages render markdown as HTML.
  */
 public class ChatMessageBubble extends Div {
+
+    private static final Parser MARKDOWN_PARSER = Parser.builder().build();
+    private static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().build();
 
     public ChatMessageBubble(String sender, String text, boolean isUser) {
         addClassName("chat-bubble-container");
@@ -20,11 +27,30 @@ public class ChatMessageBubble extends Div {
         var senderSpan = new Span(sender);
         senderSpan.addClassName("chat-bubble-sender");
 
-        var textSpan = new Span(text);
-        textSpan.addClassName("chat-bubble-text");
+        // User messages: plain text. Assistant messages: render markdown
+        if (isUser) {
+            var textSpan = new Span(text);
+            textSpan.addClassName("chat-bubble-text");
+            messageDiv.add(senderSpan, textSpan);
+        } else {
+            var contentDiv = new Div();
+            contentDiv.addClassName("chat-bubble-text");
+            contentDiv.add(new Html("<div>" + renderMarkdown(text) + "</div>"));
+            messageDiv.add(senderSpan, contentDiv);
+        }
 
-        messageDiv.add(senderSpan, textSpan);
         add(messageDiv);
+    }
+
+    /**
+     * Convert markdown to HTML.
+     */
+    private static String renderMarkdown(String markdown) {
+        if (markdown == null || markdown.isBlank()) {
+            return "";
+        }
+        var document = MARKDOWN_PARSER.parse(markdown);
+        return HTML_RENDERER.render(document);
     }
 
     /**

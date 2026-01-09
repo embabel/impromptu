@@ -25,41 +25,27 @@ public class PropositionCard extends Div {
 
     public PropositionCard(Proposition prop) {
         this.proposition = prop;
-
-        getStyle()
-                .set("padding", "var(--lumo-space-s) var(--lumo-space-m)")
-                .set("border-radius", "var(--lumo-border-radius-m)")
-                .set("background", "var(--lumo-contrast-5pct)")
-                .set("margin-bottom", "var(--lumo-space-xs)");
+        addClassName("proposition-card");
 
         // Proposition text
         var textSpan = new Span(prop.getText());
-        textSpan.getStyle()
-                .set("display", "block")
-                .set("margin-bottom", "var(--lumo-space-xs)");
+        textSpan.addClassName("proposition-text");
 
         // Metadata line
         var metaLayout = new HorizontalLayout();
         metaLayout.setSpacing(true);
-        metaLayout.getStyle().set("flex-wrap", "wrap");
+        metaLayout.addClassName("proposition-meta");
 
         // Confidence badge
         var confidencePercent = (int) (prop.getConfidence() * 100);
         var confidenceSpan = new Span(confidencePercent + "% confidence");
-        confidenceSpan.getStyle()
-                .set("font-size", "var(--lumo-font-size-xs)")
-                .set("color", confidencePercent >= 80 ? "var(--lumo-success-text-color)" :
-                        confidencePercent >= 50 ? "var(--lumo-secondary-text-color)" :
-                                "var(--lumo-error-text-color)")
-                .set("background", "var(--lumo-contrast-10pct)")
-                .set("padding", "2px 8px")
-                .set("border-radius", "var(--lumo-border-radius-s)");
+        confidenceSpan.addClassName("proposition-confidence");
+        confidenceSpan.addClassName(confidencePercent >= 80 ? "high" :
+                confidencePercent >= 50 ? "medium" : "low");
 
         // Time
         var timeSpan = new Span(TIME_FORMATTER.format(prop.getCreated()));
-        timeSpan.getStyle()
-                .set("font-size", "var(--lumo-font-size-xs)")
-                .set("color", "var(--lumo-tertiary-text-color)");
+        timeSpan.addClassName("proposition-time");
 
         metaLayout.add(confidenceSpan, timeSpan);
 
@@ -68,10 +54,7 @@ public class PropositionCard extends Div {
         if (!mentions.isEmpty()) {
             entitiesLayout = new HorizontalLayout();
             entitiesLayout.setSpacing(false);
-            entitiesLayout.getStyle()
-                    .set("flex-wrap", "wrap")
-                    .set("gap", "4px")
-                    .set("margin-top", "var(--lumo-space-xs)");
+            entitiesLayout.addClassName("proposition-entities");
 
             for (var mention : mentions) {
                 entitiesLayout.add(createMentionBadge(mention));
@@ -88,22 +71,11 @@ public class PropositionCard extends Div {
     private Span createMentionBadge(EntityMention mention) {
         var id = mention.getResolvedId() != null ? mention.getResolvedId() : "?";
         var badge = new Span(mention.getType() + ":" + id);
-        badge.getStyle()
-                .set("font-size", "var(--lumo-font-size-xxs)")
-                .set("color", "var(--lumo-primary-text-color)")
-                .set("background", "var(--lumo-primary-color-10pct)")
-                .set("padding", "1px 6px")
-                .set("border-radius", "var(--lumo-border-radius-s)");
+        badge.addClassName("mention-badge");
 
         // Make clickable if resolved and handler is set
         if (mention.getResolvedId() != null) {
-            badge.getStyle()
-                    .set("cursor", "pointer")
-                    .set("transition", "background 0.2s");
-            badge.getElement().addEventListener("mouseenter", e ->
-                    badge.getStyle().set("background", "var(--lumo-primary-color-50pct)"));
-            badge.getElement().addEventListener("mouseleave", e ->
-                    badge.getStyle().set("background", "var(--lumo-primary-color-10pct)"));
+            badge.addClassName("clickable");
             badge.getElement().addEventListener("click", e -> {
                 if (onMentionClick != null) {
                     onMentionClick.accept(mention);

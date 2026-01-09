@@ -97,6 +97,34 @@ MATCH (w:Work)-[:OF_GENRE]->(g:Genre)
 RETURN g.name, count(w) as works ORDER BY works DESC
 ```
 
+### Ingesting Documents
+
+The application can ingest documents (PDF, HTML, Markdown, etc.) into the RAG store for retrieval-augmented generation.
+
+**Ingest a URL** (e.g., Project Gutenberg):
+```bash
+curl -X POST "http://localhost:8888/api/documents/ingest?location=https://www.gutenberg.org/files/56208/56208-h/56208-h.htm"
+```
+
+**Ingest a local file**:
+```bash
+curl -X POST "http://localhost:8888/api/documents/ingest?location=./data/schumann/musicandmusician001815mbp.md"
+```
+
+**Ingest all files in a directory**:
+```bash
+curl -X POST "http://localhost:8888/api/documents/ingest-directory?path=./data"
+```
+
+**Check store status**:
+```bash
+curl http://localhost:8888/api/documents/info
+```
+
+Supported formats: `.txt`, `.md`, `.html`, `.htm`, `.pdf`, `.docx`, `.doc`, `.rtf`, `.odt`
+
+Documents are parsed using Apache Tika, which extracts hierarchical structure (headings, sections) and chunks the content for embedding. The endpoint is idempotent - documents that already exist (by URI) are skipped.
+
 ### Running the Web App
 
 After Neo4j is running:

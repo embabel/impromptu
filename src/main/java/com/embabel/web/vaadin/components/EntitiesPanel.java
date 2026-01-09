@@ -42,14 +42,10 @@ public class EntitiesPanel extends Details {
         headerLayout.setSpacing(true);
 
         var titleSpan = new Span(title);
-        titleSpan.getStyle()
-                .set("font-weight", "bold")
-                .set("font-size", "var(--lumo-font-size-m)");
+        titleSpan.addClassName("panel-title");
 
         entityCountSpan = new Span("(0 entities)");
-        entityCountSpan.getStyle()
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("font-size", "var(--lumo-font-size-s)");
+        entityCountSpan.addClassName("panel-count");
 
         var refreshButton = new Button(VaadinIcon.REFRESH.create());
         refreshButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
@@ -68,16 +64,12 @@ public class EntitiesPanel extends Details {
         contentScroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
         contentScroller.setHeight("200px");
         contentScroller.setWidthFull();
-        contentScroller.getStyle()
-                .set("border", "1px solid var(--lumo-contrast-10pct)")
-                .set("border-radius", "var(--lumo-border-radius-m)")
-                .set("background", "var(--lumo-shade-5pct)");
+        contentScroller.addClassName("panel-scroller");
 
         setSummary(headerLayout);
         setContent(contentScroller);
         addThemeVariants(DetailsVariant.FILLED);
         setWidthFull();
-        getStyle().set("--vaadin-details-summary-padding", "var(--lumo-space-s) var(--lumo-space-m)");
 
         // Refresh when opened
         addOpenedChangeListener(e -> {
@@ -105,10 +97,7 @@ public class EntitiesPanel extends Details {
 
         if (entities.isEmpty()) {
             var emptyMessage = new Span("No entities found.");
-            emptyMessage.getStyle()
-                    .set("color", "var(--lumo-secondary-text-color)")
-                    .set("font-style", "italic")
-                    .set("padding", "var(--lumo-space-m)");
+            emptyMessage.addClassName("panel-empty-message");
             entitiesContent.add(emptyMessage);
             return;
         }
