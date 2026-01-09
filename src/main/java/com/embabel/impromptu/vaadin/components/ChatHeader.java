@@ -4,7 +4,6 @@ import com.embabel.impromptu.user.ImpromptuUser;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
@@ -39,27 +38,25 @@ public class ChatHeader extends VerticalLayout {
         titleRow.setAlignItems(Alignment.CENTER);
         titleRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        var title = new H3("Impromptu Classical Music Explorer");
-        title.getStyle().set("margin", "0");
+        // Styled title with "Impromptu" in elegant gold
+        var titleContainer = new HorizontalLayout();
+        titleContainer.setAlignItems(Alignment.BASELINE);
+        titleContainer.setSpacing(false);
+
+        var impromptuText = new Span("Impromptu");
+        impromptuText.addClassName("header-title-impromptu");
+
+        var subtitleText = new Span("Classical Music Explorer");
+        subtitleText.addClassName("header-title-subtitle");
+
+        titleContainer.add(impromptuText, subtitleText);
 
         // User info and logout
         var userSection = createUserSection(config);
 
-        titleRow.add(title, userSection);
+        titleRow.add(titleContainer, userSection);
 
-        // Stats line
-        var statsText = new Span(String.format(
-                "Objective: %s | Persona: %s | %,d chunks | %,d documents",
-                config.objective() != null ? config.objective() : "Not set",
-                config.persona(),
-                config.chunkCount(),
-                config.documentCount()
-        ));
-        statsText.getStyle()
-                .set("font-size", "var(--lumo-font-size-s)")
-                .set("color", "var(--lumo-secondary-text-color)");
-
-        add(titleRow, statsText);
+        add(titleRow);
     }
 
     private HorizontalLayout createUserSection(HeaderConfig config) {
@@ -69,9 +66,7 @@ public class ChatHeader extends VerticalLayout {
 
         var user = config.user();
         var userName = new Span(user.getDisplayName());
-        userName.getStyle()
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("font-size", "var(--lumo-font-size-s)");
+        userName.addClassName("header-user-name");
 
         if (!"Anonymous".equals(user.getDisplayName())) {
             // Spotify link button (only show if Spotify is configured)
@@ -79,24 +74,13 @@ public class ChatHeader extends VerticalLayout {
                 if (config.spotifyLinked()) {
                     // User has linked Spotify
                     var spotifyBadge = new Span("Spotify linked");
-                    spotifyBadge.getStyle()
-                            .set("color", "var(--lumo-success-text-color)")
-                            .set("font-size", "var(--lumo-font-size-xs)")
-                            .set("background", "var(--lumo-success-color-10pct)")
-                            .set("padding", "2px 8px")
-                            .set("border-radius", "var(--lumo-border-radius-s)");
+                    spotifyBadge.addClassName("spotify-badge");
                     userSection.add(spotifyBadge);
                 } else {
                     // User hasn't linked Spotify yet
                     var linkSpotifyAnchor = new Anchor("/link/spotify", "Link Spotify");
                     linkSpotifyAnchor.getElement().setAttribute("router-ignore", true);
-                    linkSpotifyAnchor.getStyle()
-                            .set("color", "#1DB954") // Spotify green
-                            .set("font-size", "var(--lumo-font-size-s)")
-                            .set("text-decoration", "none")
-                            .set("padding", "4px 8px")
-                            .set("border", "1px solid #1DB954")
-                            .set("border-radius", "var(--lumo-border-radius-s)");
+                    linkSpotifyAnchor.addClassName("spotify-link");
                     userSection.add(linkSpotifyAnchor);
                 }
             }
@@ -107,16 +91,11 @@ public class ChatHeader extends VerticalLayout {
                 });
             });
             logoutButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-            logoutButton.getStyle()
-                    .set("color", "var(--lumo-primary-text-color)")
-                    .set("font-size", "var(--lumo-font-size-s)");
+            logoutButton.addClassName("header-logout-button");
             userSection.add(userName, logoutButton);
         } else {
             var loginLink = new Anchor("/login", "Sign in");
-            loginLink.getStyle()
-                    .set("color", "var(--lumo-primary-text-color)")
-                    .set("font-size", "var(--lumo-font-size-s)")
-                    .set("text-decoration", "none");
+            loginLink.addClassName("header-login-link");
             userSection.add(loginLink);
         }
 

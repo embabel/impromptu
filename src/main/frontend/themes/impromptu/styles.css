@@ -347,6 +347,192 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   border: 1px solid rgba(201, 162, 39, 0.2);
 }
 
+/* ===========================================
+   Component-specific classes
+   =========================================== */
+
+/* --- Login View --- */
+.login-view {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--concert-black) 0%, var(--velvet-purple) 50%, var(--piano-black) 100%);
+}
+
+.login-container {
+  text-align: center;
+  max-width: 600px;
+  padding: var(--lumo-space-xl);
+}
+
+.login-image {
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  margin-bottom: var(--lumo-space-l);
+}
+
+.login-title {
+  color: var(--gold-accent);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 4.5rem;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  margin: var(--lumo-space-m) 0;
+  text-shadow: 0 0 40px rgba(201, 162, 39, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #d4af37 0%, var(--gold-accent) 50%, #b8922a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.login-subtitle {
+  color: var(--ivory-white);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 1.25rem;
+  margin-bottom: var(--lumo-space-l);
+}
+
+.login-button {
+  display: inline-block;
+  padding: var(--lumo-space-m) var(--lumo-space-xl);
+  background: linear-gradient(135deg, var(--gold-accent) 0%, #b8922a 100%);
+  color: var(--concert-black);
+  text-decoration: none;
+  border-radius: 12px;
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 15px rgba(201, 162, 39, 0.4);
+  transition: all 0.3s ease;
+}
+
+.login-button:hover {
+  background: linear-gradient(135deg, var(--gold-soft) 0%, var(--gold-accent) 100%);
+  box-shadow: 0 6px 25px rgba(201, 162, 39, 0.5);
+  transform: translateY(-2px);
+}
+
+/* --- Chat Header --- */
+.header-title-impromptu {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 600;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  color: var(--gold-accent);
+  text-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
+  margin-right: 0.5rem;
+}
+
+.header-title-subtitle {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 1.1rem;
+  color: var(--lumo-secondary-text-color);
+}
+
+.header-user-name {
+  color: var(--lumo-secondary-text-color);
+  font-size: var(--lumo-font-size-s);
+}
+
+.spotify-badge {
+  color: var(--lumo-success-text-color);
+  font-size: var(--lumo-font-size-xs);
+  background: var(--lumo-success-color-10pct);
+  padding: 2px 8px;
+  border-radius: var(--lumo-border-radius-s);
+}
+
+.spotify-link {
+  color: #1DB954;
+  font-size: var(--lumo-font-size-s);
+  text-decoration: none;
+  padding: 4px 8px;
+  border: 1px solid #1DB954;
+  border-radius: var(--lumo-border-radius-s);
+  transition: all 0.2s ease;
+}
+
+.spotify-link:hover {
+  background: rgba(29, 185, 84, 0.1);
+}
+
+.header-logout-button {
+  color: var(--lumo-primary-text-color);
+  font-size: var(--lumo-font-size-s);
+}
+
+.header-login-link {
+  color: var(--lumo-primary-text-color);
+  font-size: var(--lumo-font-size-s);
+  text-decoration: none;
+}
+
+.header-login-link:hover {
+  text-decoration: underline;
+}
+
+/* --- Chat Footer --- */
+.footer-container {
+  padding: var(--lumo-space-s) 0;
+}
+
+.footer-logo {
+  height: 24px;
+  filter: drop-shadow(0 0 4px rgba(201, 162, 39, 0.5));
+  opacity: 0.85;
+}
+
+.footer-powered-by {
+  font-size: var(--lumo-font-size-s);
+  color: var(--lumo-secondary-text-color);
+}
+
+.footer-embabel-link {
+  font-size: var(--lumo-font-size-s);
+  color: var(--lumo-primary-text-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-embabel-link:hover {
+  text-decoration: underline;
+}
+
+.footer-separator {
+  color: var(--lumo-contrast-30pct);
+  margin: 0 var(--lumo-space-s);
+}
+
+.footer-neo4j-link {
+  font-size: var(--lumo-font-size-s);
+  color: var(--lumo-primary-text-color);
+  text-decoration: none;
+}
+
+.footer-neo4j-link:hover {
+  text-decoration: underline;
+}
+
+.footer-analyze-button {
+  font-size: var(--lumo-font-size-s);
+  color: var(--lumo-primary-text-color);
+}
+
+.footer-stats {
+  font-size: var(--lumo-font-size-xs);
+  color: var(--lumo-tertiary-text-color);
+  margin-left: var(--lumo-space-s);
+}
+
+/* --- Chat View --- */
+.chat-scroller {
+  border: 1px solid var(--lumo-contrast-20pct);
+  border-radius: var(--lumo-border-radius-m);
+  background: var(--lumo-base-color);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   h3::before, h3::after {
@@ -355,5 +541,13 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 
   vaadin-vertical-layout::after {
     display: none;
+  }
+
+  .login-title {
+    font-size: 3rem;
+  }
+
+  .header-title-impromptu {
+    font-size: 1.5rem;
   }
 }

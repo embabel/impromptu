@@ -118,10 +118,7 @@ public class VaadinChatView extends VerticalLayout {
         var scroller = new Scroller(messagesLayout);
         scroller.setSizeFull();
         scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
-        scroller.getStyle()
-                .set("border", "1px solid var(--lumo-contrast-20pct)")
-                .set("border-radius", "var(--lumo-border-radius-m)")
-                .set("background", "var(--lumo-base-color)");
+        scroller.addClassName("chat-scroller");
         add(scroller);
         setFlexGrow(1, scroller);
 
@@ -148,7 +145,7 @@ public class VaadinChatView extends VerticalLayout {
         var neo4jConfig = new ChatFooter.Neo4jConfig(
                 neo4jHost, neo4jPort, neo4jUsername, neo4jPassword, neo4jHttpPort
         );
-        add(new ChatFooter(neo4jConfig, this::analyzeConversation));
+        add(new ChatFooter(neo4jConfig, this::analyzeConversation, stats.getChunkCount(), stats.getDocumentCount()));
     }
 
     /**
