@@ -7,7 +7,7 @@ import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.KnownEntity;
 import com.embabel.dice.common.Relations;
 import com.embabel.dice.common.SourceAnalysisContext;
-import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
+import com.embabel.dice.common.resolver.KnownEntityResolver;
 import com.embabel.dice.incremental.ChunkHistoryStore;
 import com.embabel.dice.incremental.ConversationSource;
 import com.embabel.dice.incremental.IncrementalAnalyzer;
@@ -44,6 +44,7 @@ public class ConversationPropositionExtraction {
     private final Relations relations;
     private final PropositionRepository propositionRepository;
     private final NamedEntityDataRepository entityRepository;
+    private final EntityResolver entityResolver;
 
     public ConversationPropositionExtraction(
             PropositionPipeline propositionPipeline,
@@ -52,11 +53,13 @@ public class ConversationPropositionExtraction {
             Relations relations,
             PropositionRepository propositionRepository,
             NamedEntityDataRepository entityRepository,
+            EntityResolver entityResolver,
             ImpromptuProperties properties) {
         this.dataDictionary = dataDictionary;
         this.relations = relations;
         this.propositionRepository = propositionRepository;
         this.entityRepository = entityRepository;
+        this.entityResolver = entityResolver;
 
         // Configure analyzer with properties
         var extraction = properties.extraction();
@@ -85,7 +88,11 @@ public class ConversationPropositionExtraction {
     }
 
     private EntityResolver entityResolverForUser(ImpromptuUser user) {
-        return new NamedEntityDataRepositoryEntityResolver(entityRepository);
+        // Wrap the resolver with the user as a known entity
+        return KnownEntityResolver.withKnownEntities(
+                java.util.List.of(KnownEntity.asCurrentUser(user)),
+                entityResolver
+        );
     }
 
     /**

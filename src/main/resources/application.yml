@@ -54,6 +54,10 @@ impromptu:
     model: gpt-4.1-mini
     temperature: 0.0
 
+  entity-resolution-llm:
+    model: gpt-4.1-mini
+    temperature: 0.0
+
   voice:
     persona: impromptu
     max-words: 70

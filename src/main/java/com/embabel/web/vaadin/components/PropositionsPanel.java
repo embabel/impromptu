@@ -6,8 +6,6 @@ import com.embabel.dice.proposition.PropositionRepository;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
-import com.vaadin.flow.component.details.Details;
-import com.vaadin.flow.component.details.DetailsVariant;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -18,9 +16,9 @@ import java.util.Comparator;
 import java.util.function.Consumer;
 
 /**
- * Collapsible panel showing the knowledge base of extracted propositions.
+ * Panel showing the knowledge base of extracted propositions.
  */
-public class PropositionsPanel extends Details {
+public class PropositionsPanel extends VerticalLayout {
 
     private final PropositionRepository propositionRepository;
     private final VerticalLayout propositionsContent;
@@ -31,10 +29,15 @@ public class PropositionsPanel extends Details {
     public PropositionsPanel(PropositionRepository propositionRepository) {
         this.propositionRepository = propositionRepository;
 
+        setPadding(false);
+        setSpacing(true);
+        setSizeFull();
+
         // Header with count and refresh button
         var headerLayout = new HorizontalLayout();
-        headerLayout.setAlignItems(VerticalLayout.Alignment.CENTER);
+        headerLayout.setAlignItems(Alignment.CENTER);
         headerLayout.setSpacing(true);
+        headerLayout.setWidthFull();
 
         var titleSpan = new Span("Knowledge Base");
         titleSpan.addClassName("panel-title");
@@ -67,6 +70,7 @@ public class PropositionsPanel extends Details {
         });
 
         headerLayout.add(titleSpan, propositionCountSpan, refreshButton, clearButton);
+        headerLayout.setFlexGrow(1, titleSpan);
 
         // Content area for propositions
         propositionsContent = new VerticalLayout();
@@ -76,21 +80,11 @@ public class PropositionsPanel extends Details {
 
         var contentScroller = new Scroller(propositionsContent);
         contentScroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
-        contentScroller.setHeight("500px");
-        contentScroller.setWidthFull();
+        contentScroller.setSizeFull();
         contentScroller.addClassName("panel-scroller");
 
-        setSummary(headerLayout);
-        setContent(contentScroller);
-        addThemeVariants(DetailsVariant.FILLED);
-        setWidthFull();
-
-        // Refresh when opened
-        addOpenedChangeListener(e -> {
-            if (e.isOpened()) {
-                refresh();
-            }
-        });
+        add(headerLayout, contentScroller);
+        setFlexGrow(1, contentScroller);
     }
 
     /**

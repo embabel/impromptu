@@ -23,6 +23,7 @@ public record ImpromptuProperties(
         @NestedConfigurationProperty Extraction extraction,
         @NestedConfigurationProperty NeoRagServiceProperties neoRag,
         @NestedConfigurationProperty LlmOptions propositionExtractionLlm,
+        @NestedConfigurationProperty LlmOptions entityResolutionLlm,
         boolean showExtractionPrompts,
         boolean showExtractionResponses
 ) {

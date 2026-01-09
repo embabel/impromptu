@@ -8,12 +8,15 @@ import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.chat.*;
 import com.embabel.common.util.StringTrimmingUtilsKt;
 import com.embabel.dice.proposition.EntityMention;
-import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
+import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
 import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.user.ImpromptuUserService;
-import com.embabel.impromptu.vaadin.components.*;
+import com.embabel.impromptu.vaadin.components.ChatFooter;
+import com.embabel.impromptu.vaadin.components.ChatHeader;
+import com.embabel.impromptu.vaadin.components.SpotifyPlayerPanel;
+import com.embabel.impromptu.vaadin.components.YouTubePlayerPanel;
 import com.embabel.impromptu.youtube.YouTubePendingPlayback;
 import com.embabel.impromptu.youtube.YouTubeService;
 import com.embabel.web.vaadin.components.ChatMessageBubble;
@@ -21,6 +24,7 @@ import com.embabel.web.vaadin.components.EntityCard;
 import com.embabel.web.vaadin.components.PropositionsPanel;
 import com.embabel.web.vaadin.components.VoiceControl;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -76,6 +80,7 @@ public class VaadinChatView extends VerticalLayout {
 
     // Side panel components
     private VerticalLayout sidePanel;
+    private ShortcutRegistration escapeShortcut;
     private Div backdrop;
     private Button toggleButton;
     private VerticalLayout mediaContent;
@@ -155,8 +160,8 @@ public class VaadinChatView extends VerticalLayout {
     }
 
     private void createSidePanel(SpotifyService spotifyService,
-                                  com.embabel.impromptu.user.ImpromptuUser user,
-                                  DrivinePropositionRepository propositionRepository) {
+                                 com.embabel.impromptu.user.ImpromptuUser user,
+                                 DrivinePropositionRepository propositionRepository) {
         // Backdrop for closing panel when clicking outside
         backdrop = new Div();
         backdrop.addClassName("side-panel-backdrop");
@@ -179,7 +184,7 @@ public class VaadinChatView extends VerticalLayout {
         header.addClassName("side-panel-header");
         header.setWidthFull();
 
-        var title = new Span("Panel");
+        var title = new Span("Backstage");
         title.addClassName("side-panel-title");
 
         var closeButton = new Button(new Icon(VaadinIcon.CLOSE));
@@ -246,6 +251,10 @@ public class VaadinChatView extends VerticalLayout {
             mediaContent.setVisible(event.getSelectedTab() == mediaTab);
             knowledgeContent.setVisible(event.getSelectedTab() == knowledgeTab);
             settingsContent.setVisible(event.getSelectedTab() == settingsTab);
+            // Refresh knowledge when tab is selected
+            if (event.getSelectedTab() == knowledgeTab) {
+                propositionsPanel.refresh();
+            }
         });
 
         // Add to view
@@ -258,12 +267,21 @@ public class VaadinChatView extends VerticalLayout {
         sidePanel.addClassName("open");
         backdrop.addClassName("visible");
         toggleButton.addClassName("hidden");
+        // Register Escape key to close panel
+        escapeShortcut = getUI().map(ui ->
+            ui.addShortcutListener(this::closeSidePanel, Key.ESCAPE)
+        ).orElse(null);
     }
 
     private void closeSidePanel() {
         sidePanel.removeClassName("open");
         backdrop.removeClassName("visible");
         toggleButton.removeClassName("hidden");
+        // Unregister Escape shortcut
+        if (escapeShortcut != null) {
+            escapeShortcut.remove();
+            escapeShortcut = null;
+        }
     }
 
     /**

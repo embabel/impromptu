@@ -9,7 +9,7 @@ import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.KnowledgeType;
 import com.embabel.dice.common.Relations;
 import com.embabel.dice.common.SchemaAdherence;
-import com.embabel.dice.common.resolver.NamedEntityDataRepositoryEntityResolver;
+import com.embabel.dice.common.resolver.AgenticEntityResolver;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionExtractor;
 import com.embabel.dice.proposition.PropositionRepository;
@@ -105,9 +105,29 @@ class PropositionConfiguration {
         );
     }
 
+    /**
+     * Agentic entity resolver using ToolishRag to let LLM drive entity search.
+     * This is more accurate because the LLM can craft queries iteratively.
+     */
     @Bean
-    EntityResolver entityResolver(NamedEntityDataRepository repository) {
-        return new NamedEntityDataRepositoryEntityResolver(repository);
+    EntityResolver entityResolver(
+            NamedEntityDataRepository repository,
+            AiBuilder aiBuilder,
+            DataDictionary dataDictionary,
+            ImpromptuProperties impromptuProperties) {
+        var llmOptions = impromptuProperties.entityResolutionLlm();
+        var ai = aiBuilder
+                .withShowPrompts(impromptuProperties.showExtractionPrompts())
+                .withShowLlmResponses(impromptuProperties.showExtractionResponses())
+                .ai();
+        logger.info("EntityResolver using agentic resolution with model: {}",
+                llmOptions != null ? llmOptions.getModel() : "default");
+        return new AgenticEntityResolver(
+                repository,
+                ai,
+                llmOptions != null ? llmOptions : com.embabel.common.ai.model.LlmOptions.withModel("gpt-4.1-mini"),
+                dataDictionary
+        );
     }
 
     /**
