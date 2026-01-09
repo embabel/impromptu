@@ -261,4 +261,24 @@ public class DrivinePropositionRepository implements PropositionRepository {
         Long result = persistenceManager.getOne(spec);
         return result.intValue();
     }
+
+    /**
+     * Delete all propositions from the database.
+     *
+     * @return the number of propositions deleted
+     */
+    @Transactional
+    public int clearAll() {
+        var countSpec = QuerySpecification
+                .withStatement("MATCH (p:Proposition) RETURN count(p) AS count")
+                .transform(Long.class);
+        Long count = persistenceManager.getOne(countSpec);
+
+        var deleteSpec = QuerySpecification
+                .withStatement("MATCH (p:Proposition) DETACH DELETE p");
+        persistenceManager.execute(deleteSpec);
+
+        logger.info("Deleted {} propositions", count);
+        return count.intValue();
+    }
 }

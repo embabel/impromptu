@@ -5,6 +5,7 @@ import com.embabel.dice.proposition.Proposition;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.details.DetailsVariant;
 import com.vaadin.flow.component.html.Span;
@@ -25,6 +26,7 @@ public class PropositionsPanel extends Details {
     private final VerticalLayout propositionsContent;
     private final Span propositionCountSpan;
     private Consumer<EntityMention> onMentionClick;
+    private Runnable onClear;
 
     public PropositionsPanel(PropositionRepository propositionRepository) {
         this.propositionRepository = propositionRepository;
@@ -45,7 +47,26 @@ public class PropositionsPanel extends Details {
         refreshButton.getElement().setAttribute("title", "Refresh propositions");
         refreshButton.addClickListener(e -> refresh());
 
-        headerLayout.add(titleSpan, propositionCountSpan, refreshButton);
+        var clearButton = new Button(VaadinIcon.TRASH.create());
+        clearButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ERROR);
+        clearButton.getElement().setAttribute("title", "Clear all propositions");
+        clearButton.addClickListener(e -> {
+            if (onClear != null) {
+                var dialog = new ConfirmDialog();
+                dialog.setHeader("Clear Knowledge Base");
+                dialog.setText("This will permanently delete ALL extracted propositions. This action cannot be undone.");
+                dialog.setCancelable(true);
+                dialog.setConfirmText("Delete All");
+                dialog.setConfirmButtonTheme("error primary");
+                dialog.addConfirmListener(event -> {
+                    onClear.run();
+                    refresh();
+                });
+                dialog.open();
+            }
+        });
+
+        headerLayout.add(titleSpan, propositionCountSpan, refreshButton, clearButton);
 
         // Content area for propositions
         propositionsContent = new VerticalLayout();
@@ -55,7 +76,7 @@ public class PropositionsPanel extends Details {
 
         var contentScroller = new Scroller(propositionsContent);
         contentScroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
-        contentScroller.setHeight("200px");
+        contentScroller.setHeight("500px");
         contentScroller.setWidthFull();
         contentScroller.addClassName("panel-scroller");
 
@@ -105,6 +126,13 @@ public class PropositionsPanel extends Details {
      */
     public void setOnMentionClick(Consumer<EntityMention> handler) {
         this.onMentionClick = handler;
+    }
+
+    /**
+     * Set the handler for clearing all propositions.
+     */
+    public void setOnClear(Runnable handler) {
+        this.onClear = handler;
     }
 
     /**

@@ -8,7 +8,7 @@ import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.chat.*;
 import com.embabel.common.util.StringTrimmingUtilsKt;
 import com.embabel.dice.proposition.EntityMention;
-import com.embabel.dice.proposition.PropositionRepository;
+import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.spotify.SpotifyService;
@@ -86,7 +86,7 @@ public class VaadinChatView extends VerticalLayout {
             Chatbot chatbot,
             ImpromptuProperties properties,
             DrivineStore searchOperations,
-            PropositionRepository propositionRepository,
+            DrivinePropositionRepository propositionRepository,
             NamedEntityDataRepository entityRepository,
             ImpromptuUserService userService,
             SpotifyService spotifyService,
@@ -109,6 +109,9 @@ public class VaadinChatView extends VerticalLayout {
         setSizeFull();
         setPadding(true);
         setSpacing(true);
+
+        // Clear any stale session data so we start with a fresh conversation
+        VaadinSession.getCurrent().setAttribute("sessionData", null);
 
         var user = userService.getAuthenticatedUser();
         var stats = searchOperations.info();
@@ -153,7 +156,7 @@ public class VaadinChatView extends VerticalLayout {
 
     private void createSidePanel(SpotifyService spotifyService,
                                   com.embabel.impromptu.user.ImpromptuUser user,
-                                  PropositionRepository propositionRepository) {
+                                  DrivinePropositionRepository propositionRepository) {
         // Backdrop for closing panel when clicking outside
         backdrop = new Div();
         backdrop.addClassName("side-panel-backdrop");
@@ -225,6 +228,7 @@ public class VaadinChatView extends VerticalLayout {
 
         propositionsPanel = new PropositionsPanel(propositionRepository);
         propositionsPanel.setOnMentionClick(this::showEntityDetail);
+        propositionsPanel.setOnClear(propositionRepository::clearAll);
         knowledgeContent.add(propositionsPanel);
 
         // Settings content (placeholder)

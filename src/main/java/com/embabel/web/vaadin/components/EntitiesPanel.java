@@ -62,7 +62,7 @@ public class EntitiesPanel extends Details {
 
         var contentScroller = new Scroller(entitiesContent);
         contentScroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
-        contentScroller.setHeight("200px");
+        contentScroller.setHeight("500px");
         contentScroller.setWidthFull();
         contentScroller.addClassName("panel-scroller");
 
