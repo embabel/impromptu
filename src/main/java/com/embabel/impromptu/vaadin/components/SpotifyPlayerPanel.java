@@ -55,16 +55,14 @@ public class SpotifyPlayerPanel extends VerticalLayout {
         setPadding(true);
         setSpacing(false);
         setWidthFull();
-        getStyle()
-                .set("background", "var(--lumo-contrast-5pct)")
-                .set("border-radius", "var(--lumo-border-radius-l)");
+        addClassName("spotify-panel");
 
         // Header (always visible, clickable to expand/collapse)
         var header = new HorizontalLayout();
         header.setWidthFull();
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);
         header.setAlignItems(Alignment.CENTER);
-        header.getStyle().set("cursor", "pointer");
+        header.addClassName("spotify-header");
         header.addClickListener(e -> toggleExpanded());
 
         var titleRow = new HorizontalLayout();
@@ -72,18 +70,10 @@ public class SpotifyPlayerPanel extends VerticalLayout {
         titleRow.setSpacing(true);
 
         var brandLabel = new Span("Spotify");
-        brandLabel.getStyle()
-                .set("font-weight", "bold")
-                .set("color", "#1DB954"); // Spotify green
+        brandLabel.addClassName("spotify-brand");
 
         headerTrackInfo = new Span();
-        headerTrackInfo.getStyle()
-                .set("font-size", "var(--lumo-font-size-s)")
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("max-width", "300px")
-                .set("overflow", "hidden")
-                .set("text-overflow", "ellipsis")
-                .set("white-space", "nowrap");
+        headerTrackInfo.addClassName("spotify-track-info");
 
         titleRow.add(brandLabel, headerTrackInfo);
 
@@ -96,11 +86,7 @@ public class SpotifyPlayerPanel extends VerticalLayout {
         openAppLink.add(VaadinIcon.EXTERNAL_LINK.create());
         openAppLink.getElement().setAttribute("title", "Open Spotify app");
         openAppLink.getElement().addEventListener("click", e -> {}).addEventData("event.stopPropagation()");
-        openAppLink.getStyle()
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("padding", "var(--lumo-space-xs)")
-                .set("display", "flex")
-                .set("align-items", "center");
+        openAppLink.addClassName("spotify-open-app-link");
 
         var refreshButton = new Button(VaadinIcon.REFRESH.create());
         refreshButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
@@ -136,11 +122,7 @@ public class SpotifyPlayerPanel extends VerticalLayout {
 
         // Album art
         albumArt = new Image();
-        albumArt.setWidth("60px");
-        albumArt.setHeight("60px");
-        albumArt.getStyle()
-                .set("border-radius", "var(--lumo-border-radius-s)")
-                .set("object-fit", "cover");
+        albumArt.addClassName("spotify-album-art");
 
         // Track info
         var trackInfo = new VerticalLayout();
@@ -148,22 +130,10 @@ public class SpotifyPlayerPanel extends VerticalLayout {
         trackInfo.setSpacing(false);
 
         trackName = new Span();
-        trackName.getStyle()
-                .set("font-weight", "500")
-                .set("font-size", "var(--lumo-font-size-s)")
-                .set("white-space", "nowrap")
-                .set("overflow", "hidden")
-                .set("text-overflow", "ellipsis")
-                .set("max-width", "200px");
+        trackName.addClassName("spotify-track-name");
 
         artistName = new Span();
-        artistName.getStyle()
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("font-size", "var(--lumo-font-size-xs)")
-                .set("white-space", "nowrap")
-                .set("overflow", "hidden")
-                .set("text-overflow", "ellipsis")
-                .set("max-width", "200px");
+        artistName.addClassName("spotify-artist-name");
 
         trackInfo.add(trackName, artistName);
 
@@ -254,12 +224,12 @@ public class SpotifyPlayerPanel extends VerticalLayout {
         this.isConnected = connected;
         if (!connected) {
             headerTrackInfo.setText("• Disconnected");
-            headerTrackInfo.getStyle().set("color", "var(--lumo-error-text-color)");
+            headerTrackInfo.addClassName("error");
             contentLayout.setVisible(false);
             isExpanded = false;
             expandCollapseButton.setIcon(VaadinIcon.CHEVRON_DOWN.create());
         } else {
-            headerTrackInfo.getStyle().set("color", "var(--lumo-secondary-text-color)");
+            headerTrackInfo.removeClassName("error");
         }
     }
 
@@ -343,7 +313,7 @@ public class SpotifyPlayerPanel extends VerticalLayout {
             );
         } else if (message != null && message.contains("No active device")) {
             com.vaadin.flow.component.notification.Notification.show(
-                    "No active Spotify device. Start playback on a device first.",
+                    "No active Spotify device. Click ↗ to open Spotify, then try again.",
                     5000,
                     com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
             );

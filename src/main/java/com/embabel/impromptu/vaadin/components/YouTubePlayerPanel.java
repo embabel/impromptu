@@ -37,25 +37,15 @@ public class YouTubePlayerPanel extends HorizontalLayout {
         setSpacing(true);
         setAlignItems(Alignment.CENTER);
         setVisible(false); // Hidden until a video is loaded
-        getStyle()
-                .set("background", "var(--lumo-contrast-5pct)")
-                .set("border-radius", "var(--lumo-border-radius-l)");
+        addClassName("youtube-panel");
 
         // YouTube brand
         var brandLabel = new Span("YouTube");
-        brandLabel.getStyle()
-                .set("font-weight", "bold")
-                .set("color", "#FF0000")
-                .set("min-width", "60px");
+        brandLabel.addClassName("youtube-brand");
 
         // Thumbnail
         thumbnail = new Image();
-        thumbnail.setWidth("80px");
-        thumbnail.setHeight("45px");
-        thumbnail.getStyle()
-                .set("border-radius", "var(--lumo-border-radius-s)")
-                .set("object-fit", "cover")
-                .set("cursor", "pointer");
+        thumbnail.addClassName("youtube-thumbnail");
         thumbnail.addClickListener(e -> openInNewTab());
         thumbnail.setVisible(false);
 
@@ -65,31 +55,23 @@ public class YouTubePlayerPanel extends HorizontalLayout {
         infoLayout.setSpacing(false);
 
         titleLabel = new Span();
-        titleLabel.getStyle()
-                .set("font-weight", "500")
-                .set("font-size", "var(--lumo-font-size-s)")
-                .set("white-space", "nowrap")
-                .set("overflow", "hidden")
-                .set("text-overflow", "ellipsis")
-                .set("max-width", "300px");
+        titleLabel.addClassName("youtube-title");
 
         channelLabel = new Span();
-        channelLabel.getStyle()
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("font-size", "var(--lumo-font-size-xs)");
+        channelLabel.addClassName("youtube-channel");
 
         infoLayout.add(titleLabel, channelLabel);
 
         // Hidden anchor for link (we'll use button click instead)
         youtubeLink = new Anchor();
         youtubeLink.setTarget("_blank");
-        youtubeLink.getStyle().set("display", "none");
+        youtubeLink.addClassName("hidden");
 
         // Open button
         openButton = new Button("Watch", VaadinIcon.EXTERNAL_LINK.create());
         openButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
         openButton.addClickListener(e -> openInNewTab());
-        openButton.getStyle().set("margin-left", "auto");
+        openButton.addClassName("youtube-open-button");
 
         add(brandLabel, thumbnail, infoLayout, youtubeLink, openButton);
         setFlexGrow(1, infoLayout);

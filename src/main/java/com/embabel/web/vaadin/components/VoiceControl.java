@@ -1,4 +1,4 @@
-package com.embabel.impromptu.vaadin.components;
+package com.embabel.web.vaadin.components;
 
 import com.vaadin.flow.component.*;
 import com.vaadin.flow.component.button.Button;

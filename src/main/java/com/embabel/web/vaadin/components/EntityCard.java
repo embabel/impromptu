@@ -1,5 +1,6 @@
 package com.embabel.web.vaadin.components;
 
+import com.embabel.agent.rag.model.EntityData;
 import com.embabel.agent.rag.model.NamedEntity;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -33,7 +34,7 @@ public class EntityCard extends Div {
         headerLayout.setAlignItems(HorizontalLayout.Alignment.CENTER);
         headerLayout.getStyle().set("margin-bottom", "var(--lumo-space-xs)");
 
-        // Type badge (most specific label, excluding "Entity")
+        // Type badge (most specific label, excluding entity label)
         var typeLabel = getPrimaryLabel(entity.labels());
         var typeBadge = new Span(typeLabel);
         typeBadge.getStyle()
@@ -81,9 +82,9 @@ public class EntityCard extends Div {
      */
     private String getPrimaryLabel(Set<String> labels) {
         return labels.stream()
-                .filter(l -> !l.equals("Entity") && !l.equals("Reference"))
+                .filter(l -> !l.equals(EntityData.ENTITY_LABEL) && !l.equals("Reference"))
                 .findFirst()
-                .orElse(labels.stream().findFirst().orElse("Entity"));
+                .orElse(labels.stream().findFirst().orElse(EntityData.ENTITY_LABEL));
     }
 
     /**

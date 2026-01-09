@@ -2,6 +2,7 @@ package com.embabel.impromptu.user;
 
 import com.embabel.agent.api.identity.User;
 import com.embabel.agent.core.CreationPermitted;
+import com.embabel.agent.rag.model.EntityData;
 import com.embabel.agent.rag.model.NamedEntity;
 import com.embabel.common.ai.prompt.PromptContributor;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,7 +18,7 @@ import java.time.Instant;
 /**
  * Mutable user class for Impromptu application.
  */
-@NodeFragment(labels = {"Entity", "User"})
+@NodeFragment(labels = {EntityData.ENTITY_LABEL, "User"})
 @CreationPermitted(false)
 public class ImpromptuUser implements User, NamedEntity, PromptContributor {
 
@@ -94,7 +95,7 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
      */
     @Override
     public java.util.Set<String> labels() {
-        return java.util.Set.of("Entity", "User");
+        return java.util.Set.of(EntityData.ENTITY_LABEL, "User");
     }
 
     /**

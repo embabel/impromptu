@@ -74,6 +74,11 @@ body {
   background: transparent;
 }
 
+/* --- Utility Classes --- */
+.hidden {
+  display: none !important;
+}
+
 /* Main layout */
 vaadin-vertical-layout {
   background: transparent;
@@ -533,6 +538,58 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   background: var(--lumo-base-color);
 }
 
+/* --- Chat Message Bubbles --- */
+.chat-bubble-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.chat-bubble-container.user {
+  align-items: flex-end;
+}
+
+.chat-bubble-container.assistant {
+  align-items: flex-start;
+}
+
+.chat-bubble {
+  max-width: 80%;
+  padding: var(--lumo-space-m);
+  border-radius: var(--lumo-border-radius-l);
+  margin: var(--lumo-space-xs) 0;
+}
+
+.chat-bubble.user {
+  background: var(--lumo-primary-color);
+  color: var(--lumo-primary-contrast-color);
+}
+
+.chat-bubble.assistant {
+  background: var(--lumo-contrast-10pct);
+  color: var(--lumo-body-text-color);
+}
+
+.chat-bubble-sender {
+  font-weight: bold;
+  font-size: var(--lumo-font-size-s);
+  display: block;
+  margin-bottom: var(--lumo-space-xs);
+}
+
+.chat-bubble-text {
+  white-space: pre-wrap;
+  font-size: var(--lumo-font-size-l);
+}
+
+.chat-bubble-error {
+  background: var(--lumo-error-color-10pct);
+  border-left: 3px solid var(--lumo-error-color);
+  padding: var(--lumo-space-m);
+  border-radius: var(--lumo-border-radius-m);
+  margin: var(--lumo-space-xs) 0;
+}
+
 /* --- Right Side Panel --- */
 .side-panel {
   position: fixed;
@@ -656,6 +713,108 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 .side-panel-backdrop.visible {
   opacity: 1;
   pointer-events: auto;
+}
+
+/* --- Spotify Player Panel --- */
+.spotify-panel {
+  background: var(--lumo-contrast-5pct);
+  border-radius: var(--lumo-border-radius-l);
+}
+
+.spotify-header {
+  cursor: pointer;
+}
+
+.spotify-brand {
+  font-weight: bold;
+  color: #1DB954;
+}
+
+.spotify-track-info {
+  font-size: var(--lumo-font-size-s);
+  color: var(--lumo-secondary-text-color);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spotify-track-info.error {
+  color: var(--lumo-error-text-color);
+}
+
+.spotify-open-app-link {
+  color: var(--lumo-secondary-text-color);
+  padding: var(--lumo-space-xs);
+  display: flex;
+  align-items: center;
+}
+
+.spotify-open-app-link:hover {
+  color: #1DB954;
+}
+
+.spotify-album-art {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--lumo-border-radius-s);
+  object-fit: cover;
+}
+
+.spotify-track-name {
+  font-weight: 500;
+  font-size: var(--lumo-font-size-s);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.spotify-artist-name {
+  color: var(--lumo-secondary-text-color);
+  font-size: var(--lumo-font-size-xs);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* --- YouTube Player Panel --- */
+.youtube-panel {
+  background: var(--lumo-contrast-5pct);
+  border-radius: var(--lumo-border-radius-l);
+}
+
+.youtube-brand {
+  font-weight: bold;
+  color: #FF0000;
+  min-width: 60px;
+}
+
+.youtube-thumbnail {
+  width: 80px;
+  height: 45px;
+  border-radius: var(--lumo-border-radius-s);
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.youtube-title {
+  font-weight: 500;
+  font-size: var(--lumo-font-size-s);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+.youtube-channel {
+  color: var(--lumo-secondary-text-color);
+  font-size: var(--lumo-font-size-xs);
+}
+
+.youtube-open-button {
+  margin-left: auto;
 }
 
 /* Responsive adjustments */
