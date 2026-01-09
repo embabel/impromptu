@@ -533,6 +533,131 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   background: var(--lumo-base-color);
 }
 
+/* --- Right Side Panel --- */
+.side-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 400px;
+  max-width: 90vw;
+  background: linear-gradient(180deg, rgba(18, 18, 24, 0.98) 0%, rgba(10, 10, 15, 0.99) 100%);
+  border-left: 1px solid rgba(201, 162, 39, 0.3);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+}
+
+.side-panel.open {
+  transform: translateX(0);
+}
+
+.side-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--lumo-space-m);
+  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+}
+
+.side-panel-title {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gold-accent);
+}
+
+.side-panel-close {
+  background: transparent;
+  border: none;
+  color: var(--lumo-secondary-text-color);
+  cursor: pointer;
+  padding: var(--lumo-space-xs);
+  border-radius: var(--lumo-border-radius-s);
+  transition: all 0.2s ease;
+}
+
+.side-panel-close:hover {
+  color: var(--gold-accent);
+  background: rgba(201, 162, 39, 0.1);
+}
+
+.side-panel vaadin-tabs {
+  --lumo-contrast-60pct: var(--gold-accent);
+  padding: 0 var(--lumo-space-m);
+}
+
+.side-panel vaadin-tab {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: var(--lumo-font-size-s);
+  color: var(--lumo-secondary-text-color);
+}
+
+.side-panel vaadin-tab[selected] {
+  color: var(--gold-accent);
+}
+
+.side-panel vaadin-tab::before {
+  background: var(--gold-accent);
+}
+
+.side-panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--lumo-space-m);
+}
+
+.side-panel-toggle {
+  position: fixed;
+  right: var(--lumo-space-m);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 150;
+  background: linear-gradient(135deg, rgba(74, 28, 43, 0.8) 0%, rgba(26, 21, 37, 0.9) 100%);
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  border-radius: var(--lumo-border-radius-m) 0 0 var(--lumo-border-radius-m);
+  border-right: none;
+  color: var(--gold-accent);
+  padding: var(--lumo-space-m) var(--lumo-space-s);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.3);
+}
+
+.side-panel-toggle:hover {
+  background: linear-gradient(135deg, rgba(74, 28, 43, 0.9) 0%, rgba(26, 21, 37, 1) 100%);
+  border-color: var(--gold-accent);
+  padding-right: var(--lumo-space-m);
+}
+
+.side-panel-toggle.hidden {
+  transform: translateY(-50%) translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Backdrop when panel is open */
+.side-panel-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 190;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.side-panel-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   h3::before, h3::after {
@@ -549,5 +674,11 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 
   .header-title-impromptu {
     font-size: 1.5rem;
+  }
+
+  /* Side panel full width on mobile */
+  .side-panel {
+    width: 100%;
+    max-width: 100%;
   }
 }

@@ -54,7 +54,6 @@ impromptu:
     model: gpt-4.1-mini
     temperature: 0.0
 
-
   voice:
     persona: impromptu
     max-words: 70
@@ -68,6 +67,7 @@ impromptu:
     trigger-interval: 10
 
   objective: music
+  behaviour: default
 
   show-extraction-prompts: true
   show-extraction-responses: false

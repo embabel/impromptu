@@ -18,6 +18,7 @@ public record ImpromptuProperties(
         @NestedConfigurationProperty LlmOptions chatLlm,
         String embeddingService,
         String objective,
+        String behaviour,
         @NestedConfigurationProperty Voice voice,
         @NestedConfigurationProperty Extraction extraction,
         @NestedConfigurationProperty NeoRagServiceProperties neoRag,

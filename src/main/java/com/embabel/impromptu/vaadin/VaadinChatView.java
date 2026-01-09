@@ -22,10 +22,15 @@ import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.Tab;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -43,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Vaadin-based chat view for the RAG chatbot.
- * Provides a browser-based chat interface.
+ * Provides a browser-based chat interface with side drawers for media and knowledge.
  */
 @Route("chat")
 @PageTitle("Impromptu Classical Music Explorer")
@@ -66,6 +71,14 @@ public class VaadinChatView extends VerticalLayout {
     private Button sendButton;
     private VoiceControl voiceControl;
     private YouTubePlayerPanel youTubePlayerPanel;
+
+    // Side panel components
+    private VerticalLayout sidePanel;
+    private Div backdrop;
+    private Button toggleButton;
+    private VerticalLayout mediaContent;
+    private VerticalLayout knowledgeContent;
+    private VerticalLayout settingsContent;
 
     public VaadinChatView(
             Chatbot chatbot,
@@ -95,9 +108,10 @@ public class VaadinChatView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        // Build header
         var user = userService.getAuthenticatedUser();
         var stats = searchOperations.info();
+
+        // Build header
         var headerConfig = new ChatHeader.HeaderConfig(
                 user,
                 properties.objective(),
@@ -125,27 +139,125 @@ public class VaadinChatView extends VerticalLayout {
         // Input section
         add(createInputSection());
 
-        // Propositions panel
-        propositionsPanel = new PropositionsPanel(propositionRepository);
-        propositionsPanel.setOnMentionClick(this::showEntityDetail);
-        add(propositionsPanel);
-
-        // Spotify player (only if linked)
-        if (spotifyService.isLinked(user)) {
-            add(new SpotifyPlayerPanel(spotifyService, user));
-        }
-
-        // YouTube player (always available if configured)
-        if (youTubeService.isConfigured()) {
-            youTubePlayerPanel = new YouTubePlayerPanel(youTubeService);
-            add(youTubePlayerPanel);
-        }
+        // Side panel with tabs for Media, Knowledge, Settings
+        createSidePanel(spotifyService, user, propositionRepository);
 
         // Footer
         var neo4jConfig = new ChatFooter.Neo4jConfig(
                 neo4jHost, neo4jPort, neo4jUsername, neo4jPassword, neo4jHttpPort
         );
         add(new ChatFooter(neo4jConfig, this::analyzeConversation, stats.getChunkCount(), stats.getDocumentCount()));
+    }
+
+    private void createSidePanel(SpotifyService spotifyService,
+                                  com.embabel.impromptu.user.ImpromptuUser user,
+                                  PropositionRepository propositionRepository) {
+        // Backdrop for closing panel when clicking outside
+        backdrop = new Div();
+        backdrop.addClassName("side-panel-backdrop");
+        backdrop.addClickListener(e -> closeSidePanel());
+
+        // Toggle button on right edge
+        toggleButton = new Button(VaadinIcon.COG.create());
+        toggleButton.addClassName("side-panel-toggle");
+        toggleButton.getElement().setAttribute("title", "Open panel");
+        toggleButton.addClickListener(e -> openSidePanel());
+
+        // Side panel
+        sidePanel = new VerticalLayout();
+        sidePanel.addClassName("side-panel");
+        sidePanel.setPadding(false);
+        sidePanel.setSpacing(false);
+
+        // Header with close button
+        var header = new HorizontalLayout();
+        header.addClassName("side-panel-header");
+        header.setWidthFull();
+
+        var title = new Span("Panel");
+        title.addClassName("side-panel-title");
+
+        var closeButton = new Button(new Icon(VaadinIcon.CLOSE));
+        closeButton.addClassName("side-panel-close");
+        closeButton.addClickListener(e -> closeSidePanel());
+
+        header.add(title, closeButton);
+        header.setFlexGrow(1, title);
+        sidePanel.add(header);
+
+        // Tabs
+        var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
+        var knowledgeTab = new Tab(VaadinIcon.BOOK.create(), new Span("Knowledge"));
+        var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
+
+        var tabs = new Tabs(mediaTab, knowledgeTab, settingsTab);
+        tabs.setWidthFull();
+        sidePanel.add(tabs);
+
+        // Content area
+        var contentArea = new VerticalLayout();
+        contentArea.addClassName("side-panel-content");
+        contentArea.setPadding(false);
+        contentArea.setSizeFull();
+
+        // Media content
+        mediaContent = new VerticalLayout();
+        mediaContent.setPadding(false);
+        mediaContent.setSpacing(true);
+
+        if (spotifyService.isLinked(user)) {
+            mediaContent.add(new SpotifyPlayerPanel(spotifyService, user));
+        }
+        if (youTubeService.isConfigured()) {
+            youTubePlayerPanel = new YouTubePlayerPanel(youTubeService);
+            mediaContent.add(youTubePlayerPanel);
+        }
+        if (mediaContent.getComponentCount() == 0) {
+            mediaContent.add(new Span("No media services configured"));
+        }
+
+        // Knowledge content
+        knowledgeContent = new VerticalLayout();
+        knowledgeContent.setPadding(false);
+        knowledgeContent.setVisible(false);
+
+        propositionsPanel = new PropositionsPanel(propositionRepository);
+        propositionsPanel.setOnMentionClick(this::showEntityDetail);
+        knowledgeContent.add(propositionsPanel);
+
+        // Settings content (placeholder)
+        settingsContent = new VerticalLayout();
+        settingsContent.setPadding(false);
+        settingsContent.setVisible(false);
+        settingsContent.add(new Span("Settings coming soon..."));
+
+        contentArea.add(mediaContent, knowledgeContent, settingsContent);
+        sidePanel.add(contentArea);
+        sidePanel.setFlexGrow(1, contentArea);
+
+        // Tab switching
+        tabs.addSelectedChangeListener(event -> {
+            mediaContent.setVisible(event.getSelectedTab() == mediaTab);
+            knowledgeContent.setVisible(event.getSelectedTab() == knowledgeTab);
+            settingsContent.setVisible(event.getSelectedTab() == settingsTab);
+        });
+
+        // Add to view
+        getElement().appendChild(backdrop.getElement());
+        getElement().appendChild(toggleButton.getElement());
+        getElement().appendChild(sidePanel.getElement());
+    }
+
+    private void openSidePanel() {
+        sidePanel.addClassName("open");
+        backdrop.addClassName("visible");
+        toggleButton.addClassName("hidden");
+    }
+
+    private void closeSidePanel() {
+        sidePanel.removeClassName("open");
+        backdrop.removeClassName("visible");
+        toggleButton.removeClassName("hidden");
     }
 
     /**

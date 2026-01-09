@@ -8,6 +8,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -90,6 +91,17 @@ public class SpotifyPlayerPanel extends VerticalLayout {
         headerButtons.setSpacing(false);
         headerButtons.setAlignItems(Alignment.CENTER);
 
+        // "Open in Spotify app" link
+        var openAppLink = new Anchor("spotify:", "");
+        openAppLink.add(VaadinIcon.EXTERNAL_LINK.create());
+        openAppLink.getElement().setAttribute("title", "Open Spotify app");
+        openAppLink.getElement().addEventListener("click", e -> {}).addEventData("event.stopPropagation()");
+        openAppLink.getStyle()
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("padding", "var(--lumo-space-xs)")
+                .set("display", "flex")
+                .set("align-items", "center");
+
         var refreshButton = new Button(VaadinIcon.REFRESH.create());
         refreshButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
         refreshButton.addClickListener(e -> {
@@ -105,7 +117,7 @@ public class SpotifyPlayerPanel extends VerticalLayout {
             toggleExpanded();
         });
 
-        headerButtons.add(refreshButton, expandCollapseButton);
+        headerButtons.add(openAppLink, refreshButton, expandCollapseButton);
         header.add(titleRow, headerButtons);
         add(header);
 

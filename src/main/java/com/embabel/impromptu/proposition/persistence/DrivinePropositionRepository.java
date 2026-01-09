@@ -15,7 +15,7 @@
  */
 package com.embabel.impromptu.proposition.persistence;
 
-import com.embabel.agent.rag.service.EntityIdentifier;
+import com.embabel.agent.rag.service.RetrievableIdentifier;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.common.core.types.SimilarityResult;
 import com.embabel.common.core.types.SimpleSimilaritySearchResult;
@@ -143,7 +143,7 @@ public class DrivinePropositionRepository implements PropositionRepository {
 
     @Override
     @Transactional(readOnly = true)
-    public @NonNull List<Proposition> findByEntity(@NonNull EntityIdentifier identifier) {
+    public @NonNull List<Proposition> findByEntity(@NonNull RetrievableIdentifier identifier) {
         // TODO make this efficient with query
         return findAll().stream().filter(p ->
                 p.getMentions().stream().anyMatch(m ->
