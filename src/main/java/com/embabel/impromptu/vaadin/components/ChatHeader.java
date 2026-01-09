@@ -4,6 +4,8 @@ import com.embabel.impromptu.user.ImpromptuUser;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
@@ -38,18 +40,22 @@ public class ChatHeader extends VerticalLayout {
         titleRow.setAlignItems(Alignment.CENTER);
         titleRow.setJustifyContentMode(JustifyContentMode.BETWEEN);
 
-        // Styled title with "Impromptu" in elegant gold
+        // Logo and subtitle
         var titleContainer = new HorizontalLayout();
-        titleContainer.setAlignItems(Alignment.BASELINE);
-        titleContainer.setSpacing(false);
+        titleContainer.setAlignItems(Alignment.CENTER);
+        titleContainer.setSpacing(true);
 
-        var impromptuText = new Span("Impromptu");
-        impromptuText.addClassName("header-title-impromptu");
+        var logoContainer = new Div();
+        logoContainer.addClassName("header-logo-container");
+
+        var logo = new Image("/images/piano_wide_2.jpg", "Impromptu");
+        logo.addClassName("header-logo");
+        logoContainer.add(logo);
 
         var subtitleText = new Span("Classical Music Explorer");
         subtitleText.addClassName("header-title-subtitle");
 
-        titleContainer.add(impromptuText, subtitleText);
+        titleContainer.add(logoContainer, subtitleText);
 
         // User info and logout
         var userSection = createUserSection(config);

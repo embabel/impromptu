@@ -47,7 +47,7 @@
         <dependency>
             <groupId>org.drivine</groupId>
             <artifactId>drivine4j-spring-boot-starter</artifactId>
-            <version>0.0.12</version>
+            <version>0.0.14</version>
         </dependency>
 
         <dependency>
