@@ -24,7 +24,7 @@ class ChatConfiguration {
     Chatbot chatbot(AgentPlatform agentPlatform) {
         return AgentProcessChatbot.utilityFromPlatform(
                 agentPlatform,
-                new Verbosity().showPrompts()
+                new Verbosity()
         );
     }
 
