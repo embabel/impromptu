@@ -116,9 +116,6 @@ public class VaadinChatView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        // Clear any stale session data so we start with a fresh conversation
-        VaadinSession.getCurrent().setAttribute("sessionData", null);
-
         var user = userService.getAuthenticatedUser();
         var stats = searchOperations.info();
 
@@ -146,6 +143,9 @@ public class VaadinChatView extends VerticalLayout {
         messagesScroller.addClassName("chat-scroller");
         add(messagesScroller);
         setFlexGrow(1, messagesScroller);
+
+        // Restore previous messages if session exists
+        restorePreviousMessages();
 
         // Input section
         add(createInputSection());
@@ -424,6 +424,30 @@ public class VaadinChatView extends VerticalLayout {
 
     private void scrollToBottom() {
         messagesScroller.getElement().executeJs("this.scrollTop = this.scrollHeight");
+    }
+
+    /**
+     * Restore previous messages from an existing session.
+     */
+    private void restorePreviousMessages() {
+        var vaadinSession = VaadinSession.getCurrent();
+        var sessionData = (SessionData) vaadinSession.getAttribute("sessionData");
+        if (sessionData == null) {
+            return;
+        }
+
+        var conversation = sessionData.chatSession().getConversation();
+        for (var message : conversation.getMessages()) {
+            if (message instanceof UserMessage) {
+                messagesLayout.add(ChatMessageBubble.user(message.getContent()));
+            } else if (message instanceof AssistantMessage) {
+                messagesLayout.add(ChatMessageBubble.assistant(persona, message.getContent()));
+            }
+        }
+
+        if (!conversation.getMessages().isEmpty()) {
+            scrollToBottom();
+        }
     }
 
     /**
