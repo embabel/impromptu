@@ -41,6 +41,7 @@ neo4j:
 
 impromptu:
 
+
   neo-rag: {}
 
   chunker-config:
@@ -78,6 +79,7 @@ impromptu:
   show-extraction-prompts: true
   show-extraction-responses: false
   embedding-service: text-embedding-3-small
+  conversation-window: 60
 
 # YouTube Data API v3
 # To set up:

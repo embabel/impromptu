@@ -8,12 +8,24 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /**
- * Properties for chatbot
+ * Properties for chatbot. See application.yml
  *
- * @param chatLlm   LLM model and hyperparameters to use
- * @param objective the goal of the chatbot's responses: For example, to answer legal questions
- * @param voice     the persona and output style of the chatbot while achieving its objective
- * @param neoRag    configuration for ingestion
+ * @param chatLlm                  LLM model and hyperparameters to use
+ *                                 for chatbot responses
+ * @param embeddingService         the name of the embedding service to use
+ *                                 for retrieval-augmented generation
+ * @param objective                the goal of the chatbot's responses: For example, to answer legal questions
+ * @param voice                    the persona and output style of the chatbot while achieving its objective
+ * @param extraction               configuration for extraction of propositions from conversations
+ * @param neoRag                   Neo RAG configuration
+ * @param chunkerConfig            content chunker configuration
+ *                                 for RAG ingestion
+ * @param propositionExtractionLlm LLM model and hyperparameters to use
+ *                                 for proposition extraction from conversations
+ * @param entityResolutionLlm      LLM model and hyperparameters to use
+ *                                 for entity resolution during proposition extraction
+ * @param showExtractionPrompts    whether to log the extraction prompts
+ * @param showExtractionResponses  whether to log the extraction responses
  */
 @ConfigurationProperties(prefix = "impromptu")
 public record ImpromptuProperties(
@@ -21,6 +33,7 @@ public record ImpromptuProperties(
         String embeddingService,
         String objective,
         String behaviour,
+        @DefaultValue("50") int conversationWindow,
         @NestedConfigurationProperty Voice voice,
         @NestedConfigurationProperty Extraction extraction,
         @DefaultValue @NestedConfigurationProperty NeoRagServiceProperties neoRag,

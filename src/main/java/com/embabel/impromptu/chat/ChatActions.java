@@ -47,6 +47,7 @@ public class ChatActions {
     private final MemoryProjector memoryProjector;
     private final PropositionRepository propositionRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final ImpromptuProperties impromptuProperties;
 
     public ChatActions(
             SearchOperations searchOperations,
@@ -56,7 +57,7 @@ public class ChatActions {
             MemoryProjector memoryProjector,
             PropositionRepository propositionRepository,
             ApplicationEventPublisher eventPublisher,
-            ImpromptuProperties properties) {
+            ImpromptuProperties properties, ImpromptuProperties impromptuProperties) {
         this.toolishRag = new ToolishRag(
                 "sources",
                 "The music criticism written by Robert Schumann: His own writings",
@@ -69,6 +70,7 @@ public class ChatActions {
         this.memoryProjector = memoryProjector;
         this.properties = properties;
         this.eventPublisher = eventPublisher;
+        this.impromptuProperties = impromptuProperties;
     }
 
     /**
@@ -101,7 +103,7 @@ public class ChatActions {
             ImpromptuUser user,
             ConversationAnalysisRequestEvent.LastAnalysis lastAnalysis,
             ActionContext context) {
-        logger.info("Conversation has {} messages", conversation.getMessages().size());
+        logger.debug("Conversation has {} messages", conversation.getMessages().size());
         var tools = new LinkedList<ToolObject>();
         if (user.isSpotifyLinked()) {
             tools.add(new ToolObject(new SpotifyTools(user, spotifyService)).withPrefix("spotify"));
@@ -122,11 +124,11 @@ public class ChatActions {
                 .withToolObjects(tools)
                 .withToolGroup(CoreToolGroups.WEB)
                 .withTemplate("impromptu_chat_response")
-                .respondWithSystemPrompt(conversation, Map.of(
-                        "properties", properties,
-                        "voice", properties.voice(),
-                        "objective", properties.objective()
-                ));
+                .respondWithSystemPrompt(
+                        conversation.last(impromptuProperties.conversationWindow()),
+                        Map.of(
+                                "properties", properties
+                        ));
         context.sendMessage(conversation.addMessage(assistantMessage));
     }
 
