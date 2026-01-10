@@ -12,6 +12,7 @@ import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
 import com.embabel.impromptu.spotify.SpotifyService;
+import com.embabel.impromptu.user.ImpromptuUser;
 import com.embabel.impromptu.user.ImpromptuUserService;
 import com.embabel.impromptu.vaadin.components.ChatFooter;
 import com.embabel.impromptu.vaadin.components.ChatHeader;
@@ -70,6 +71,7 @@ public class VaadinChatView extends VerticalLayout {
     private final YouTubeService youTubeService;
     private final YouTubePendingPlayback youTubePendingPlayback;
     private final String persona;
+    private final ImpromptuUser currentUser;
 
     private VerticalLayout messagesLayout;
     private Scroller messagesScroller;
@@ -116,18 +118,18 @@ public class VaadinChatView extends VerticalLayout {
         setPadding(true);
         setSpacing(true);
 
-        var user = userService.getAuthenticatedUser();
+        this.currentUser = userService.getAuthenticatedUser();
         var stats = searchOperations.info();
 
         // Build header
         var headerConfig = new ChatHeader.HeaderConfig(
-                user,
+                currentUser,
                 properties.objective(),
                 persona,
                 stats.getChunkCount(),
                 stats.getDocumentCount(),
                 spotifyService.isConfigured(),
-                spotifyService.isLinked(user)
+                spotifyService.isLinked(currentUser)
         );
         add(new ChatHeader(headerConfig));
 
@@ -151,7 +153,7 @@ public class VaadinChatView extends VerticalLayout {
         add(createInputSection());
 
         // Side panel with tabs for Media, Knowledge, Settings
-        createSidePanel(spotifyService, user, propositionRepository);
+        createSidePanel(spotifyService, currentUser, propositionRepository);
 
         // Footer
         var neo4jConfig = new ChatFooter.Neo4jConfig(
@@ -270,7 +272,7 @@ public class VaadinChatView extends VerticalLayout {
         toggleButton.addClassName("hidden");
         // Register Escape key to close panel
         escapeShortcut = getUI().map(ui ->
-            ui.addShortcutListener(this::closeSidePanel, Key.ESCAPE)
+                ui.addShortcutListener(this::closeSidePanel, Key.ESCAPE)
         ).orElse(null);
     }
 
@@ -298,11 +300,10 @@ public class VaadinChatView extends VerticalLayout {
         if (sessionData == null) {
             var responseQueue = new ArrayBlockingQueue<Message>(10);
             var outputChannel = new QueueingOutputChannel(responseQueue);
-            var user = userService.getAuthenticatedUser();
-            var chatSession = chatbot.createSession(user, outputChannel, UUID.randomUUID().toString());
+            var chatSession = chatbot.createSession(currentUser, outputChannel, UUID.randomUUID().toString());
             sessionData = new SessionData(chatSession, responseQueue);
             vaadinSession.setAttribute("sessionData", sessionData);
-            logger.info("Created new chat session for user: {}", user.getDisplayName());
+            logger.info("Created new chat session for user: {}", currentUser.getDisplayName());
         }
 
         return sessionData;
@@ -317,7 +318,7 @@ public class VaadinChatView extends VerticalLayout {
         // Voice control - initialize from user preferences
         voiceControl = new VoiceControl();
         voiceControl.setOnSpeechRecognized(this::onVoiceInput);
-        voiceControl.setAutoSpeak(userService.getAuthenticatedUser().isVoiceEnabled());
+        voiceControl.setAutoSpeak(currentUser.isVoiceEnabled());
 
         inputField = new TextField();
         inputField.setPlaceholder("Type or click mic to speak...");
@@ -412,11 +413,10 @@ public class VaadinChatView extends VerticalLayout {
             logger.info("No session data - nothing to analyze");
             return;
         }
-        var user = userService.getAuthenticatedUser();
         var conversation = sessionData.chatSession().getConversation();
-        logger.info("Publishing ConversationAnalysisRequestEvent for user: {}", user.getDisplayName());
+        logger.info("Publishing ConversationAnalysisRequestEvent for user: {}", currentUser.getDisplayName());
         eventPublisher.publishEvent(new ConversationAnalysisRequestEvent(
-                this, user, conversation, ConversationAnalysisRequestEvent.LastAnalysis.NONE));
+                this, currentUser, conversation, ConversationAnalysisRequestEvent.LastAnalysis.NONE));
 
         // Schedule a refresh of propositions after analysis
         getUI().ifPresent(ui -> propositionsPanel.scheduleRefresh(ui, 2000));
@@ -456,8 +456,7 @@ public class VaadinChatView extends VerticalLayout {
     private void checkPendingYouTubePlayback() {
         if (youTubePlayerPanel == null) return;
 
-        var user = userService.getAuthenticatedUser();
-        var video = youTubePendingPlayback.consumePendingVideo(user.getId());
+        var video = youTubePendingPlayback.consumePendingVideo(currentUser.getId());
         if (video != null) {
             logger.info("Loading pending YouTube video: {} - {}", video.videoId(), video.title());
             youTubePlayerPanel.loadVideo(video.videoId(), video.title(), video.channelTitle());
@@ -502,12 +501,12 @@ public class VaadinChatView extends VerticalLayout {
     private record QueueingOutputChannel(BlockingQueue<Message> queue) implements OutputChannel {
         @Override
         public void send(OutputChannelEvent event) {
-            logger.info("OutputChannel.send() called with event type: {}", event.getClass().getSimpleName());
+            logger.debug("OutputChannel.send() called with event type: {}", event.getClass().getSimpleName());
             if (event instanceof MessageOutputChannelEvent msgEvent) {
                 var msg = msgEvent.getMessage();
-                logger.info("MessageOutputChannelEvent received, message type: {}", msg.getClass().getSimpleName());
+                logger.debug("MessageOutputChannelEvent received, message type: {}", msg.getClass().getSimpleName());
                 if (msg instanceof AssistantMessage) {
-                    logger.info("Queueing AssistantMessage: {}",
+                    logger.debug("Queueing AssistantMessage: {}",
                             StringTrimmingUtilsKt.trim(msg.getContent(), 80, 3, "..."));
                     queue.offer(msg);
                 }
