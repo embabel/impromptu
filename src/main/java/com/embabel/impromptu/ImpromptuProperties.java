@@ -1,9 +1,11 @@
 package com.embabel.impromptu;
 
+import com.embabel.agent.rag.ingestion.ContentChunker;
 import com.embabel.agent.rag.neo.drivine.NeoRagServiceProperties;
 import com.embabel.common.ai.model.LlmOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /**
  * Properties for chatbot
@@ -21,7 +23,8 @@ public record ImpromptuProperties(
         String behaviour,
         @NestedConfigurationProperty Voice voice,
         @NestedConfigurationProperty Extraction extraction,
-        @NestedConfigurationProperty NeoRagServiceProperties neoRag,
+        @DefaultValue @NestedConfigurationProperty NeoRagServiceProperties neoRag,
+        @NestedConfigurationProperty ContentChunker.Config chunkerConfig,
         @NestedConfigurationProperty LlmOptions propositionExtractionLlm,
         @NestedConfigurationProperty LlmOptions entityResolutionLlm,
         boolean showExtractionPrompts,

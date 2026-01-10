@@ -15,8 +15,8 @@
  */
 package com.embabel.impromptu.rag;
 
-import com.embabel.agent.rag.ingestion.NeverRefreshExistingDocumentContentPolicy;
 import com.embabel.agent.rag.ingestion.TikaHierarchicalContentReader;
+import com.embabel.agent.rag.ingestion.policy.NeverRefreshExistingDocumentContentPolicy;
 import com.embabel.agent.rag.model.NavigableContainerSection;
 import com.embabel.agent.rag.model.NavigableDocument;
 import com.embabel.agent.rag.model.NavigableSection;

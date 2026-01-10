@@ -1,5 +1,7 @@
 package com.embabel.impromptu.rag;
 
+import com.embabel.agent.rag.ingestion.ChunkTransformer;
+import com.embabel.agent.rag.ingestion.transform.AddTitlesChunkTransformer;
 import com.embabel.agent.rag.neo.drivine.DrivineCypherSearch;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
 import com.embabel.common.ai.model.EmbeddingService;
@@ -42,15 +44,23 @@ class RagConfiguration {
     }
 
     @Bean
+    ChunkTransformer chunkTransformer() {
+        return AddTitlesChunkTransformer.INSTANCE;
+    }
+
+    @Bean
     @Primary
     DrivineStore drivineStore(
             PersistenceManager persistenceManager,
             PlatformTransactionManager platformTransactionManager,
             EmbeddingService embeddingService,
+            ChunkTransformer chunkTransformer,
             ImpromptuProperties properties) {
         var store = new DrivineStore(
                 persistenceManager,
                 properties.neoRag(),
+                properties.chunkerConfig(),
+                chunkTransformer,
                 embeddingService,
                 platformTransactionManager,
                 new DrivineCypherSearch(persistenceManager)

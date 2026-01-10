@@ -1,7 +1,7 @@
 package com.embabel.impromptu.rag;
 
-import com.embabel.agent.rag.ingestion.NeverRefreshExistingDocumentContentPolicy;
 import com.embabel.agent.rag.ingestion.TikaHierarchicalContentReader;
+import com.embabel.agent.rag.ingestion.policy.NeverRefreshExistingDocumentContentPolicy;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
 import org.springframework.stereotype.Service;
 
@@ -83,7 +83,7 @@ public record DataManager(DrivineStore store) {
 
         return "Ingested " + ingestedCount + " documents from directory: " + dirUri;
     }
-    
+
     public String getInfo() {
         var info = store.info();
         return "Chunks: " + info.getChunkCount() + ", Documents: " + info.getDocumentCount();

@@ -41,7 +41,9 @@ neo4j:
 
 impromptu:
 
-  neo-rag:
+  neo-rag: {}
+
+  chunker-config:
     max-chunk-size: 800
     overlap-size: 100
     embedding-batch-size: 800
