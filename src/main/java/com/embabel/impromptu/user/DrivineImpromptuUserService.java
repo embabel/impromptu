@@ -37,7 +37,26 @@ public class DrivineImpromptuUserService extends ImpromptuUserService {
     protected ImpromptuUser findOrCreate(String id, String displayName, String username, String email) {
         ImpromptuUser existing = findById(id);
         if (existing != null) {
-            logger.info("Found existing user by ID: {}", existing);
+            // Update fields from OAuth if missing in DB (e.g., after data migration or corruption)
+            boolean needsSave = false;
+            if (existing.getDisplayName() == null && displayName != null) {
+                existing.setDisplayName(displayName);
+                needsSave = true;
+            }
+            if (existing.getUsername() == null && username != null) {
+                existing.setUsername(username);
+                needsSave = true;
+            }
+            if (existing.getEmail() == null && email != null) {
+                existing.setEmail(email);
+                needsSave = true;
+            }
+            if (needsSave) {
+                save(existing);
+                logger.info("Updated existing user with missing fields from OAuth: {}", existing);
+            } else {
+                logger.info("Found existing user by ID: {}", existing);
+            }
             return existing;
         }
 

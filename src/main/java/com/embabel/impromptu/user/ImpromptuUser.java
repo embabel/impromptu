@@ -77,12 +77,13 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
 
     @Override
     public @NonNull String getName() {
-        return displayName;
+        // Fallback to username or id if displayName is null (defensive for corrupted data)
+        return displayName != null ? displayName : (username != null ? username : id);
     }
 
     @Override
     public @NonNull String getDescription() {
-        return "User %s with username %s".formatted(displayName, username);
+        return "User %s with username %s".formatted(getDisplayName(), username);
     }
 
     // TODO this is questionable, needed for Vaadin to not crash with serialization errors
@@ -125,7 +126,7 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
 
     @Override
     public @NonNull String getDisplayName() {
-        return displayName;
+        return displayName != null ? displayName : (username != null ? username : id);
     }
 
     public void setDisplayName(String displayName) {
