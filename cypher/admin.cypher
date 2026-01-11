@@ -9,7 +9,10 @@ MATCH (e:__Entity__)
   WHERE NOT e:Reference
 DETACH DELETE e;
 
-
+// Delete open opus data
+MATCH (n)
+WHERE n.primarySource = 'openopus'
+DETACH DELETE n;
 
 // DANGER ZONE
 

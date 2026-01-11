@@ -19,6 +19,7 @@ import com.embabel.dice.proposition.revision.PropositionReviser;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.domain.Composer;
 import com.embabel.impromptu.domain.MusicPlace;
+import com.embabel.impromptu.domain.Performer;
 import com.embabel.impromptu.domain.Work;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.drivine.manager.GraphObjectManager;
@@ -50,6 +51,7 @@ class PropositionConfiguration {
         var schema = DataDictionary.fromClasses(
                 Composer.class,
                 Work.class,
+                Performer.class,
 //                MusicDomainTypes.Instrument.class,
                 MusicPlace.class,
 //                MusicDomainTypes.MusicalConcept.class,

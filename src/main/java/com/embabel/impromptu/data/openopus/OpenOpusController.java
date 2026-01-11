@@ -355,9 +355,11 @@ public class OpenOpusController {
     }
 
     private String buildWorkDescription(String composerName, OpenOpusWork work) {
+        // Format for better full-text search: "Rachmaninoff - Piano Concerto No. 2, in G minor Op. 33"
         var sb = new StringBuilder();
-        sb.append("composer:").append(composerName);
-        sb.append(" work:").append(work.title());
+        sb.append(composerName);
+        sb.append(" - ");
+        sb.append(work.title());
         if (work.subtitle() != null && !work.subtitle().isBlank()) {
             sb.append(", ").append(work.subtitle());
         }
