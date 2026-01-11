@@ -1,7 +1,7 @@
 package com.embabel.web.vaadin.components;
 
-import com.embabel.agent.rag.model.EntityData;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.embabel.agent.rag.model.NamedEntityData;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.html.Div;
@@ -56,9 +56,9 @@ public class EntityCard extends Div {
      */
     private String getPrimaryLabel(Set<String> labels) {
         return labels.stream()
-                .filter(l -> !l.equals(EntityData.ENTITY_LABEL) && !l.equals("Reference"))
+                .filter(l -> !l.equals(NamedEntityData.ENTITY_LABEL) && !l.equals("Reference"))
                 .findFirst()
-                .orElse(labels.stream().findFirst().orElse(EntityData.ENTITY_LABEL));
+                .orElse(labels.stream().findFirst().orElse(NamedEntityData.ENTITY_LABEL));
     }
 
     /**

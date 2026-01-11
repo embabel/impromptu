@@ -2,8 +2,8 @@ package com.embabel.impromptu.user;
 
 import com.embabel.agent.api.identity.User;
 import com.embabel.agent.core.CreationPermitted;
-import com.embabel.agent.rag.model.EntityData;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.embabel.agent.rag.model.NamedEntityData;
 import com.embabel.common.ai.prompt.PromptContributor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,11 +14,14 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
+import java.util.Set;
+
+import static com.embabel.agent.rag.model.NamedEntityData.ENTITY_LABEL;
 
 /**
  * Mutable user class for Impromptu application.
  */
-@NodeFragment(labels = {EntityData.ENTITY_LABEL, "User"})
+@NodeFragment(labels = {NamedEntityData.ENTITY_LABEL, "User"})
 @CreationPermitted(false)
 public class ImpromptuUser implements User, NamedEntity, PromptContributor {
 
@@ -94,8 +97,9 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
      * This ensures EntityIdentifier.forUser() can find propositions mentioning this user.
      */
     @Override
-    public java.util.Set<String> labels() {
-        return java.util.Set.of(EntityData.ENTITY_LABEL, "User");
+    @NonNull
+    public Set<String> labels() {
+        return Set.of(ENTITY_LABEL, "User");
     }
 
     /**

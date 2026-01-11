@@ -17,7 +17,10 @@ package com.embabel.impromptu.domain;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.embabel.agent.rag.model.Relationship;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * Represents a composer in the graph database.
@@ -30,6 +33,18 @@ public interface Composer extends NamedEntity {
     @Nullable Long getBirthYear();
 
     @Nullable Long getDeathYear();
+
+    @Relationship(name = "COMPOSED")
+    List<Work> getWorks();
+
+    default Long lifespan() {
+        Long birthYear = getBirthYear();
+        Long deathYear = getDeathYear();
+        if (birthYear != null && deathYear != null) {
+            return deathYear - birthYear;
+        }
+        return null;
+    }
 
     boolean isPopular();
 

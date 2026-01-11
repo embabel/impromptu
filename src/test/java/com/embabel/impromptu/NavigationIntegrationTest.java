@@ -84,4 +84,27 @@ class NavigationIntegrationTest {
         assertNotNull(brahms);
         assertEquals(1833L, brahms.getBirthYear());
     }
+
+    @Test
+    @Transactional
+    void testBusinessMethodOnComposer() {
+        var brahms = namedEntityDataRepository.findById("composer-brahms", Composer.class);
+        assertNotNull(brahms);
+        // He actually was only 63 but this is what the math says, so this is a reasonable
+        // test of this business method
+        assertEquals(64L, brahms.lifespan());
+    }
+
+    @Test
+    @Transactional
+    void testWorks() {
+        var brahms = namedEntityDataRepository.findById("composer-bach", Composer.class);
+        var works = brahms.getWorks();
+        assertNotNull(works);
+        assertEquals(2, works.size(), "Bach should have 2 test works");
+        for (var work : works) {
+            assertNotNull(work.getTitle());
+            System.out.println("Bach work: " + work.getTitle());
+        }
+    }
 }
