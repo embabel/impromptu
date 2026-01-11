@@ -115,20 +115,15 @@ class PropositionConfiguration {
     EntityResolver entityResolver(
             NamedEntityDataRepository repository,
             AiBuilder aiBuilder,
-            DataDictionary dataDictionary,
             ImpromptuProperties impromptuProperties) {
-        var llmOptions = impromptuProperties.entityResolutionLlm();
         var ai = aiBuilder
                 .withShowPrompts(impromptuProperties.showExtractionPrompts())
                 .withShowLlmResponses(impromptuProperties.showExtractionResponses())
                 .ai();
-        logger.info("EntityResolver using agentic resolution with model: {}",
-                llmOptions != null ? llmOptions.getModel() : "default");
         return new AgenticEntityResolver(
                 repository,
                 ai,
-                llmOptions != null ? llmOptions : com.embabel.common.ai.model.LlmOptions.withModel("gpt-4.1-mini"),
-                dataDictionary
+                impromptuProperties.entityResolutionLlm()
         );
     }
 

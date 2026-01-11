@@ -14,6 +14,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Set;
 
 import static com.embabel.agent.rag.model.NamedEntityData.ENTITY_LABEL;
@@ -97,8 +98,8 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     // TODO this is questionable, needed for Vaadin to not crash with serialization errors
     @Override
     @JsonIgnore
-    public java.util.Map<String, Object> getMetadata() {
-        return java.util.Map.of();
+    public Map<String, Object> getMetadata() {
+        return Map.of();
     }
 
     /**
