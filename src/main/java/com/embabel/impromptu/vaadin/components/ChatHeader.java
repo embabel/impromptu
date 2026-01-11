@@ -73,19 +73,15 @@ public class ChatHeader extends VerticalLayout {
         userSection.setSpacing(true);
 
         var user = config.user();
-        var userName = new Span(user.getDisplayName());
-        userName.addClassName("header-user-name");
 
         if (!"Anonymous".equals(user.getDisplayName())) {
             // Spotify link button (only show if Spotify is configured)
             if (config.spotifyConfigured()) {
                 if (config.spotifyLinked()) {
-                    // User has linked Spotify
                     var spotifyBadge = new Span("Spotify linked");
                     spotifyBadge.addClassName("spotify-badge");
                     userSection.add(spotifyBadge);
                 } else {
-                    // User hasn't linked Spotify yet
                     var linkSpotifyAnchor = new Anchor("/link/spotify", "Link Spotify");
                     linkSpotifyAnchor.getElement().setAttribute("router-ignore", true);
                     linkSpotifyAnchor.addClassName("spotify-link");
@@ -93,13 +89,43 @@ public class ChatHeader extends VerticalLayout {
                 }
             }
 
-            // User profile button
-            var profileButton = new Button(VaadinIcon.USER.create());
-            profileButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ICON);
-            profileButton.addClassName("header-profile-button");
-            profileButton.getElement().setAttribute("title", "User settings");
+            // User profile chip - clickable avatar + name
+            var profileChip = new HorizontalLayout();
+            profileChip.setAlignItems(Alignment.CENTER);
+            profileChip.setSpacing(false);
+            profileChip.addClassName("user-profile-chip");
+            profileChip.getStyle()
+                    .set("background", "var(--lumo-contrast-5pct)")
+                    .set("border-radius", "20px")
+                    .set("padding", "4px 12px 4px 4px")
+                    .set("cursor", "pointer")
+                    .set("gap", "8px");
+
+            // Avatar with initials
+            var initials = getInitials(user.getDisplayName());
+            var avatar = new Div();
+            avatar.setText(initials);
+            avatar.getStyle()
+                    .set("width", "28px")
+                    .set("height", "28px")
+                    .set("border-radius", "50%")
+                    .set("background", "var(--lumo-primary-color)")
+                    .set("color", "var(--lumo-primary-contrast-color)")
+                    .set("display", "flex")
+                    .set("align-items", "center")
+                    .set("justify-content", "center")
+                    .set("font-size", "var(--lumo-font-size-xs)")
+                    .set("font-weight", "600");
+
+            var userName = new Span(user.getDisplayName());
+            userName.getStyle()
+                    .set("font-size", "var(--lumo-font-size-s)")
+                    .set("color", "var(--lumo-body-text-color)");
+
+            profileChip.add(avatar, userName);
+
             if (config.onUserProfileClick() != null) {
-                profileButton.addClickListener(e -> config.onUserProfileClick().run());
+                profileChip.addClickListener(e -> config.onUserProfileClick().run());
             }
 
             var logoutButton = new Button("Logout", e -> {
@@ -109,7 +135,7 @@ public class ChatHeader extends VerticalLayout {
             });
             logoutButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
             logoutButton.addClassName("header-logout-button");
-            userSection.add(userName, profileButton, logoutButton);
+            userSection.add(profileChip, logoutButton);
         } else {
             var loginLink = new Anchor("/login", "Sign in");
             loginLink.addClassName("header-login-link");
@@ -117,5 +143,14 @@ public class ChatHeader extends VerticalLayout {
         }
 
         return userSection;
+    }
+
+    private String getInitials(String name) {
+        if (name == null || name.isBlank()) return "?";
+        var parts = name.trim().split("\\s+");
+        if (parts.length >= 2) {
+            return (parts[0].substring(0, 1) + parts[parts.length - 1].substring(0, 1)).toUpperCase();
+        }
+        return name.substring(0, Math.min(2, name.length())).toUpperCase();
     }
 }

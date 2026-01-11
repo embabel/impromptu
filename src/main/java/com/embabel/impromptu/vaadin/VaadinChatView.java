@@ -375,6 +375,24 @@ public class VaadinChatView extends VerticalLayout {
         voiceSelect.setWidthFull();
         voiceSelect.setItemLabelGenerator(PersonaService.PersonaInfo::displayName);
 
+        // Custom renderer to show description in dropdown
+        voiceSelect.setRenderer(new com.vaadin.flow.data.renderer.ComponentRenderer<>(persona -> {
+            var item = new VerticalLayout();
+            item.setPadding(false);
+            item.setSpacing(false);
+            item.getStyle().set("padding", "var(--lumo-space-xs) 0");
+
+            var name = new Span(persona.displayName());
+            name.getStyle().set("font-weight", "500");
+
+            var desc = new Span(persona.description());
+            desc.getStyle().set("color", "var(--lumo-secondary-text-color)");
+            desc.getStyle().set("font-size", "var(--lumo-font-size-s)");
+
+            item.add(name, desc);
+            return item;
+        }));
+
         var personas = personaService.getAvailablePersonas();
         voiceSelect.setItems(personas);
 
@@ -383,23 +401,7 @@ public class VaadinChatView extends VerticalLayout {
                 .findFirst()
                 .ifPresent(voiceSelect::setValue);
 
-        // Description display
-        var descriptionSpan = new Span();
-        descriptionSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
-        descriptionSpan.getStyle().set("font-size", "var(--lumo-font-size-s)");
-
-        if (voiceSelect.getValue() != null) {
-            descriptionSpan.setText(voiceSelect.getValue().description());
-        }
-
-        voiceSelect.addValueChangeListener(e -> {
-            var selected = e.getValue();
-            if (selected != null) {
-                descriptionSpan.setText(selected.description());
-            }
-        });
-
-        content.add(voiceSelect, descriptionSpan);
+        content.add(voiceSelect);
 
         dialog.add(content);
 
