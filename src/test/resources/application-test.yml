@@ -14,3 +14,52 @@ database:
       user-name: neo4j
       password: brahmsian
       database-name: neo4j
+
+# Impromptu test settings
+impromptu:
+  objective: test-objective
+  behaviour: test-behaviour
+  embedding-service: text-embedding-3-small
+
+  chat-llm:
+    model: gpt-4.1-mini
+    temperature: 0.0
+
+  proposition-extraction-llm:
+    model: gpt-4.1-mini
+    temperature: 0.0
+
+  entity-resolution-llm:
+    model: gpt-4.1-mini
+    temperature: 0.0
+
+  voice:
+    persona: test
+    max-words: 50
+
+  extraction:
+    window-size: 10
+    overlap-size: 2
+    trigger-interval: 10
+
+  show-extraction-prompts: false
+  show-extraction-responses: false
+
+# Disable OAuth2 for tests
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-client-id
+            client-secret: test-client-secret
+          spotify:
+            client-id: test-spotify-id
+            client-secret: test-spotify-secret
+
+# Use default LLM for tests
+embabel:
+  models:
+    default-llm:
+      model: gpt-4.1-mini

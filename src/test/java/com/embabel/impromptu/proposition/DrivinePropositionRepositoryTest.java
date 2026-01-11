@@ -27,19 +27,27 @@ import org.drivine.manager.PersistenceManager;
 import org.drivine.query.QuerySpecification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = TestDrivineConfiguration.class)
 @ActiveProfiles("test")
 @Transactional
 class DrivinePropositionRepositoryTest {
+
+    private static final String TEST_CONTEXT = "test-context";
+    private static final float[] TEST_EMBEDDING = new float[]{0.1f, 0.2f, 0.3f};
 
     @Autowired
     private GraphObjectManager graphObjectManager;
@@ -53,6 +61,10 @@ class DrivinePropositionRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        // Create mock embedding service
+        embeddingService = Mockito.mock(EmbeddingService.class);
+        when(embeddingService.embed(anyString())).thenReturn(TEST_EMBEDDING);
+
         repository = new DrivinePropositionRepository(graphObjectManager,
                 persistenceManager, embeddingService);
         // Clean up any existing test propositions
@@ -64,24 +76,38 @@ class DrivinePropositionRepositoryTest {
         );
     }
 
+    private Proposition createProposition(String id, String text, List<EntityMention> mentions,
+                                          double confidence, PropositionStatus status) {
+        return Proposition.create(
+                id,
+                TEST_CONTEXT,
+                text,
+                mentions,
+                confidence,
+                0.0,  // decay
+                null, // reasoning
+                List.of(), // grounding
+                Instant.now(),
+                Instant.now(),
+                status,
+                0,    // level
+                List.of(), // sourceIds
+                Map.of(),  // metadata
+                null  // uri
+        );
+    }
+
     @Test
     void saveAndFindById() {
         // Given
-        var mention1 = new EntityMention("Jim", "Person", null, MentionRole.SUBJECT, java.util.Map.of());
-        var mention2 = new EntityMention("Neo4j", "Technology", null, MentionRole.OBJECT, java.util.Map.of());
-        var proposition = new Proposition(
+        var mention1 = new EntityMention("Jim", "Person", null, MentionRole.SUBJECT, Map.of());
+        var mention2 = new EntityMention("Neo4j", "Technology", null, MentionRole.OBJECT, Map.of());
+        var proposition = createProposition(
                 "test-prop-1",
                 "Jim is an expert in Neo4j",
                 List.of(mention1, mention2),
                 0.9,
-                0.1,
-                "Extracted from bio",
-                List.of("chunk-1"),
-                java.time.Instant.now(),
-                java.time.Instant.now(),
-                PropositionStatus.ACTIVE,
-                java.util.Map.of(),
-                null
+                PropositionStatus.ACTIVE
         );
 
         // When
@@ -109,34 +135,8 @@ class DrivinePropositionRepositoryTest {
     @Test
     void findAll() {
         // Given
-        var prop1 = new Proposition(
-                "test-prop-all-1",
-                "First proposition",
-                List.of(),
-                0.8,
-                0.0,
-                null,
-                List.of(),
-                java.time.Instant.now(),
-                java.time.Instant.now(),
-                PropositionStatus.ACTIVE,
-                java.util.Map.of(),
-                null
-        );
-        var prop2 = new Proposition(
-                "test-prop-all-2",
-                "Second proposition",
-                List.of(),
-                0.7,
-                0.0,
-                null,
-                List.of(),
-                java.time.Instant.now(),
-                java.time.Instant.now(),
-                PropositionStatus.ACTIVE,
-                java.util.Map.of(),
-                null
-        );
+        var prop1 = createProposition("test-prop-all-1", "First proposition", List.of(), 0.8, PropositionStatus.ACTIVE);
+        var prop2 = createProposition("test-prop-all-2", "Second proposition", List.of(), 0.7, PropositionStatus.ACTIVE);
 
         repository.save(prop1);
         repository.save(prop2);
@@ -153,34 +153,8 @@ class DrivinePropositionRepositoryTest {
     @Test
     void findByStatus() {
         // Given
-        var activeProp = new Proposition(
-                "test-active",
-                "Active proposition",
-                List.of(),
-                0.8,
-                0.0,
-                null,
-                List.of(),
-                java.time.Instant.now(),
-                java.time.Instant.now(),
-                PropositionStatus.ACTIVE,
-                java.util.Map.of(),
-                null
-        );
-        var supersededProp = new Proposition(
-                "test-superseded",
-                "Superseded proposition",
-                List.of(),
-                0.6,
-                0.0,
-                null,
-                List.of(),
-                java.time.Instant.now(),
-                java.time.Instant.now(),
-                PropositionStatus.SUPERSEDED,
-                java.util.Map.of(),
-                null
-        );
+        var activeProp = createProposition("test-active", "Active proposition", List.of(), 0.8, PropositionStatus.ACTIVE);
+        var supersededProp = createProposition("test-superseded", "Superseded proposition", List.of(), 0.6, PropositionStatus.SUPERSEDED);
 
         repository.save(activeProp);
         repository.save(supersededProp);
@@ -202,20 +176,7 @@ class DrivinePropositionRepositoryTest {
         // Given
         assertEquals(0, repository.count());
 
-        var prop = new Proposition(
-                "test-count",
-                "Test proposition",
-                List.of(),
-                0.8,
-                0.0,
-                null,
-                List.of(),
-                java.time.Instant.now(),
-                java.time.Instant.now(),
-                PropositionStatus.ACTIVE,
-                java.util.Map.of(),
-                null
-        );
+        var prop = createProposition("test-count", "Test proposition", List.of(), 0.8, PropositionStatus.ACTIVE);
         repository.save(prop);
 
         // When/Then

@@ -27,9 +27,9 @@ import org.jspecify.annotations.Nullable;
 public interface Composer extends NamedEntity {
     String getCompleteName();
 
-    @Nullable String getBirth();
+    @Nullable Long getBirthYear();
 
-    @Nullable String getDeath();
+    @Nullable Long getDeathYear();
 
     boolean isPopular();
 

@@ -224,8 +224,8 @@ public class OpenOpusController {
             data.put("id", toComposerId(composer));
             data.put("name", composer.name());
             data.put("completeName", composer.completeName());
-            data.put("birth", composer.birth());
-            data.put("death", composer.death());
+            data.put("birthYear", parseYear(composer.birth()));
+            data.put("deathYear", parseYear(composer.death()));
             data.put("popular", composer.isPopular());
             data.put("recommended", composer.isRecommended());
             data.put("epochId", composer.epoch() != null ? toId(composer.epoch()) : null);
@@ -238,8 +238,8 @@ public class OpenOpusController {
                                 MERGE (composer:__Entity__:Composer:Reference {id: c.id})
                                 SET composer.name = c.name,
                                     composer.completeName = c.completeName,
-                                    composer.birth = c.birth,
-                                    composer.death = c.death,
+                                    composer.birthYear = c.birthYear,
+                                    composer.deathYear = c.deathYear,
                                     composer.popular = c.popular,
                                     composer.recommended = c.recommended,
                                     composer.primarySource = "openopus"
@@ -362,5 +362,19 @@ public class OpenOpusController {
             sb.append(", ").append(work.subtitle());
         }
         return sb.toString();
+    }
+
+    private Long parseYear(String yearStr) {
+        if (yearStr == null || yearStr.isBlank()) {
+            return null;
+        }
+        try {
+            // Extract first 4 digits (handles formats like "1770" or "1770-12-16")
+            String year = yearStr.length() >= 4 ? yearStr.substring(0, 4) : yearStr;
+            return Long.parseLong(year);
+        } catch (NumberFormatException e) {
+            logger.warn("Could not parse year: {}", yearStr);
+            return null;
+        }
     }
 }
