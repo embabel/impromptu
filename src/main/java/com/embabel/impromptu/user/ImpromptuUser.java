@@ -81,6 +81,14 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
         return displayName != null ? displayName : (username != null ? username : id);
     }
 
+    /**
+     * Setter for Drivine/Jackson compatibility.
+     * Maps the "name" property from Neo4j/JSON to the displayName field.
+     */
+    public void setName(String name) {
+        this.displayName = name;
+    }
+
     @Override
     public @NonNull String getDescription() {
         return "User %s with username %s".formatted(getDisplayName(), username);
