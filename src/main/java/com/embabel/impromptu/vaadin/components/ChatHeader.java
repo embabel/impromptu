@@ -7,6 +7,7 @@ import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -27,7 +28,8 @@ public class ChatHeader extends VerticalLayout {
             long chunkCount,
             long documentCount,
             boolean spotifyConfigured,
-            boolean spotifyLinked
+            boolean spotifyLinked,
+            Runnable onUserProfileClick
     ) {}
 
     public ChatHeader(HeaderConfig config) {
@@ -91,6 +93,15 @@ public class ChatHeader extends VerticalLayout {
                 }
             }
 
+            // User profile button
+            var profileButton = new Button(VaadinIcon.USER.create());
+            profileButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ICON);
+            profileButton.addClassName("header-profile-button");
+            profileButton.getElement().setAttribute("title", "User settings");
+            if (config.onUserProfileClick() != null) {
+                profileButton.addClickListener(e -> config.onUserProfileClick().run());
+            }
+
             var logoutButton = new Button("Logout", e -> {
                 getUI().ifPresent(ui -> {
                     ui.getPage().setLocation("/logout");
@@ -98,7 +109,7 @@ public class ChatHeader extends VerticalLayout {
             });
             logoutButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
             logoutButton.addClassName("header-logout-button");
-            userSection.add(userName, logoutButton);
+            userSection.add(userName, profileButton, logoutButton);
         } else {
             var loginLink = new Anchor("/login", "Sign in");
             loginLink.addClassName("header-login-link");

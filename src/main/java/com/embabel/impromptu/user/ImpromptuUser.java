@@ -49,6 +49,13 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     // User preferences
     private boolean voiceEnabled = false;
 
+    /**
+     * Default voice/persona name.
+     */
+    public static final String DEFAULT_VOICE = "impromptu";
+
+    private String voice = DEFAULT_VOICE;
+
     @JsonCreator
     public ImpromptuUser(
             @JsonProperty("id") String id,
@@ -248,6 +255,24 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
 
     public void setVoiceEnabled(boolean voiceEnabled) {
         this.voiceEnabled = voiceEnabled;
+    }
+
+    /**
+     * Get the user's preferred voice/persona name.
+     *
+     * @return the persona name (defaults to {@link #DEFAULT_VOICE})
+     */
+    public String getVoice() {
+        return voice;
+    }
+
+    /**
+     * Set the user's preferred voice/persona name.
+     *
+     * @param voice the persona name (use {@link #DEFAULT_VOICE} for default)
+     */
+    public void setVoice(String voice) {
+        this.voice = voice != null ? voice : DEFAULT_VOICE;
     }
 
     @Override

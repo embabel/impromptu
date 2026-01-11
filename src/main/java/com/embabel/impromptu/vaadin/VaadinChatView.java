@@ -18,6 +18,7 @@ import com.embabel.impromptu.vaadin.components.ChatFooter;
 import com.embabel.impromptu.vaadin.components.ChatHeader;
 import com.embabel.impromptu.vaadin.components.SpotifyPlayerPanel;
 import com.embabel.impromptu.vaadin.components.YouTubePlayerPanel;
+import com.embabel.impromptu.voice.PersonaService;
 import com.embabel.impromptu.youtube.YouTubePendingPlayback;
 import com.embabel.impromptu.youtube.YouTubeService;
 import com.embabel.web.vaadin.components.ChatMessageBubble;
@@ -36,6 +37,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
@@ -70,6 +72,7 @@ public class VaadinChatView extends VerticalLayout {
     private final NamedEntityDataRepository entityRepository;
     private final YouTubeService youTubeService;
     private final YouTubePendingPlayback youTubePendingPlayback;
+    private final PersonaService personaService;
     private final String persona;
     private final ImpromptuUser currentUser;
 
@@ -100,6 +103,7 @@ public class VaadinChatView extends VerticalLayout {
             SpotifyService spotifyService,
             YouTubeService youTubeService,
             YouTubePendingPlayback youTubePendingPlayback,
+            PersonaService personaService,
             ApplicationEventPublisher eventPublisher,
             @Value("${database.datasources.neo.host:localhost}") String neo4jHost,
             @Value("${database.datasources.neo.port:7687}") int neo4jPort,
@@ -112,13 +116,15 @@ public class VaadinChatView extends VerticalLayout {
         this.entityRepository = entityRepository;
         this.youTubeService = youTubeService;
         this.youTubePendingPlayback = youTubePendingPlayback;
-        this.persona = properties.voice() != null ? properties.voice().persona() : "Assistant";
-
+        this.personaService = personaService;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
 
         this.currentUser = userService.getAuthenticatedUser();
+        // Use user's defaultVoice preference if set, otherwise fall back to default
+        var defaultPersona = properties.defaultVoice() != null ? properties.defaultVoice().persona() : "impromptu";
+        this.persona = currentUser.getVoice() != null ? currentUser.getVoice() : defaultPersona;
         var stats = searchOperations.info();
 
         // Build header
@@ -129,7 +135,8 @@ public class VaadinChatView extends VerticalLayout {
                 stats.getChunkCount(),
                 stats.getDocumentCount(),
                 spotifyService.isConfigured(),
-                spotifyService.isLinked(currentUser)
+                spotifyService.isLinked(currentUser),
+                this::showUserProfileDialog
         );
         add(new ChatHeader(headerConfig));
 
@@ -239,11 +246,8 @@ public class VaadinChatView extends VerticalLayout {
         propositionsPanel.setOnClear(propositionRepository::clearAll);
         knowledgeContent.add(propositionsPanel);
 
-        // Settings content (placeholder)
-        settingsContent = new VerticalLayout();
-        settingsContent.setPadding(false);
-        settingsContent.setVisible(false);
-        settingsContent.add(new Span("Settings coming soon..."));
+        // Settings content
+        settingsContent = createSettingsContent();
 
         contentArea.add(mediaContent, knowledgeContent, settingsContent);
         sidePanel.add(contentArea);
@@ -336,6 +340,92 @@ public class VaadinChatView extends VerticalLayout {
         return inputSection;
     }
 
+    private VerticalLayout createSettingsContent() {
+        var content = new VerticalLayout();
+        content.setPadding(true);
+        content.setSpacing(true);
+        content.setVisible(false);
+
+        // General settings placeholder
+        var placeholder = new Span("General settings coming soon...");
+        placeholder.getStyle().set("color", "var(--lumo-secondary-text-color)");
+        content.add(placeholder);
+
+        return content;
+    }
+
+    private void showUserProfileDialog() {
+        var dialog = new Dialog();
+        dialog.setHeaderTitle("User Settings");
+        dialog.setWidth("400px");
+
+        var content = new VerticalLayout();
+        content.setPadding(false);
+        content.setSpacing(true);
+
+        // User name display
+        var userNameLabel = new Span(currentUser.getDisplayName());
+        userNameLabel.getStyle().set("font-weight", "bold");
+        userNameLabel.getStyle().set("font-size", "var(--lumo-font-size-l)");
+        content.add(userNameLabel);
+
+        // Voice/Persona selection
+        var voiceSelect = new Select<PersonaService.PersonaInfo>();
+        voiceSelect.setLabel("Voice");
+        voiceSelect.setWidthFull();
+        voiceSelect.setItemLabelGenerator(PersonaService.PersonaInfo::displayName);
+
+        var personas = personaService.getAvailablePersonas();
+        voiceSelect.setItems(personas);
+
+        personas.stream()
+                .filter(p -> p.name().equals(currentUser.getVoice()))
+                .findFirst()
+                .ifPresent(voiceSelect::setValue);
+
+        // Description display
+        var descriptionSpan = new Span();
+        descriptionSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
+        descriptionSpan.getStyle().set("font-size", "var(--lumo-font-size-s)");
+
+        if (voiceSelect.getValue() != null) {
+            descriptionSpan.setText(voiceSelect.getValue().description());
+        }
+
+        voiceSelect.addValueChangeListener(e -> {
+            var selected = e.getValue();
+            if (selected != null) {
+                descriptionSpan.setText(selected.description());
+            }
+        });
+
+        content.add(voiceSelect, descriptionSpan);
+
+        dialog.add(content);
+
+        // Save button
+        var saveButton = new Button("Save", e -> {
+            var selected = voiceSelect.getValue();
+            if (selected != null && !selected.name().equals(currentUser.getVoice())) {
+                currentUser.setVoice(selected.name());
+                userService.save(currentUser);
+                logger.info("Updated user voice to: {}", selected.name());
+                com.vaadin.flow.component.notification.Notification.show(
+                        "Voice changed to " + selected.name() + ". Refresh to apply.",
+                        3000,
+                        com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
+                );
+            }
+            dialog.close();
+        });
+        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        var cancelButton = new Button("Cancel", e -> dialog.close());
+
+        dialog.getFooter().add(cancelButton, saveButton);
+        dialog.open();
+    }
+
     private void onVoiceInput(String text) {
         if (text != null && !text.isBlank()) {
             inputField.setValue(text);
@@ -378,7 +468,7 @@ public class VaadinChatView extends VerticalLayout {
                     if (response != null) {
                         var content = response.getContent();
                         messagesLayout.add(ChatMessageBubble.assistant(persona, content));
-                        // Speak the response if voice output is enabled
+                        // Speak the response if defaultVoice output is enabled
                         voiceControl.speak(content);
                     } else {
                         messagesLayout.add(ChatMessageBubble.error("Response timed out"));

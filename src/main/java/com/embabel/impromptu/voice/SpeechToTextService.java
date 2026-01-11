@@ -1,14 +1,10 @@
 package com.embabel.impromptu.voice;
 
+import com.embabel.impromptu.ImpromptuProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.MediaType;
-import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.reactive.function.BodyInserters;
 
 import java.util.Map;
 
@@ -24,17 +20,10 @@ public class SpeechToTextService {
 
     private final RestClient restClient = RestClient.create();
 
-    @Value("${impromptu.voice.openai-api-key:}")
-    private String apiKey;
+    private final ImpromptuProperties properties;
 
-    @Value("${impromptu.voice.stt-model:whisper-1}")
-    private String model;
-
-    /**
-     * Check if STT is configured (API key available).
-     */
-    public boolean isConfigured() {
-        return apiKey != null && !apiKey.isEmpty();
+    public SpeechToTextService(ImpromptuProperties properties) {
+        this.properties = properties;
     }
 
     /**
@@ -46,7 +35,7 @@ public class SpeechToTextService {
      * @throws SttException if transcription fails
      */
     public String transcribe(byte[] audioData, String filename) {
-        if (!isConfigured()) {
+        if (!properties.isSpeechConfigured()) {
             throw new SttException("OpenAI API key not configured");
         }
 
@@ -65,7 +54,7 @@ public class SpeechToTextService {
             // Add model field
             body.append("--").append(boundary).append("\r\n");
             body.append("Content-Disposition: form-data; name=\"model\"\r\n\r\n");
-            body.append(model).append("\r\n");
+            body.append(properties.speech().ttsModel()).append("\r\n");
 
             // Add file field header
             body.append("--").append(boundary).append("\r\n");
@@ -84,7 +73,7 @@ public class SpeechToTextService {
             @SuppressWarnings("unchecked")
             Map<String, Object> response = restClient.post()
                     .uri(OPENAI_TRANSCRIPTION_URL)
-                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Authorization", "Bearer " + properties.speech().apiKey())
                     .header("Content-Type", "multipart/form-data; boundary=" + boundary)
                     .body(fullBody)
                     .retrieve()
@@ -104,6 +93,10 @@ public class SpeechToTextService {
             logger.error("Transcription failed: {}", e.getMessage());
             throw new SttException("Transcription failed: " + e.getMessage(), e);
         }
+    }
+
+    public boolean isConfigured() {
+        return properties.isSpeechConfigured();
     }
 
     public static class SttException extends RuntimeException {

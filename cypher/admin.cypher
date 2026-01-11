@@ -4,6 +4,12 @@
 MATCH (p:Proposition)
 DETACH DELETE p;
 
+// Delete all user data (Users and their Propositions)
+MATCH (u:User)
+DETACH DELETE u;
+MATCH (p:Proposition)
+DETACH DELETE p;
+
 // Delete Entity nodes that don't have the Reference label
 MATCH (e:__Entity__)
   WHERE NOT e:Reference

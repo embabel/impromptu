@@ -103,7 +103,6 @@ public class ChatActions {
             ImpromptuUser user,
             ConversationAnalysisRequestEvent.LastAnalysis lastAnalysis,
             ActionContext context) {
-        logger.debug("Conversation has {} messages", conversation.getMessages().size());
         var tools = new LinkedList<ToolObject>();
         if (user.isSpotifyLinked()) {
             tools.add(new ToolObject(new SpotifyTools(user, spotifyService)).withPrefix("spotify"));
@@ -127,7 +126,8 @@ public class ChatActions {
                 .respondWithSystemPrompt(
                         conversation.last(impromptuProperties.conversationWindow()),
                         Map.of(
-                                "properties", properties
+                                "properties", properties,
+                                "user", user
                         ));
         context.sendMessage(conversation.addMessage(assistantMessage));
     }

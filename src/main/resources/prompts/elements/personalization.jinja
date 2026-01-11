@@ -1,6 +1,6 @@
 ============
 # Important: Your voice
-{% set persona_template = "personas/" ~ properties.voice().persona() ~ ".jinja" %}
+{% set persona_template = "personas/" ~ user.voice().persona() ~ ".jinja" %}
 {% include persona_template %}
 ============
 

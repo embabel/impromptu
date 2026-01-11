@@ -6,6 +6,7 @@ import com.embabel.common.ai.model.LlmOptions;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.lang.Nullable;
 
 /**
  * Properties for chatbot. See application.yml
@@ -15,7 +16,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param embeddingService         the name of the embedding service to use
  *                                 for retrieval-augmented generation
  * @param objective                the goal of the chatbot's responses: For example, to answer legal questions
- * @param voice                    the persona and output style of the chatbot while achieving its objective
+ * @param defaultVoice             the persona and output style of the chatbot while achieving its objective
  * @param extraction               configuration for extraction of propositions from conversations
  * @param neoRag                   Neo RAG configuration
  * @param chunkerConfig            content chunker configuration
@@ -34,20 +35,35 @@ public record ImpromptuProperties(
         String objective,
         String behaviour,
         @DefaultValue("50") int conversationWindow,
-        @NestedConfigurationProperty Voice voice,
+        @NestedConfigurationProperty Voice defaultVoice,
         @NestedConfigurationProperty Extraction extraction,
         @DefaultValue @NestedConfigurationProperty NeoRagServiceProperties neoRag,
         @NestedConfigurationProperty ContentChunker.Config chunkerConfig,
         @NestedConfigurationProperty LlmOptions propositionExtractionLlm,
         @NestedConfigurationProperty LlmOptions entityResolutionLlm,
         boolean showExtractionPrompts,
-        boolean showExtractionResponses
+        boolean showExtractionResponses,
+        @Nullable @NestedConfigurationProperty Speech speech
 ) {
 
     public record Voice(
             String persona,
             int maxWords
     ) {
+    }
+
+    public record Speech(
+            String ttsModel,
+            String ttsVoice,
+            String apiKey
+    ) {
+    }
+
+    /**
+     * Check if STT is configured (API key available).
+     */
+    public boolean isSpeechConfigured() {
+        return speech != null;
     }
 
     /**
