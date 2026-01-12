@@ -14,10 +14,9 @@ import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepositor
 import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.user.ImpromptuUser;
 import com.embabel.impromptu.user.ImpromptuUserService;
+import com.embabel.impromptu.vaadin.components.BackstagePanel;
 import com.embabel.impromptu.vaadin.components.ChatFooter;
 import com.embabel.impromptu.vaadin.components.ChatHeader;
-import com.embabel.impromptu.vaadin.components.SpotifyPlayerPanel;
-import com.embabel.impromptu.vaadin.components.YouTubePlayerPanel;
 import com.embabel.impromptu.voice.PersonaService;
 import com.embabel.impromptu.youtube.YouTubePendingPlayback;
 import com.embabel.impromptu.youtube.YouTubeService;
@@ -26,20 +25,15 @@ import com.embabel.web.vaadin.components.EntityCard;
 import com.embabel.web.vaadin.components.PropositionsPanel;
 import com.embabel.web.vaadin.components.VoiceControl;
 import com.vaadin.flow.component.Key;
-import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -78,21 +72,10 @@ public class VaadinChatView extends VerticalLayout {
 
     private VerticalLayout messagesLayout;
     private Scroller messagesScroller;
-    private PropositionsPanel propositionsPanel;
     private TextField inputField;
     private Button sendButton;
     private VoiceControl voiceControl;
-    private YouTubePlayerPanel youTubePlayerPanel;
-
-    // Side panel components
-    private VerticalLayout sidePanel;
-    private ShortcutRegistration escapeShortcut;
-    private Div backdrop;
-    private Button toggleButton;
-    private VerticalLayout mediaContent;
-    private VerticalLayout knowledgeContent;
-    private VerticalLayout libraryContent;
-    private VerticalLayout settingsContent;
+    private BackstagePanel backstagePanel;
 
     public VaadinChatView(
             Chatbot chatbot,
@@ -160,141 +143,25 @@ public class VaadinChatView extends VerticalLayout {
         // Input section
         add(createInputSection());
 
-        // Side panel with tabs for Media, Knowledge, Settings
-        createSidePanel(spotifyService, currentUser, propositionRepository);
+        // Backstage panel
+        var backstageConfig = new BackstagePanel.Config(
+                currentUser,
+                spotifyService,
+                youTubeService,
+                entityRepository,
+                propositionRepository,
+                personaService,
+                userService,
+                this::showEntityDetail
+        );
+        backstagePanel = new BackstagePanel(backstageConfig);
+        getElement().appendChild(backstagePanel.getElement());
 
         // Footer
         var neo4jConfig = new ChatFooter.Neo4jConfig(
                 neo4jHost, neo4jPort, neo4jUsername, neo4jPassword, neo4jHttpPort
         );
         add(new ChatFooter(neo4jConfig, this::analyzeConversation, stats.getChunkCount(), stats.getDocumentCount()));
-    }
-
-    private void createSidePanel(SpotifyService spotifyService,
-                                 com.embabel.impromptu.user.ImpromptuUser user,
-                                 DrivinePropositionRepository propositionRepository) {
-        // Backdrop for closing panel when clicking outside
-        backdrop = new Div();
-        backdrop.addClassName("side-panel-backdrop");
-        backdrop.addClickListener(e -> closeSidePanel());
-
-        // Toggle button on right edge
-        toggleButton = new Button(VaadinIcon.COG.create());
-        toggleButton.addClassName("side-panel-toggle");
-        toggleButton.getElement().setAttribute("title", "Open panel");
-        toggleButton.addClickListener(e -> openSidePanel());
-
-        // Side panel
-        sidePanel = new VerticalLayout();
-        sidePanel.addClassName("side-panel");
-        sidePanel.setPadding(false);
-        sidePanel.setSpacing(false);
-
-        // Header with close button
-        var header = new HorizontalLayout();
-        header.addClassName("side-panel-header");
-        header.setWidthFull();
-
-        var title = new Span("Backstage");
-        title.addClassName("side-panel-title");
-
-        var closeButton = new Button(new Icon(VaadinIcon.CLOSE));
-        closeButton.addClassName("side-panel-close");
-        closeButton.addClickListener(e -> closeSidePanel());
-
-        header.add(title, closeButton);
-        header.setFlexGrow(1, title);
-        sidePanel.add(header);
-
-        // Tabs
-        var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
-        var libraryTab = new Tab(VaadinIcon.RECORDS.create(), new Span("Library"));
-        var knowledgeTab = new Tab(VaadinIcon.BOOK.create(), new Span("Knowledge"));
-        var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
-
-        var tabs = new Tabs(mediaTab, libraryTab, knowledgeTab, settingsTab);
-        tabs.setWidthFull();
-        sidePanel.add(tabs);
-
-        // Content area
-        var contentArea = new VerticalLayout();
-        contentArea.addClassName("side-panel-content");
-        contentArea.setPadding(false);
-        contentArea.setSizeFull();
-
-        // Media content
-        mediaContent = new VerticalLayout();
-        mediaContent.setPadding(false);
-        mediaContent.setSpacing(true);
-
-        if (spotifyService.isLinked(user)) {
-            mediaContent.add(new SpotifyPlayerPanel(spotifyService, user));
-        }
-        if (youTubeService.isConfigured()) {
-            youTubePlayerPanel = new YouTubePlayerPanel(youTubeService);
-            mediaContent.add(youTubePlayerPanel);
-        }
-        if (mediaContent.getComponentCount() == 0) {
-            mediaContent.add(new Span("No media services configured"));
-        }
-
-        // Library content - composers and works
-        libraryContent = createLibraryContent();
-
-        // Knowledge content
-        knowledgeContent = new VerticalLayout();
-        knowledgeContent.setPadding(false);
-        knowledgeContent.setVisible(false);
-
-        propositionsPanel = new PropositionsPanel(propositionRepository);
-        propositionsPanel.setOnMentionClick(this::showEntityDetail);
-        propositionsPanel.setOnClear(propositionRepository::clearAll);
-        knowledgeContent.add(propositionsPanel);
-
-        // Settings content
-        settingsContent = createSettingsContent();
-
-        contentArea.add(mediaContent, libraryContent, knowledgeContent, settingsContent);
-        sidePanel.add(contentArea);
-        sidePanel.setFlexGrow(1, contentArea);
-
-        // Tab switching
-        tabs.addSelectedChangeListener(event -> {
-            mediaContent.setVisible(event.getSelectedTab() == mediaTab);
-            libraryContent.setVisible(event.getSelectedTab() == libraryTab);
-            knowledgeContent.setVisible(event.getSelectedTab() == knowledgeTab);
-            settingsContent.setVisible(event.getSelectedTab() == settingsTab);
-            // Refresh knowledge when tab is selected
-            if (event.getSelectedTab() == knowledgeTab) {
-                propositionsPanel.refresh();
-            }
-        });
-
-        // Add to view
-        getElement().appendChild(backdrop.getElement());
-        getElement().appendChild(toggleButton.getElement());
-        getElement().appendChild(sidePanel.getElement());
-    }
-
-    private void openSidePanel() {
-        sidePanel.addClassName("open");
-        backdrop.addClassName("visible");
-        toggleButton.addClassName("hidden");
-        // Register Escape key to close panel
-        escapeShortcut = getUI().map(ui ->
-                ui.addShortcutListener(this::closeSidePanel, Key.ESCAPE)
-        ).orElse(null);
-    }
-
-    private void closeSidePanel() {
-        sidePanel.removeClassName("open");
-        backdrop.removeClassName("visible");
-        toggleButton.removeClassName("hidden");
-        // Unregister Escape shortcut
-        if (escapeShortcut != null) {
-            escapeShortcut.remove();
-            escapeShortcut = null;
-        }
     }
 
     /**
@@ -344,88 +211,6 @@ public class VaadinChatView extends VerticalLayout {
         inputSection.setFlexGrow(1, inputField);
 
         return inputSection;
-    }
-
-    private VerticalLayout createLibraryContent() {
-        var content = new VerticalLayout();
-        content.setPadding(true);
-        content.setSpacing(true);
-        content.setVisible(false);
-
-        // Header with counts
-        var composers = entityRepository.findByLabel("Composer");
-        var works = entityRepository.findByLabel("Work");
-
-        var header = new HorizontalLayout();
-        header.setWidthFull();
-        header.setJustifyContentMode(JustifyContentMode.BETWEEN);
-
-        var composersCount = new Span(composers.size() + " Composers");
-        composersCount.getStyle().set("font-weight", "bold");
-
-        var worksCount = new Span(works.size() + " Works");
-        worksCount.getStyle().set("color", "var(--lumo-secondary-text-color)");
-
-        header.add(composersCount, worksCount);
-        content.add(header);
-
-        // Composer list
-        var composerList = new VerticalLayout();
-        composerList.setPadding(false);
-        composerList.setSpacing(false);
-
-        // Sort composers by name and list them
-        composers.stream()
-                .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
-                .forEach(composer -> {
-                    var item = new HorizontalLayout();
-                    item.setWidthFull();
-                    item.setAlignItems(Alignment.CENTER);
-                    item.getStyle()
-                            .set("padding", "var(--lumo-space-xs) 0")
-                            .set("border-bottom", "1px solid var(--lumo-contrast-10pct)");
-
-                    var name = new Span(composer.getName());
-                    name.getStyle().set("flex-grow", "1");
-
-                    // Count works for this composer
-                    var workCount = entityRepository.findRelated(
-                            new com.embabel.agent.rag.service.RetrievableIdentifier(composer.getId(), "Composer"),
-                            "COMPOSED",
-                            com.embabel.agent.rag.model.RelationshipDirection.OUTGOING
-                    ).size();
-
-                    var count = new Span(workCount + " works");
-                    count.getStyle()
-                            .set("color", "var(--lumo-secondary-text-color)")
-                            .set("font-size", "var(--lumo-font-size-s)");
-
-                    item.add(name, count);
-                    composerList.add(item);
-                });
-
-        var scroller = new Scroller(composerList);
-        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
-        scroller.setWidthFull();
-        scroller.setHeight("400px");
-
-        content.add(scroller);
-
-        return content;
-    }
-
-    private VerticalLayout createSettingsContent() {
-        var content = new VerticalLayout();
-        content.setPadding(true);
-        content.setSpacing(true);
-        content.setVisible(false);
-
-        // General settings placeholder
-        var placeholder = new Span("General settings coming soon...");
-        placeholder.getStyle().set("color", "var(--lumo-secondary-text-color)");
-        content.add(placeholder);
-
-        return content;
     }
 
     private void showUserProfileDialog() {
@@ -558,7 +343,7 @@ public class VaadinChatView extends VerticalLayout {
                     checkPendingYouTubePlayback();
 
                     // Refresh propositions after a delay
-                    propositionsPanel.scheduleRefresh(ui, 2000);
+                    backstagePanel.getPropositionsPanel().scheduleRefresh(ui, 2000);
                 });
             } catch (Exception e) {
                 logger.error("Error getting chatbot response", e);
@@ -585,7 +370,7 @@ public class VaadinChatView extends VerticalLayout {
                 this, currentUser, conversation, ConversationAnalysisRequestEvent.LastAnalysis.NONE));
 
         // Schedule a refresh of propositions after analysis
-        getUI().ifPresent(ui -> propositionsPanel.scheduleRefresh(ui, 2000));
+        getUI().ifPresent(ui -> backstagePanel.getPropositionsPanel().scheduleRefresh(ui, 2000));
     }
 
     private void scrollToBottom() {
@@ -620,12 +405,13 @@ public class VaadinChatView extends VerticalLayout {
      * Check for pending YouTube playback requests from LLM tools.
      */
     private void checkPendingYouTubePlayback() {
-        if (youTubePlayerPanel == null) return;
+        var ytPanel = backstagePanel.getYouTubePlayerPanel();
+        if (ytPanel == null) return;
 
         var video = youTubePendingPlayback.consumePendingVideo(currentUser.getId());
         if (video != null) {
             logger.info("Loading pending YouTube video: {} - {}", video.videoId(), video.title());
-            youTubePlayerPanel.loadVideo(video.videoId(), video.title(), video.channelTitle());
+            ytPanel.loadVideo(video.videoId(), video.title(), video.channelTitle());
         }
     }
 
