@@ -340,4 +340,27 @@ public class DrivinePropositionRepository implements PropositionRepository {
         logger.info("Deleted {} propositions", count);
         return count.intValue();
     }
+
+    /**
+     * Delete all propositions for a specific context.
+     *
+     * @param contextId the context ID to clear propositions for
+     * @return the number of propositions deleted
+     */
+    @Transactional
+    public int clearByContext(@NonNull String contextId) {
+        var countSpec = QuerySpecification
+                .withStatement("MATCH (p:Proposition {contextId: $contextId}) RETURN count(p) AS count")
+                .bind(Map.of("contextId", contextId))
+                .transform(Long.class);
+        Long count = persistenceManager.getOne(countSpec);
+
+        var deleteSpec = QuerySpecification
+                .withStatement("MATCH (p:Proposition {contextId: $contextId}) DETACH DELETE p")
+                .bind(Map.of("contextId", contextId));
+        persistenceManager.execute(deleteSpec);
+
+        logger.info("Deleted {} propositions for context {}", count, contextId);
+        return count.intValue();
+    }
 }

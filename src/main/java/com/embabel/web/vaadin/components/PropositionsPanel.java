@@ -25,6 +25,7 @@ public class PropositionsPanel extends VerticalLayout {
     private final Span propositionCountSpan;
     private Consumer<EntityMention> onMentionClick;
     private Runnable onClear;
+    private String contextId;
 
     public PropositionsPanel(PropositionRepository propositionRepository) {
         this.propositionRepository = propositionRepository;
@@ -89,11 +90,14 @@ public class PropositionsPanel extends VerticalLayout {
 
     /**
      * Refresh the propositions list from the repository.
+     * If a contextId is set, only propositions for that context are shown.
      */
     public void refresh() {
         propositionsContent.removeAll();
 
-        var propositions = propositionRepository.findAll();
+        var propositions = contextId != null
+                ? propositionRepository.findByContextIdValue(contextId)
+                : propositionRepository.findAll();
         propositionCountSpan.setText("(" + propositions.size() + " propositions)");
 
         if (propositions.isEmpty()) {
@@ -127,6 +131,16 @@ public class PropositionsPanel extends VerticalLayout {
      */
     public void setOnClear(Runnable handler) {
         this.onClear = handler;
+    }
+
+    /**
+     * Set the context ID to filter propositions.
+     * When set, only propositions for this context are shown and cleared.
+     *
+     * @param contextId the context ID, or null to show all propositions
+     */
+    public void setContextId(String contextId) {
+        this.contextId = contextId;
     }
 
     /**

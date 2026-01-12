@@ -51,7 +51,8 @@ public class BackstagePanel extends Div {
             DrivinePropositionRepository propositionRepository,
             PersonaService personaService,
             ImpromptuUserService userService,
-            Consumer<EntityMention> onMentionClick
+            Consumer<EntityMention> onMentionClick,
+            ReferencesPanel.IndexStats indexStats
     ) {}
 
     public BackstagePanel(Config config) {
@@ -90,12 +91,12 @@ public class BackstagePanel extends Div {
 
         // Tabs
         var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
-        var libraryTab = new Tab(VaadinIcon.RECORDS.create(), new Span("Library"));
+        var referencesTab = new Tab(VaadinIcon.RECORDS.create(), new Span("References"));
         var knowledgeTab = new Tab(VaadinIcon.BOOK.create(), new Span("Knowledge"));
         var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
         var aboutTab = new Tab(VaadinIcon.INFO_CIRCLE.create(), new Span("About"));
 
-        var tabs = new Tabs(mediaTab, libraryTab, knowledgeTab, settingsTab, aboutTab);
+        var tabs = new Tabs(mediaTab, referencesTab, knowledgeTab, settingsTab, aboutTab);
         tabs.setWidthFull();
         sidePanel.add(tabs);
 
@@ -108,17 +109,19 @@ public class BackstagePanel extends Div {
         // Media content
         var mediaContent = createMediaContent(config);
 
-        // Library content
-        var libraryContent = new LibraryPanel(config.entityRepository());
+        // References content
+        var referencesContent = new ReferencesPanel(config.entityRepository(), config.indexStats());
 
         // Knowledge content
         var knowledgeContent = new VerticalLayout();
         knowledgeContent.setPadding(false);
         knowledgeContent.setVisible(false);
 
+        var userContextId = config.user().currentContext();
         propositionsPanel = new PropositionsPanel(config.propositionRepository());
+        propositionsPanel.setContextId(userContextId);
         propositionsPanel.setOnMentionClick(config.onMentionClick());
-        propositionsPanel.setOnClear(config.propositionRepository()::clearAll);
+        propositionsPanel.setOnClear(() -> config.propositionRepository().clearByContext(userContextId));
         knowledgeContent.add(propositionsPanel);
 
         // About content
@@ -127,17 +130,17 @@ public class BackstagePanel extends Div {
         // Settings content
         var settingsContent = createSettingsContent();
 
-        contentArea.add(mediaContent, libraryContent, knowledgeContent, aboutContent, settingsContent);
+        contentArea.add(mediaContent, referencesContent, knowledgeContent, settingsContent, aboutContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
         // Tab switching
         tabs.addSelectedChangeListener(event -> {
             mediaContent.setVisible(event.getSelectedTab() == mediaTab);
-            libraryContent.setVisible(event.getSelectedTab() == libraryTab);
+            referencesContent.setVisible(event.getSelectedTab() == referencesTab);
             knowledgeContent.setVisible(event.getSelectedTab() == knowledgeTab);
-            aboutContent.setVisible(event.getSelectedTab() == aboutTab);
             settingsContent.setVisible(event.getSelectedTab() == settingsTab);
+            aboutContent.setVisible(event.getSelectedTab() == aboutTab);
             if (event.getSelectedTab() == knowledgeTab) {
                 propositionsPanel.refresh();
             }

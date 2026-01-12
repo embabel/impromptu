@@ -144,6 +144,8 @@ public class VaadinChatView extends VerticalLayout {
         add(createInputSection());
 
         // Backstage panel
+        var indexStats = new com.embabel.impromptu.vaadin.components.ReferencesPanel.IndexStats(
+                stats.getChunkCount(), stats.getDocumentCount());
         var backstageConfig = new BackstagePanel.Config(
                 currentUser,
                 spotifyService,
@@ -152,7 +154,8 @@ public class VaadinChatView extends VerticalLayout {
                 propositionRepository,
                 personaService,
                 userService,
-                this::showEntityDetail
+                this::showEntityDetail,
+                indexStats
         );
         backstagePanel = new BackstagePanel(backstageConfig);
         getElement().appendChild(backstagePanel.getElement());
@@ -161,7 +164,7 @@ public class VaadinChatView extends VerticalLayout {
         var neo4jConfig = new ChatFooter.Neo4jConfig(
                 neo4jHost, neo4jPort, neo4jUsername, neo4jPassword, neo4jHttpPort
         );
-        add(new ChatFooter(neo4jConfig, this::analyzeConversation, stats.getChunkCount(), stats.getDocumentCount()));
+        add(new ChatFooter(neo4jConfig, this::analyzeConversation));
     }
 
     /**

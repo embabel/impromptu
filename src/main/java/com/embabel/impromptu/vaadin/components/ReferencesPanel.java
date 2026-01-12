@@ -3,6 +3,7 @@ package com.embabel.impromptu.vaadin.components;
 import com.embabel.agent.rag.model.RelationshipDirection;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.agent.rag.service.RetrievableIdentifier;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
@@ -11,20 +12,48 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 /**
- * Library panel showing composers and their works.
+ * References panel showing indexed content statistics and domain entities.
  */
-public class LibraryPanel extends VerticalLayout {
+public class ReferencesPanel extends VerticalLayout {
 
-    public LibraryPanel(NamedEntityDataRepository entityRepository) {
+    /**
+     * Statistics about indexed content.
+     */
+    public record IndexStats(long chunkCount, long documentCount) {}
+
+    public ReferencesPanel(NamedEntityDataRepository entityRepository, IndexStats stats) {
         setPadding(true);
         setSpacing(true);
         setVisible(false);
         setSizeFull();
 
+        // Index statistics header
+        var statsRow = new HorizontalLayout();
+        statsRow.setWidthFull();
+        statsRow.setJustifyContentMode(JustifyContentMode.START);
+        statsRow.setSpacing(true);
+
+        var chunksLabel = new Span(String.format("%,d chunks", stats.chunkCount()));
+        chunksLabel.getStyle().set("font-size", "var(--lumo-font-size-l)");
+
+        var separator = new Span("|");
+        separator.getStyle()
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("font-size", "var(--lumo-font-size-l)");
+
+        var docsLabel = new Span(String.format("%,d documents", stats.documentCount()));
+        docsLabel.getStyle().set("font-size", "var(--lumo-font-size-l)");
+
+        statsRow.add(chunksLabel, separator, docsLabel);
+        add(statsRow);
+
+        // Divider
+        add(new Hr());
+
         var composers = entityRepository.findByLabel("Composer");
         var works = entityRepository.findByLabel("Work");
 
-        // Header with counts
+        // Composers/Works header
         var header = new HorizontalLayout();
         header.setWidthFull();
         header.setJustifyContentMode(JustifyContentMode.BETWEEN);

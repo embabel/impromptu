@@ -31,7 +31,7 @@ public class ChatFooter extends HorizontalLayout {
         }
     }
 
-    public ChatFooter(Neo4jConfig neo4jConfig, Runnable onAnalyze, long chunkCount, long documentCount) {
+    public ChatFooter(Neo4jConfig neo4jConfig, Runnable onAnalyze) {
         setWidthFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
@@ -71,10 +71,6 @@ public class ChatFooter extends HorizontalLayout {
         analyzeButton.addClassName("footer-analyze-button");
         analyzeButton.getElement().setAttribute("title", "Extract propositions from conversation");
 
-        // Stats display
-        var statsText = new Span(String.format("%,d chunks | %,d documents", chunkCount, documentCount));
-        statsText.addClassName("footer-stats");
-
         // Separator
         var separator3 = new Span("|");
         separator3.addClassName("footer-separator");
@@ -83,6 +79,6 @@ public class ChatFooter extends HorizontalLayout {
         var copyright = new Span("© 2025 Embabel Software, Inc.");
         copyright.addClassName("footer-copyright");
 
-        add(logo, poweredBy, embabelLink, separator, neo4jLink, separator2, analyzeButton, statsText, separator3, copyright);
+        add(logo, poweredBy, embabelLink, separator, neo4jLink, separator2, analyzeButton, separator3, copyright);
     }
 }

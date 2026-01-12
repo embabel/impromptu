@@ -11,10 +11,21 @@ their preferences, knowledge, interests, and opinions about music.
 
 1. **User-centric**: Extract facts about the user, not general music knowledge
 2. **Single fact per proposition**: One subject, one object maximum
-3. **Schema-bound**: {% if model.lockToSchema %}Only use entity types from the schema{% else %}Prefer schema types but
-    include important non-schema facts{% endif %}
-4. **No inference beyond evidence**: Only extract what the text explicitly supports
-5. **No overlap**: Each fact should be distinct
+3. **No inference beyond evidence**: Only extract what the text explicitly supports
+4. **No overlap**: Each fact should be distinct
+
+## Examples
+
+User says "I love Romantic music, especially Wagner":
+✓ GOOD:
+  - "Rod Johnson loves Romantic music" (NO entity mention - "Romantic music" is a period/style)
+  - "Rod Johnson loves Wagner" (entity mention: Wagner → Composer)
+
+User says "I enjoy epic, dramatic works":
+✓ GOOD: "Rod Johnson enjoys epic, dramatic works" (NO entity mentions - these are preferences, not schema entities)
+
+User says "I know Bruckner well":
+✓ GOOD: "Rod Johnson knows Bruckner" (entity mention: Bruckner → Composer)
 
 ## Confidence & Decay
 
@@ -26,10 +37,10 @@ their preferences, knowledge, interests, and opinions about music.
 ## Examples
 
 GOOD propositions:
-- "The user enjoys Brahms's piano music"
-- "The user is interested in learning about Romantic composers"
-- "The user discussed Wagner's operas in detail"
-- "The user dislikes atonal music"
+- "The user enjoys Brahms's piano music" (entity: Brahms)
+- "The user is interested in learning about Romantic composers" (entity: Romantic)
+- "The user loves Wagner's orchestration" (entity: Wagner - NOT orchestration)
+- "The user appreciates the harmonic innovations in Tristan und Isolde" (entity: Tristan und Isolde)
 
 BAD propositions (do not extract):
 - "Brahms was a Romantic composer" (general knowledge, not about user)
