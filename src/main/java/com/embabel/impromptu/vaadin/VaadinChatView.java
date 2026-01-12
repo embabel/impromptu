@@ -91,6 +91,7 @@ public class VaadinChatView extends VerticalLayout {
     private Button toggleButton;
     private VerticalLayout mediaContent;
     private VerticalLayout knowledgeContent;
+    private VerticalLayout libraryContent;
     private VerticalLayout settingsContent;
 
     public VaadinChatView(
@@ -207,10 +208,11 @@ public class VaadinChatView extends VerticalLayout {
 
         // Tabs
         var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
+        var libraryTab = new Tab(VaadinIcon.RECORDS.create(), new Span("Library"));
         var knowledgeTab = new Tab(VaadinIcon.BOOK.create(), new Span("Knowledge"));
         var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
 
-        var tabs = new Tabs(mediaTab, knowledgeTab, settingsTab);
+        var tabs = new Tabs(mediaTab, libraryTab, knowledgeTab, settingsTab);
         tabs.setWidthFull();
         sidePanel.add(tabs);
 
@@ -236,6 +238,9 @@ public class VaadinChatView extends VerticalLayout {
             mediaContent.add(new Span("No media services configured"));
         }
 
+        // Library content - composers and works
+        libraryContent = createLibraryContent();
+
         // Knowledge content
         knowledgeContent = new VerticalLayout();
         knowledgeContent.setPadding(false);
@@ -249,13 +254,14 @@ public class VaadinChatView extends VerticalLayout {
         // Settings content
         settingsContent = createSettingsContent();
 
-        contentArea.add(mediaContent, knowledgeContent, settingsContent);
+        contentArea.add(mediaContent, libraryContent, knowledgeContent, settingsContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
         // Tab switching
         tabs.addSelectedChangeListener(event -> {
             mediaContent.setVisible(event.getSelectedTab() == mediaTab);
+            libraryContent.setVisible(event.getSelectedTab() == libraryTab);
             knowledgeContent.setVisible(event.getSelectedTab() == knowledgeTab);
             settingsContent.setVisible(event.getSelectedTab() == settingsTab);
             // Refresh knowledge when tab is selected
@@ -338,6 +344,74 @@ public class VaadinChatView extends VerticalLayout {
         inputSection.setFlexGrow(1, inputField);
 
         return inputSection;
+    }
+
+    private VerticalLayout createLibraryContent() {
+        var content = new VerticalLayout();
+        content.setPadding(true);
+        content.setSpacing(true);
+        content.setVisible(false);
+
+        // Header with counts
+        var composers = entityRepository.findByLabel("Composer");
+        var works = entityRepository.findByLabel("Work");
+
+        var header = new HorizontalLayout();
+        header.setWidthFull();
+        header.setJustifyContentMode(JustifyContentMode.BETWEEN);
+
+        var composersCount = new Span(composers.size() + " Composers");
+        composersCount.getStyle().set("font-weight", "bold");
+
+        var worksCount = new Span(works.size() + " Works");
+        worksCount.getStyle().set("color", "var(--lumo-secondary-text-color)");
+
+        header.add(composersCount, worksCount);
+        content.add(header);
+
+        // Composer list
+        var composerList = new VerticalLayout();
+        composerList.setPadding(false);
+        composerList.setSpacing(false);
+
+        // Sort composers by name and list them
+        composers.stream()
+                .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
+                .forEach(composer -> {
+                    var item = new HorizontalLayout();
+                    item.setWidthFull();
+                    item.setAlignItems(Alignment.CENTER);
+                    item.getStyle()
+                            .set("padding", "var(--lumo-space-xs) 0")
+                            .set("border-bottom", "1px solid var(--lumo-contrast-10pct)");
+
+                    var name = new Span(composer.getName());
+                    name.getStyle().set("flex-grow", "1");
+
+                    // Count works for this composer
+                    var workCount = entityRepository.findRelated(
+                            new com.embabel.agent.rag.service.RetrievableIdentifier(composer.getId(), "Composer"),
+                            "COMPOSED",
+                            com.embabel.agent.rag.model.RelationshipDirection.OUTGOING
+                    ).size();
+
+                    var count = new Span(workCount + " works");
+                    count.getStyle()
+                            .set("color", "var(--lumo-secondary-text-color)")
+                            .set("font-size", "var(--lumo-font-size-s)");
+
+                    item.add(name, count);
+                    composerList.add(item);
+                });
+
+        var scroller = new Scroller(composerList);
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        scroller.setWidthFull();
+        scroller.setHeight("400px");
+
+        content.add(scroller);
+
+        return content;
     }
 
     private VerticalLayout createSettingsContent() {
