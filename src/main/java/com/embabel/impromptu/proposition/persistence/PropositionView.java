@@ -78,7 +78,8 @@ public class PropositionView {
                 p.getCreated(),
                 p.getRevised(),
                 p.getStatus(),
-                p.getUri()
+                p.getUri(),
+                p.getSourceIds()  // Preserve sourceIds for lineage tracking
         );
         var mentionNodes = p.getMentions().stream()
                 .map(Mention::fromDice)
@@ -106,8 +107,7 @@ public class PropositionView {
                 proposition.getRevised(),
                 proposition.getStatus(),
                 0,
-                // TODO empty sourceIds seems wrong
-                List.of(),
+                proposition.getSourceIds(),  // Preserve sourceIds for lineage tracking
                 Map.of(),
                 proposition.getUri()
         );

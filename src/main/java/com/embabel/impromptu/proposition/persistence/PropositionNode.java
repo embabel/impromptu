@@ -90,6 +90,11 @@ public class PropositionNode {
     private @Nullable String uri;
 
     /**
+     * Source IDs that this proposition was derived from (for lineage tracking)
+     */
+    private List<String> sourceIds;
+
+    /**
      * Vector embedding for similarity search
      */
     private @Nullable List<Double> embedding;
@@ -106,7 +111,8 @@ public class PropositionNode {
             @JsonProperty("created") Instant created,
             @JsonProperty("revised") Instant revised,
             @JsonProperty("status") PropositionStatus status,
-            @JsonProperty("uri") @Nullable String uri) {
+            @JsonProperty("uri") @Nullable String uri,
+            @JsonProperty("sourceIds") List<String> sourceIds) {
         this.id = id != null ? id : UUID.randomUUID().toString();
         this.contextId = contextId != null ? contextId : "default";
         this.text = text;
@@ -118,11 +124,12 @@ public class PropositionNode {
         this.revised = revised != null ? revised : Instant.now();
         this.status = status != null ? status : PropositionStatus.ACTIVE;
         this.uri = uri;
+        this.sourceIds = sourceIds != null ? sourceIds : List.of();
     }
 
     public PropositionNode(String text, double confidence) {
         this(UUID.randomUUID().toString(), "default", text, confidence, 0.0, null, List.of(),
-                Instant.now(), Instant.now(), PropositionStatus.ACTIVE, null);
+                Instant.now(), Instant.now(), PropositionStatus.ACTIVE, null, List.of());
     }
 
     // Getters and setters
@@ -213,6 +220,14 @@ public class PropositionNode {
 
     public void setUri(@Nullable String uri) {
         this.uri = uri;
+    }
+
+    public List<String> getSourceIds() {
+        return sourceIds;
+    }
+
+    public void setSourceIds(List<String> sourceIds) {
+        this.sourceIds = sourceIds;
     }
 
     public @Nullable List<Double> getEmbedding() {

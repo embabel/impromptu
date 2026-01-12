@@ -116,13 +116,24 @@ public class DrivinePropositionRepository implements PropositionRepository {
     }
 
 
-    // TODO shouldn't we narrow by context in nearly all cases
     @Override
     @Transactional(readOnly = true)
     public @NonNull List<Proposition> findByMinLevel(int minLevel) {
-        return findAll().stream()
-                // TODO make this efficient with query
-                .filter(p -> p.getLevel() >= minLevel)
+        var whereClause = "proposition.level >= " + minLevel;
+        return graphObjectManager.loadAll(PropositionView.class, whereClause).stream()
+                .map(PropositionView::toDice)
+                .toList();
+    }
+
+    /**
+     * Find propositions with minimum level for a specific context.
+     * This is more efficient than findByMinLevel() when context filtering is needed.
+     */
+    @Transactional(readOnly = true)
+    public @NonNull List<Proposition> findByMinLevelAndContext(int minLevel, @NonNull String contextId) {
+        var whereClause = "proposition.level >= " + minLevel + " AND proposition.contextId = '" + contextId + "'";
+        return graphObjectManager.loadAll(PropositionView.class, whereClause).stream()
+                .map(PropositionView::toDice)
                 .toList();
     }
 
@@ -144,13 +155,40 @@ public class DrivinePropositionRepository implements PropositionRepository {
     @Override
     @Transactional(readOnly = true)
     public @NonNull List<Proposition> findByEntity(@NonNull RetrievableIdentifier identifier) {
-        // TODO make this efficient with query
-        return findAll().stream().filter(p ->
-                p.getMentions().stream().anyMatch(m ->
-                        isTypeCompatible(m.getType(), identifier.getType()) &&
-                                identifier.getId().equals(m.getResolvedId())
-                )
-        ).toList();
+        // Use Cypher query with traversal for efficiency
+        var cypher = """
+                MATCH (p:Proposition)-[:HAS_MENTION]->(m:Mention)
+                WHERE m.resolvedId = $resolvedId
+                  AND (toLower(m.type) = toLower($type)
+                       OR (toLower($type) = 'user' AND toLower(m.type) CONTAINS 'user'))
+                RETURN DISTINCT p.id AS id
+                """;
+        var params = Map.of(
+                "resolvedId", identifier.getId(),
+                "type", identifier.getType()
+        );
+
+        try {
+            var ids = persistenceManager.query(
+                    QuerySpecification
+                            .withStatement(cypher)
+                            .bind(params)
+                            .transform(String.class)
+            );
+            return ids.stream()
+                    .map(this::findById)
+                    .filter(p -> p != null)
+                    .toList();
+        } catch (Exception e) {
+            logger.warn("findByEntity query failed: {}, falling back to in-memory", e.getMessage());
+            // Fallback to in-memory filtering
+            return findAll().stream().filter(p ->
+                    p.getMentions().stream().anyMatch(m ->
+                            isTypeCompatible(m.getType(), identifier.getType()) &&
+                                    identifier.getId().equals(m.getResolvedId())
+                    )
+            ).toList();
+        }
     }
 
     /**
@@ -230,10 +268,31 @@ public class DrivinePropositionRepository implements PropositionRepository {
     @Override
     @Transactional(readOnly = true)
     public @NonNull List<Proposition> findByGrounding(@NonNull String chunkId) {
-        // TODO make this efficient with query
-        return findAll().stream()
-                .filter(p -> p.getGrounding().contains(chunkId))
-                .toList();
+        // Use Cypher query for efficiency - grounding is stored as an array property
+        var cypher = """
+                MATCH (p:Proposition)
+                WHERE $chunkId IN p.grounding
+                RETURN p.id AS id
+                """;
+        var params = Map.of("chunkId", chunkId);
+
+        try {
+            var ids = persistenceManager.query(
+                    QuerySpecification
+                            .withStatement(cypher)
+                            .bind(params)
+                            .transform(String.class)
+            );
+            return ids.stream()
+                    .map(this::findById)
+                    .filter(p -> p != null)
+                    .toList();
+        } catch (Exception e) {
+            logger.warn("findByGrounding query failed: {}, falling back to in-memory", e.getMessage());
+            return findAll().stream()
+                    .filter(p -> p.getGrounding().contains(chunkId))
+                    .toList();
+        }
     }
 
     @Override

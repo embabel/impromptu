@@ -118,6 +118,7 @@ public class ChatActions {
         var assistantMessage = context.
                 ai()
                 .withLlm(properties.chatLlm())
+                .withId("chat_response")
                 .withPromptElements(user, userPersonaSnapshot)
                 .withReference(toolishRag)
                 .withToolObjects(tools)

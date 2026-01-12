@@ -5,11 +5,17 @@ import com.embabel.agent.core.DataDictionary;
 import com.embabel.agent.rag.neo.drivine.DrivineNamedEntityDataRepository;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.ai.model.EmbeddingService;
+import com.embabel.common.ai.model.ModelProvider;
 import com.embabel.dice.common.EntityResolver;
 import com.embabel.dice.common.KnowledgeType;
 import com.embabel.dice.common.Relations;
 import com.embabel.dice.common.SchemaAdherence;
-import com.embabel.dice.common.resolver.AgenticEntityResolver;
+import com.embabel.dice.common.resolver.ContextCompressor;
+import com.embabel.dice.common.resolver.HierarchicalConfig;
+import com.embabel.dice.common.resolver.HierarchicalEntityResolver;
+import com.embabel.dice.common.resolver.MatchStrategyKt;
+import com.embabel.dice.common.resolver.matcher.LlmCandidateBakeoff;
+import com.embabel.dice.common.resolver.matcher.PromptMode;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionExtractor;
 import com.embabel.dice.proposition.PropositionRepository;
@@ -108,22 +114,49 @@ class PropositionConfiguration {
     }
 
     /**
-     * Agentic entity resolver using ToolishRag to let LLM drive entity search.
-     * This is more accurate because the LLM can craft queries iteratively.
+     * Hierarchical entity resolver that escalates through resolution levels:
+     * 1. EXACT_MATCH - ID/name lookup (no LLM)
+     * 2. HEURISTIC_MATCH - Fuzzy strategies (no LLM)
+     * 3. EMBEDDING_MATCH - High-confidence vector (no LLM)
+     * 4. LLM_VERIFICATION - Single candidate yes/no
+     * 5. LLM_BAKEOFF - Compare multiple candidates
+     *
+     * This minimizes LLM calls by handling easy cases with fast heuristics.
      */
     @Bean
     EntityResolver entityResolver(
             NamedEntityDataRepository repository,
-            AiBuilder aiBuilder,
+            ModelProvider modelProvider,
             ImpromptuProperties impromptuProperties) {
-        var ai = aiBuilder
-                .withShowPrompts(impromptuProperties.showExtractionPrompts())
-                .withShowLlmResponses(impromptuProperties.showExtractionResponses())
-                .ai();
-        return new AgenticEntityResolver(
+        // Get model name from LlmOptions, with fallback to default
+        var llmOptions = impromptuProperties.entityResolutionLlm();
+        var modelName = llmOptions.getModel() != null ? llmOptions.getModel() : "gpt-4.1-mini";
+
+        // LLM bakeoff with compact prompts (~100 tokens vs ~400 for full)
+        var llmBakeoff = new LlmCandidateBakeoff(
+                modelProvider,
+                modelName,
+                PromptMode.COMPACT
+        );
+
+        // Hierarchical config - tune thresholds for music domain
+        var config = new HierarchicalConfig(
+                0.95,   // embeddingAutoAcceptThreshold - high confidence = auto-accept
+                0.7,    // embeddingCandidateThreshold - consider as candidate
+                10,     // topK - max candidates to retrieve
+                true,   // useTextSearch
+                true,   // useVectorSearch
+                false,  // heuristicOnly - allow LLM for ambiguous cases
+                0.9     // earlyTerminationThreshold
+        );
+
+        logger.info("Creating HierarchicalEntityResolver with model: {}", modelName);
+        return new HierarchicalEntityResolver(
                 repository,
-                ai,
-                impromptuProperties.entityResolutionLlm()
+                MatchStrategyKt.defaultMatchStrategies(),
+                llmBakeoff,
+                ContextCompressor.none(),  // Context compressed separately in pipeline
+                config
         );
     }
 
