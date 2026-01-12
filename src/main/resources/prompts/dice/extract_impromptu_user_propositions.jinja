@@ -14,18 +14,25 @@ their preferences, knowledge, interests, and opinions about music.
 3. **No inference beyond evidence**: Only extract what the text explicitly supports
 4. **No overlap**: Each fact should be distinct
 
+## Work Entity Mentions - BE SPECIFIC
+
+**Entity mention rules for Works**:
+- **Include the composer name** to disambiguate (e.g., "Bruckner Symphony No. 7" not just "Symphony No. 7")
+- Use the work's proper/canonical title with opus/catalog numbers when known
+- Strip user opinions and adjectives (lovely, beautiful, amazing)
+- Avoid vague ordinals like "first" or "second" - use "No. 1", "No. 2"
+
+Many works share generic titles (Symphony, Concerto, Quartet). Always include composer context.
+
 ## Examples
 
 User says "I love Romantic music, especially Wagner":
 ✓ GOOD:
-  - "Rod Johnson loves Romantic music" (NO entity mention - "Romantic music" is a period/style)
-  - "Rod Johnson loves Wagner" (entity mention: Wagner → Composer)
+  - "Rod Johnson loves Romantic music" (NO entity mention - period/style)
+  - "Rod Johnson loves Wagner" (entity: Wagner → Composer)
 
 User says "I enjoy epic, dramatic works":
-✓ GOOD: "Rod Johnson enjoys epic, dramatic works" (NO entity mentions - these are preferences, not schema entities)
-
-User says "I know Bruckner well":
-✓ GOOD: "Rod Johnson knows Bruckner" (entity mention: Bruckner → Composer)
+✓ GOOD: "Rod Johnson enjoys epic, dramatic works" (NO entity mentions - preferences)
 
 ## Confidence & Decay
 
@@ -33,19 +40,6 @@ User says "I know Bruckner well":
 - **Lower confidence**: Implied preferences (asking many questions about a topic)
 - **Low decay**: Stable preferences (favorite composer, genre preferences)
 - **High decay**: Transient states (current listening, mood)
-
-## Examples
-
-GOOD propositions:
-- "The user enjoys Brahms's piano music" (entity: Brahms)
-- "The user is interested in learning about Romantic composers" (entity: Romantic)
-- "The user loves Wagner's orchestration" (entity: Wagner - NOT orchestration)
-- "The user appreciates the harmonic innovations in Tristan und Isolde" (entity: Tristan und Isolde)
-
-BAD propositions (do not extract):
-- "Brahms was a Romantic composer" (general knowledge, not about user)
-- "Atonal music lacks a tonal center" (definition, not user fact)
-- "The user loves all of Beethoven's works" (overgeneralization from liking one piece)
 
 ## Input
 
