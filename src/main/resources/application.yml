@@ -92,6 +92,16 @@ impromptu:
 youtube:
   api-key: ${YOUTUBE_API_KEY:}
 
+# DICE (Domain-Integrated Context Engineering) REST API Security
+# This enables API key authentication for DICE endpoints (/api/v1/**)
+# Use the X-API-Key header with the configured key to access the API
+dice:
+  security:
+    api-key:
+      enabled: true
+      keys:
+        - impromptu-admin
+
 embabel:
 
   agent:

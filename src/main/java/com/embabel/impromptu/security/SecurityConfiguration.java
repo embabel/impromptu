@@ -22,8 +22,8 @@ class SecurityConfiguration extends VaadinWebSecurity {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        // Allow unauthenticated access to data loading APIs
-        web.ignoring().requestMatchers("/api/openopus/**", "/api/documents/**");
+        // Allow unauthenticated access to APIs (DICE API uses its own API key auth)
+        web.ignoring().requestMatchers("/api/openopus/**", "/api/documents/**", "/api/v1/**");
         super.configure(web);
     }
 

@@ -191,6 +191,227 @@ Once configured, a "Link Spotify" button appears in the header after Google logi
 - **Spotify Integration**: Link your Spotify account to create and manage playlists through the chatbot
 - **Neo4j Browser**: Direct link to explore the graph database
 
+## DICE REST API (Proposition Memory)
+
+The application exposes DICE (Domain-Integrated Context Engineering) REST API endpoints for managing proposition-based memory. These endpoints are protected by API key authentication.
+
+### Enabling the REST Endpoints
+
+To enable DICE REST endpoints in your application:
+
+1. **Import the configuration** in your main application class:
+
+```java
+import com.embabel.dice.web.rest.DiceRestConfiguration;
+import org.springframework.context.annotation.Import;
+
+@SpringBootApplication
+@Import(DiceRestConfiguration.class)
+public class MyApplication { }
+```
+
+2. **Configure Spring Security** to allow API key authentication (bypass OAuth/session auth):
+
+```java
+@Override
+public void configure(WebSecurity web) throws Exception {
+    web.ignoring().requestMatchers("/api/v1/**");
+    super.configure(web);
+}
+```
+
+3. **Add API key configuration** to `application.yml`:
+
+```yaml
+dice:
+  security:
+    api-key:
+      enabled: true
+      keys:
+        - your-api-key-here
+```
+
+4. **Provide a SchemaRegistry bean** (see [Schema Registry](#schema-registry) section below).
+
+### Authentication
+
+All DICE endpoints require an API key header:
+
+```bash
+curl -H "X-API-Key: impromptu-admin" http://localhost:8888/api/v1/contexts/user123/memory
+```
+
+The default API key is `impromptu-admin` (configured in `application.yml`).
+
+### Extract Propositions from Text
+
+```bash
+# Extract propositions from text
+curl -X POST http://localhost:8888/api/v1/contexts/user123/extract \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: impromptu-admin" \
+  -d '{
+    "text": "Johann Sebastian Bach composed the Brandenburg Concertos in 1721. He was born in Eisenach, Germany.",
+    "sourceId": "music-facts"
+  }'
+```
+
+### Extract with User Association
+
+Use `knownEntities` to associate extracted propositions with a user or other entities:
+
+```bash
+curl -X POST http://localhost:8888/api/v1/contexts/user123/extract \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: impromptu-admin" \
+  -d '{
+    "text": "I really enjoyed the Brahms Symphony No. 4 performance last night.",
+    "sourceId": "user-conversation",
+    "knownEntities": [
+      {
+        "id": "alice_id",
+        "name": "Alice",
+        "type": "User",
+        "description": "A music enthusiast who loves classical music",
+        "role": "The user in the conversation"
+      }
+    ]
+  }'
+```
+
+The `knownEntities` array accepts entities with:
+- `id` - Unique identifier for the entity
+- `name` - Display name
+- `type` - Entity type label (e.g., "User", "Composer", "Work")
+- `description` - Optional description of the entity (defaults to name if not provided)
+- `role` - Descriptive role explaining context (e.g., "The user in the conversation", "A referenced composer")
+
+### Extract with Named Schema
+
+If multiple schemas are registered, specify which one to use:
+
+```bash
+curl -X POST http://localhost:8888/api/v1/contexts/user123/extract \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: impromptu-admin" \
+  -d '{
+    "text": "The contract was signed on January 15, 2024.",
+    "schemaName": "legal"
+  }'
+```
+
+### Extract Propositions from File
+
+```bash
+# Upload and process a document (PDF, Word, Markdown, HTML)
+curl -X POST http://localhost:8888/api/v1/contexts/user123/extract/file \
+  -H "X-API-Key: impromptu-admin" \
+  -F "file=@./data/schumann/musicandmusician001815mbp.md" \
+  -F "sourceId=schumann-writings"
+
+# With schema name
+curl -X POST http://localhost:8888/api/v1/contexts/user123/extract/file \
+  -H "X-API-Key: impromptu-admin" \
+  -F "file=@./document.pdf" \
+  -F "schemaName=legal"
+```
+
+### Query Memory
+
+```bash
+# Get all propositions for a context
+curl -H "X-API-Key: impromptu-admin" \
+  http://localhost:8888/api/v1/contexts/user123/memory
+
+# Search by similarity
+curl -X POST http://localhost:8888/api/v1/contexts/user123/memory/search \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: impromptu-admin" \
+  -d '{
+    "query": "What instruments did Bach play?",
+    "topK": 5,
+    "similarityThreshold": 0.7
+  }'
+
+# Get propositions about a specific entity
+curl -H "X-API-Key: impromptu-admin" \
+  "http://localhost:8888/api/v1/contexts/user123/memory/entity/bach-123"
+```
+
+### Manage Propositions
+
+```bash
+# Get a specific proposition
+curl -H "X-API-Key: impromptu-admin" \
+  http://localhost:8888/api/v1/contexts/user123/memory/prop-456
+
+# Delete a proposition (soft delete)
+curl -X DELETE -H "X-API-Key: impromptu-admin" \
+  http://localhost:8888/api/v1/contexts/user123/memory/prop-456
+```
+
+### Configuration
+
+The DICE API key security is configured in `application.yml`:
+
+```yaml
+dice:
+  security:
+    api-key:
+      enabled: true
+      keys:
+        - impromptu-admin          # Add your API keys here
+      headerName: X-API-Key        # Optional, defaults to X-API-Key
+      pathPatterns:                # Optional, defaults to /api/v1/**
+        - /api/v1/**
+```
+
+### Custom API Key Authenticator
+
+For production, implement a custom `ApiKeyAuthenticator` bean to validate keys against a database or secrets manager. When you provide your own bean, the in-memory authenticator is automatically disabled:
+
+```java
+@Component
+public class DatabaseApiKeyAuthenticator implements ApiKeyAuthenticator {
+
+    private final ApiKeyRepository apiKeyRepository;
+
+    public DatabaseApiKeyAuthenticator(ApiKeyRepository apiKeyRepository) {
+        this.apiKeyRepository = apiKeyRepository;
+    }
+
+    @Override
+    public AuthResult authenticate(String apiKey) {
+        return apiKeyRepository.findByKey(apiKey)
+            .map(key -> new AuthResult.Authorized(
+                key.getClientName(),
+                Map.of("scopes", key.getScopes())
+            ))
+            .orElseGet(() -> new AuthResult.Unauthorized("Invalid API key"));
+    }
+}
+```
+
+The `AuthResult.Authorized` can include a principal name and metadata map, which are stored in request attributes for downstream use:
+- `dice.auth.principal` - The authenticated client identifier
+- `dice.auth.metadata` - Additional metadata (scopes, rate limits, etc.)
+
+### Schema Registry
+
+To support multiple named schemas, provide a `SchemaRegistry` bean:
+
+```java
+@Bean
+SchemaRegistry schemaRegistry(DataDictionary defaultSchema) {
+    InMemorySchemaRegistry registry = InMemorySchemaRegistry.withDefault(defaultSchema);
+    registry.register("music", DataDictionary.fromClasses(Composer.class, Work.class));
+    registry.register("legal", DataDictionary.fromClasses(Contract.class, Party.class));
+    return registry;
+}
+```
+
+If no `SchemaRegistry` bean is provided, wrap your default `DataDictionary` with `InMemorySchemaRegistry.withDefault(schema)`.
+
 ## Implementation Details
 
 ### Neo4j Vector Storage

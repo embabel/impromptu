@@ -15,15 +15,18 @@
  */
 package com.embabel.impromptu;
 
+import com.embabel.dice.web.rest.DiceRestConfiguration;
 import org.drivine.autoconfigure.EnableDrivine;
 import org.drivine.autoconfigure.EnableDrivinePropertiesConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
 
 
 @SpringBootApplication
 @EnableDrivine
 @EnableDrivinePropertiesConfig
+@Import(DiceRestConfiguration.class)
 class ImpromptuApplication {
     public static void main(String[] args) {
         SpringApplication.run(ImpromptuApplication.class, args);

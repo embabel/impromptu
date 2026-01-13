@@ -6,16 +6,14 @@ import com.embabel.agent.rag.neo.drivine.DrivineNamedEntityDataRepository;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.common.ai.model.ModelProvider;
-import com.embabel.dice.common.EntityResolver;
-import com.embabel.dice.common.KnowledgeType;
-import com.embabel.dice.common.Relations;
-import com.embabel.dice.common.SchemaAdherence;
+import com.embabel.dice.common.*;
 import com.embabel.dice.common.resolver.ContextCompressor;
 import com.embabel.dice.common.resolver.HierarchicalConfig;
 import com.embabel.dice.common.resolver.HierarchicalEntityResolver;
 import com.embabel.dice.common.resolver.MatchStrategyKt;
 import com.embabel.dice.common.resolver.matcher.LlmCandidateBakeoff;
 import com.embabel.dice.common.resolver.matcher.PromptMode;
+import com.embabel.dice.common.support.InMemorySchemaRegistry;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionExtractor;
 import com.embabel.dice.proposition.PropositionRepository;
@@ -65,6 +63,18 @@ class PropositionConfiguration {
         );
         logger.info("Created music domain schema with {} types", schema.getDomainTypes().size());
         return schema;
+    }
+
+    /**
+     * Schema registry for DICE REST API.
+     * Wraps the default music schema and allows named schema lookup.
+     */
+    @Bean
+    SchemaRegistry schemaRegistry(DataDictionary musicSchema) {
+        var registry = new InMemorySchemaRegistry(musicSchema);
+        registry.register("music", musicSchema);
+        logger.info("Created SchemaRegistry with default music schema");
+        return registry;
     }
 
     @Bean
@@ -120,7 +130,7 @@ class PropositionConfiguration {
      * 3. EMBEDDING_MATCH - High-confidence vector (no LLM)
      * 4. LLM_VERIFICATION - Single candidate yes/no
      * 5. LLM_BAKEOFF - Compare multiple candidates
-     *
+     * <p>
      * This minimizes LLM calls by handling easy cases with fast heuristics.
      */
     @Bean
