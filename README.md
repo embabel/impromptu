@@ -247,7 +247,7 @@ The default API key is `impromptu-admin` (configured in `application.yml`).
 
 ```bash
 # Extract propositions from text
-curl -X POST http://localhost:8888/api/v1/contexts/user123/extract \
+curl -X POST http://localhost:8888/api/v1/contexts/alice_default/extract \
   -H "Content-Type: application/json" \
   -H "X-API-Key: impromptu-admin" \
   -d '{
@@ -261,7 +261,7 @@ curl -X POST http://localhost:8888/api/v1/contexts/user123/extract \
 Use `knownEntities` to associate extracted propositions with a user or other entities:
 
 ```bash
-curl -X POST http://localhost:8888/api/v1/contexts/user123/extract \
+curl -X POST http://localhost:8888/api/v1/contexts/alice_default/extract \
   -H "Content-Type: application/json" \
   -H "X-API-Key: impromptu-admin" \
   -d '{
@@ -291,7 +291,7 @@ The `knownEntities` array accepts entities with:
 If multiple schemas are registered, specify which one to use:
 
 ```bash
-curl -X POST http://localhost:8888/api/v1/contexts/user123/extract \
+curl -X POST http://localhost:8888/api/v1/contexts/alice_default/extract \
   -H "Content-Type: application/json" \
   -H "X-API-Key: impromptu-admin" \
   -d '{
@@ -304,13 +304,13 @@ curl -X POST http://localhost:8888/api/v1/contexts/user123/extract \
 
 ```bash
 # Upload and process a document (PDF, Word, Markdown, HTML)
-curl -X POST http://localhost:8888/api/v1/contexts/user123/extract/file \
+curl -X POST http://localhost:8888/api/v1/contexts/alice_default/extract/file \
   -H "X-API-Key: impromptu-admin" \
   -F "file=@./data/schumann/musicandmusician001815mbp.md" \
   -F "sourceId=schumann-writings"
 
 # With schema name
-curl -X POST http://localhost:8888/api/v1/contexts/user123/extract/file \
+curl -X POST http://localhost:8888/api/v1/contexts/alice_default/extract/file \
   -H "X-API-Key: impromptu-admin" \
   -F "file=@./document.pdf" \
   -F "schemaName=legal"
@@ -321,7 +321,7 @@ curl -X POST http://localhost:8888/api/v1/contexts/user123/extract/file \
 ```bash
 # Get all propositions for a context
 curl -H "X-API-Key: impromptu-admin" \
-  http://localhost:8888/api/v1/contexts/user123/memory
+  http://localhost:8888/api/v1/contexts/alice_default/memory
 
 # Search by similarity
 curl -X POST http://localhost:8888/api/v1/contexts/user123/memory/search \
@@ -343,11 +343,11 @@ curl -H "X-API-Key: impromptu-admin" \
 ```bash
 # Get a specific proposition
 curl -H "X-API-Key: impromptu-admin" \
-  http://localhost:8888/api/v1/contexts/user123/memory/prop-456
+  http://localhost:8888/api/v1/contexts/alice_default/memory/prop-456
 
 # Delete a proposition (soft delete)
 curl -X DELETE -H "X-API-Key: impromptu-admin" \
-  http://localhost:8888/api/v1/contexts/user123/memory/prop-456
+  http://localhost:8888/api/v1/contexts/alice_default/memory/prop-456
 ```
 
 ### Configuration

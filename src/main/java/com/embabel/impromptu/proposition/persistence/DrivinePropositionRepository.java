@@ -21,6 +21,7 @@ import com.embabel.common.core.types.SimilarityResult;
 import com.embabel.common.core.types.SimpleSimilaritySearchResult;
 import com.embabel.common.core.types.TextSimilaritySearchRequest;
 import com.embabel.dice.proposition.Proposition;
+import com.embabel.dice.proposition.PropositionQuery;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.PropositionStatus;
 import jakarta.annotation.PostConstruct;
@@ -252,6 +253,80 @@ public class DrivinePropositionRepository implements PropositionRepository {
                     .toList();
         } catch (Exception e) {
             logger.error("Vector search failed: {}", e.getMessage(), e);
+            return List.of();
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public @NonNull List<SimilarityResult<Proposition>> findSimilarWithScores(
+            @NonNull TextSimilaritySearchRequest request,
+            @NonNull PropositionQuery query) {
+        var embedding = embeddingService.embed(request.getQuery());
+
+        // Build WHERE clause from query filters
+        var whereConditions = new java.util.ArrayList<String>();
+        whereConditions.add("score >= $similarityThreshold");
+
+        var params = new java.util.HashMap<String, Object>();
+        params.put("vectorIndex", PROPOSITION_VECTOR_INDEX);
+        params.put("topK", request.getTopK());
+        params.put("queryVector", embedding);
+        params.put("similarityThreshold", request.getSimilarityThreshold());
+
+        if (query.getContextIdValue() != null) {
+            whereConditions.add("p.contextId = $contextId");
+            params.put("contextId", query.getContextIdValue());
+        }
+        if (query.getStatus() != null) {
+            whereConditions.add("p.status = $status");
+            params.put("status", query.getStatus().name());
+        }
+        if (query.getMinLevel() != null) {
+            whereConditions.add("p.level >= $minLevel");
+            params.put("minLevel", query.getMinLevel());
+        }
+        if (query.getMaxLevel() != null) {
+            whereConditions.add("p.level <= $maxLevel");
+            params.put("maxLevel", query.getMaxLevel());
+        }
+
+        var whereClause = String.join(" AND ", whereConditions);
+        var cypher = """
+                CALL db.index.vector.queryNodes($vectorIndex, $topK, $queryVector)
+                YIELD node AS p, score
+                WHERE %s
+                RETURN {
+                    id: p.id,
+                    score: score
+                } AS result
+                ORDER BY score DESC
+                """.formatted(whereClause);
+
+        logger.debug("Executing filtered proposition vector search with query: {}, contextId: {}",
+                request.getQuery(), query.getContextIdValue());
+
+        try {
+            var rows = persistenceManager.query(
+                    QuerySpecification
+                            .withStatement(cypher)
+                            .bind(params)
+                            .mapWith(new PropositionSimilarityMapper())
+            );
+
+            logger.debug("Filtered vector search returned {} rows", rows.size());
+
+            return rows.stream()
+                    .<SimilarityResult<Proposition>>map(row -> {
+                        var proposition = findById(row.id());
+                        return proposition != null
+                                ? new SimpleSimilaritySearchResult<>(proposition, row.score())
+                                : null;
+                    })
+                    .filter(r -> r != null)
+                    .toList();
+        } catch (Exception e) {
+            logger.error("Filtered vector search failed: {}", e.getMessage(), e);
             return List.of();
         }
     }
