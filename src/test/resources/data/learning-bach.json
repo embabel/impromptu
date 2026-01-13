@@ -1,0 +1,14 @@
+{
+  "description": "User thoughts on Bach and learning keyboard",
+  "text": "I've been learning to play Bach's Prelude in C Major on piano. It's challenging but rewarding. I find Bach's counterpoint fascinating and want to explore more of his keyboard works.",
+  "sourceId": "test-learning",
+  "knownEntities": [
+    {
+      "id": "alice_id",
+      "name": "Alice",
+      "type": "User",
+      "description": "A music enthusiast learning piano",
+      "role": "The user in the conversation"
+    }
+  ]
+}

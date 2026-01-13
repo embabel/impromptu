@@ -1,0 +1,6 @@
+{
+  "description": "Search query for user preferences about piano music",
+  "query": "What does the user like about piano music?",
+  "topK": 5,
+  "similarityThreshold": 0.6
+}

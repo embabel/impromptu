@@ -1,0 +1,14 @@
+{
+  "description": "User comparing preferences between Romantic composers",
+  "text": "I love both Chopin and Liszt, but for different reasons. Chopin's nocturnes help me relax in the evening, while Liszt's Hungarian Rhapsodies energize me. I prefer listening to Chopin when I'm working.",
+  "sourceId": "test-comparison",
+  "knownEntities": [
+    {
+      "id": "alice_id",
+      "name": "Alice",
+      "type": "User",
+      "description": "A music enthusiast who loves Romantic piano music",
+      "role": "The user in the conversation"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "description": "User general preferences including concert habits and lifestyle",
+  "text": "I usually attend concerts on Friday evenings since I work from home. I prefer smaller venues over large concert halls - the acoustics feel more intimate. I always grab coffee beforehand at the cafe next door.",
+  "sourceId": "test-general",
+  "knownEntities": [
+    {
+      "id": "alice_id",
+      "name": "Alice",
+      "type": "User",
+      "description": "A music enthusiast with specific concert preferences",
+      "role": "The user in the conversation"
+    }
+  ]
+}

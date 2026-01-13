@@ -1,0 +1,14 @@
+{
+  "description": "User opinion about Beethoven's works",
+  "text": "I think Beethoven's late string quartets are underappreciated. The Grosse Fuge is challenging but I find it rewarding. I've been meaning to attend more chamber music concerts.",
+  "sourceId": "test-opinion",
+  "knownEntities": [
+    {
+      "id": "test_user_bob",
+      "name": "Bob",
+      "type": "User",
+      "description": "A classical music enthusiast interested in chamber music",
+      "role": "The user expressing their opinion"
+    }
+  ]
+}

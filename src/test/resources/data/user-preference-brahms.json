@@ -1,0 +1,14 @@
+{
+  "description": "User expressing enjoyment of a Brahms performance",
+  "text": "I really enjoyed the Brahms Symphony No. 4 performance last night. The fourth movement was absolutely magnificent. I think I prefer Brahms over Beethoven for symphonies.",
+  "sourceId": "test-user-preference",
+  "knownEntities": [
+    {
+      "id": "alice_id",
+      "name": "Alice",
+      "type": "User",
+      "description": "A music enthusiast who loves classical music",
+      "role": "The user in the conversation"
+    }
+  ]
+}
