@@ -5,11 +5,10 @@ import com.embabel.agent.core.DataDictionary;
 import com.embabel.agent.rag.neo.drivine.DrivineNamedEntityDataRepository;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.ai.model.EmbeddingService;
-import com.embabel.common.ai.model.ModelProvider;
 import com.embabel.dice.common.*;
 import com.embabel.dice.common.resolver.EscalatingEntityResolver;
-import com.embabel.dice.common.resolver.matcher.LlmCandidateBakeoff;
-import com.embabel.dice.common.resolver.matcher.PromptMode;
+import com.embabel.dice.common.resolver.LlmCandidateBakeoff;
+import com.embabel.dice.common.resolver.PromptMode;
 import com.embabel.dice.common.support.InMemorySchemaRegistry;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionExtractor;
@@ -133,22 +132,25 @@ class PropositionConfiguration {
     @Bean
     EntityResolver entityResolver(
             NamedEntityDataRepository repository,
-            ModelProvider modelProvider,
+            AiBuilder aiBuilder,
             ImpromptuProperties impromptuProperties) {
-        // Get model name from LlmOptions, with fallback to default
         var llmOptions = impromptuProperties.entityResolutionLlm();
-        var modelName = llmOptions.getModel() != null ? llmOptions.getModel() : "gpt-4.1-mini";
+        var ai = aiBuilder
+                .withShowPrompts(impromptuProperties.showExtractionPrompts())
+                .withShowLlmResponses(impromptuProperties.showExtractionResponses())
+                .ai();
 
         // LLM bakeoff with compact prompts (~100 tokens vs ~400 for full)
         var llmBakeoff = new LlmCandidateBakeoff(
-                modelProvider,
-                modelName,
-                PromptMode.COMPACT
+                ai,
+                llmOptions,
+                PromptMode.FULL
         );
 
-        logger.info("Creating EscalatingEntityResolver with model: {}", modelName);
+        logger.info("Creating EscalatingEntityResolver with model: {}", llmOptions.getModel());
         // Uses default searcher chain: ByIdCandidateSearcher -> ByExactNameCandidateSearcher
-        // -> TextCandidateSearcher -> VectorCandidateSearcher
+        // -> NormalizedNameCandidateSearcher -> PartialNameCandidateSearcher
+        // -> FuzzyNameCandidateSearcher -> VectorCandidateSearcher
         return EscalatingEntityResolver.create(repository, llmBakeoff);
     }
 

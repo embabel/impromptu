@@ -115,6 +115,12 @@ embabel:
       model: gpt-4.1-mini
 
 
+logging:
+  level:
+    # Entity resolution debug logging
+    com.embabel.dice.common.resolver: DEBUG
+    com.embabel.dice.common.resolver.searcher: DEBUG
+
 server:
   port: 8888  # Double the 88 piano keys
   servlet:
