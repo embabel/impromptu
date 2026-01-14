@@ -6,9 +6,9 @@ import com.embabel.agent.rag.neo.drivine.DrivineNamedEntityDataRepository;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.dice.common.*;
+import com.embabel.dice.common.resolver.BakeoffPromptStrategies;
 import com.embabel.dice.common.resolver.EscalatingEntityResolver;
 import com.embabel.dice.common.resolver.LlmCandidateBakeoff;
-import com.embabel.dice.common.resolver.PromptMode;
 import com.embabel.dice.common.support.InMemorySchemaRegistry;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.PropositionExtractor;
@@ -140,12 +140,12 @@ class PropositionConfiguration {
                 .withShowLlmResponses(impromptuProperties.showExtractionResponses())
                 .ai();
 
-        // LLM bakeoff with compact prompts (~100 tokens vs ~400 for full)
-        var llmBakeoff = new LlmCandidateBakeoff(
-                ai,
-                llmOptions,
-                PromptMode.FULL
-        );
+        // LLM bakeoff with full prompts (includes descriptions for accurate disambiguation)
+        // Use BakeoffPromptStrategies.COMPACT for faster/cheaper resolution if descriptions aren't needed
+        var llmBakeoff = LlmCandidateBakeoff
+                .withLlm(llmOptions)
+                .withAi(ai)
+                .withPromptStrategy(BakeoffPromptStrategies.FULL);
 
         logger.info("Creating EscalatingEntityResolver with model: {}", llmOptions.getModel());
         // Uses default searcher chain: ByIdCandidateSearcher -> ByExactNameCandidateSearcher
