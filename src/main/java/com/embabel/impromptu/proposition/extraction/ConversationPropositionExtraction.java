@@ -8,11 +8,9 @@ import com.embabel.dice.common.KnownEntity;
 import com.embabel.dice.common.Relations;
 import com.embabel.dice.common.SourceAnalysisContext;
 import com.embabel.dice.common.resolver.KnownEntityResolver;
-import com.embabel.dice.incremental.ChunkHistoryStore;
-import com.embabel.dice.incremental.ConversationSource;
-import com.embabel.dice.incremental.IncrementalAnalyzer;
-import com.embabel.dice.incremental.MessageFormatter;
-import com.embabel.dice.incremental.WindowConfig;
+import com.embabel.dice.incremental.*;
+import com.embabel.dice.incremental.proposition.PropositionIncrementalAnalyzer;
+import com.embabel.dice.pipeline.ChunkPropositionResult;
 import com.embabel.dice.pipeline.PropositionPipeline;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.dice.proposition.PropositionRepository;
@@ -39,7 +37,7 @@ public class ConversationPropositionExtraction {
 
     private static final Logger logger = LoggerFactory.getLogger(ConversationPropositionExtraction.class);
 
-    private final IncrementalAnalyzer<Message> analyzer;
+    private final IncrementalAnalyzer<Message, ChunkPropositionResult> analyzer;
     private final DataDictionary dataDictionary;
     private final Relations relations;
     private final PropositionRepository propositionRepository;
@@ -68,7 +66,7 @@ public class ConversationPropositionExtraction {
                 extraction.overlapSize(),
                 extraction.triggerInterval()
         );
-        this.analyzer = new IncrementalAnalyzer<>(
+        this.analyzer = new PropositionIncrementalAnalyzer<>(
                 propositionPipeline,
                 chunkHistoryStore,
                 MessageFormatter.INSTANCE,
