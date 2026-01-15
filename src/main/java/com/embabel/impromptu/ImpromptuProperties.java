@@ -43,6 +43,7 @@ public record ImpromptuProperties(
         @NestedConfigurationProperty LlmOptions entityResolutionLlm,
         boolean showExtractionPrompts,
         boolean showExtractionResponses,
+        boolean showChatPrompts,
         @Nullable @NestedConfigurationProperty Speech speech
 ) {
 

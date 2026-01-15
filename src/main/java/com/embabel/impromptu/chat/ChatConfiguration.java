@@ -8,6 +8,7 @@ import com.embabel.dice.common.Relations;
 import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.projection.memory.support.DefaultMemoryProjector;
 import com.embabel.dice.projection.memory.support.RelationBasedKnowledgeTypeClassifier;
+import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.user.DrivineImpromptuUserService;
 import com.embabel.impromptu.user.ImpromptuUserService;
 import org.drivine.manager.GraphObjectManager;
@@ -21,10 +22,12 @@ import org.springframework.context.annotation.Configuration;
 class ChatConfiguration {
 
     @Bean
-    Chatbot chatbot(AgentPlatform agentPlatform) {
+    Chatbot chatbot(
+            AgentPlatform agentPlatform,
+            ImpromptuProperties properties) {
         return AgentProcessChatbot.utilityFromPlatform(
                 agentPlatform,
-                new Verbosity()
+                new Verbosity().withShowPrompts(properties.showChatPrompts())
         );
     }
 

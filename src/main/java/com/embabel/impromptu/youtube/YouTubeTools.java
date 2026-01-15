@@ -1,16 +1,19 @@
 package com.embabel.impromptu.youtube;
 
 import com.embabel.agent.api.annotation.LlmTool;
+import com.embabel.agent.api.annotation.MatryoshkaTools;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * LLM tools for YouTube integration.
  * Allows the chatbot to search for and play YouTube videos.
  */
+@MatryoshkaTools(
+        name = "youtube",
+        description = "Access YouTube to play or search for videos"
+)
 public record YouTubeTools(
         ImpromptuUser user,
         YouTubeService youTubeService,
@@ -40,12 +43,12 @@ public record YouTubeTools(
         }
 
         try {
-            List<YouTubeService.YouTubeVideoDetails> videos = youTubeService.searchVideosDetailed(query, 10);
+            var videos = youTubeService.searchVideosDetailed(query, 10);
             if (videos.isEmpty()) {
                 return "No videos found for: " + query;
             }
 
-            StringBuilder sb = new StringBuilder("Found YouTube videos:\n\n");
+            var sb = new StringBuilder("Found YouTube videos:\n\n");
             for (int i = 0; i < Math.min(5, videos.size()); i++) {
                 var video = videos.get(i);
                 sb.append(i + 1).append(". **").append(video.title()).append("**\n");
@@ -69,13 +72,13 @@ public record YouTubeTools(
 
         try {
             // Search with scoring for classical music
-            List<YouTubeService.YouTubeVideoDetails> videos = youTubeService.searchVideosDetailed(query, 15);
+            var videos = youTubeService.searchVideosDetailed(query, 15);
             if (videos.isEmpty()) {
                 return "No videos found for: " + query;
             }
 
             // Best match is first (already sorted by score)
-            var bestMatch = videos.get(0);
+            var bestMatch = videos.getFirst();
 
             logger.info("Best YouTube match for '{}': {} (score: {})",
                     query, bestMatch.title(), bestMatch.score());

@@ -82,6 +82,7 @@ impromptu:
   show-extraction-responses: false
   embedding-service: text-embedding-3-small
   conversation-window: 60
+  show-chat-prompts: true
 
 # YouTube Data API v3
 # To set up:
@@ -120,6 +121,9 @@ logging:
     # Entity resolution debug logging
     com.embabel.dice.common.resolver: DEBUG
     com.embabel.dice.common.resolver.searcher: DEBUG
+    # MatryoshkaTool debugging
+    com.embabel.agent.spi.loop.MatryoshkaToolInjectionStrategy: DEBUG
+    com.embabel.agent.spi.loop.support.DefaultToolLoop: DEBUG
 
 server:
   port: 8888  # Double the 88 piano keys

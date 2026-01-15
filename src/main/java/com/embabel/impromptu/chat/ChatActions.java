@@ -105,10 +105,10 @@ public class ChatActions {
             ActionContext context) {
         var tools = new LinkedList<ToolObject>();
         if (user.isSpotifyLinked()) {
-            tools.add(new ToolObject(new SpotifyTools(user, spotifyService)).withPrefix("spotify"));
+            tools.add(new ToolObject(new SpotifyTools(user, spotifyService)));
         }
         if (youTubeService.isConfigured()) {
-            tools.add(new ToolObject(new YouTubeTools(user, youTubeService, youTubePendingPlayback)).withPrefix("youtube"));
+            tools.add(new ToolObject(new YouTubeTools(user, youTubeService, youTubePendingPlayback)));
         }
         var userPersonaSnapshot = memoryProjector.project(
                 propositionRepository.query(
