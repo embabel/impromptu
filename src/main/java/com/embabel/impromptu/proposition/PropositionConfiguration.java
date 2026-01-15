@@ -49,6 +49,7 @@ class PropositionConfiguration {
     @Primary
     DataDictionary musicSchema() {
         var schema = DataDictionary.fromClasses(
+                "art_music",
                 Composer.class,
                 Work.class,
                 Performer.class,
@@ -68,7 +69,7 @@ class PropositionConfiguration {
     @Bean
     SchemaRegistry schemaRegistry(DataDictionary musicSchema) {
         var registry = new InMemorySchemaRegistry(musicSchema);
-        registry.register("music", musicSchema);
+        registry.register(musicSchema);
         logger.info("Created SchemaRegistry with default music schema");
         return registry;
     }
