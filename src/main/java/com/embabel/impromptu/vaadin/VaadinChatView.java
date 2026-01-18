@@ -506,22 +506,40 @@ public class VaadinChatView extends VerticalLayout {
                 var message = progressEvent.getMessage();
                 // LLM calls start with "Calling LLM", tool calls start with "🔧"
                 boolean isLlmCall = message != null && message.startsWith("Calling LLM");
+                boolean isToolCall = message != null && message.startsWith("🔧");
 
-                // Show if: it's an LLM call, OR showToolCalls is enabled (which shows tool calls too)
-                if (isLlmCall || currentUser.isShowToolCalls()) {
-                    ui.access(() -> {
-                        // Remove previous indicator if exists
-                        if (currentToolCallIndicator != null) {
-                            messagesLayout.remove(currentToolCallIndicator);
-                        }
-                        // Create new progress indicator
-                        currentToolCallIndicator = new Div();
-                        currentToolCallIndicator.addClassName("tool-call-indicator");
-                        currentToolCallIndicator.setText(message);
-                        messagesLayout.add(currentToolCallIndicator);
-                        scrollToBottom();
-                    });
-                }
+                ui.access(() -> {
+                    // Remove previous indicator if exists
+                    if (currentToolCallIndicator != null) {
+                        messagesLayout.remove(currentToolCallIndicator);
+                    }
+
+                    // Determine what to show
+                    String displayMessage;
+                    if (currentUser.isShowToolCalls()) {
+                        // Show full details for both LLM and tool calls
+                        displayMessage = message;
+                    } else if (isLlmCall) {
+                        // Show LLM calls even when tool calls are hidden
+                        displayMessage = message;
+                    } else if (isToolCall) {
+                        // Show minimal indicator for tool calls when hidden
+                        displayMessage = "...";
+                    } else {
+                        // Other progress events - show as-is
+                        displayMessage = message;
+                    }
+
+                    // Create progress indicator
+                    currentToolCallIndicator = new Div();
+                    currentToolCallIndicator.addClassName("tool-call-indicator");
+                    if ("...".equals(displayMessage)) {
+                        currentToolCallIndicator.addClassName("minimal-indicator");
+                    }
+                    currentToolCallIndicator.setText(displayMessage);
+                    messagesLayout.add(currentToolCallIndicator);
+                    scrollToBottom();
+                });
             }
         }
     }

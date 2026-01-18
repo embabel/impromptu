@@ -50,9 +50,24 @@ public record ImslpTools(
     /**
      * Find a musical score on IMSLP by composer and work title.
      */
-    @LlmTool(description = "Find a musical score on IMSLP given composer and work title. " +
-            "Returns the work page URL and links to available PDF scores. " +
-            "Example: composer='Beethoven', workTitle='Symphony No. 5'")
+    @LlmTool(description = """
+            Find a musical score on IMSLP given composer and work title.
+
+            COMPOSER FORMAT: Use last name only (e.g., 'Brahms', 'Bach', 'Beethoven').
+            IMSLP page titles use format: Work_Title_(Composer,_First_Last)
+
+            WORK TITLE FORMAT: Use standard titles with proper spacing:
+            - 'Symphony No. 5' (not 'Symphony No.5')
+            - 'Violin Sonata No. 1, Op. 78' or just 'Violin Sonata Op. 78'
+            - 'The Well-Tempered Clavier' or 'Well-Tempered Clavier'
+
+            TROUBLESHOOTING - if no results:
+            1. Simplify: Try just 'Violin Sonata' instead of 'Violin Sonata No. 1 in G major'
+            2. Try searchWorks with a flexible query like 'Brahms violin sonata'
+            3. Different opus formats: 'Op. 78' vs 'Op.78' vs 'Opus 78'
+
+            ALWAYS share the IMSLP page URL with the user - they can browse editions directly.
+            """)
     public String findScore(String composer, String workTitle) {
         try {
             var result = imslpService.findScore(composer, workTitle);
@@ -98,9 +113,24 @@ public record ImslpTools(
     /**
      * Search for works on IMSLP with a general query.
      */
-    @LlmTool(description = "Search IMSLP for musical works using a general query. " +
-            "Useful when you don't know the exact composer or work title. " +
-            "Returns a list of matching works with links to their IMSLP pages.")
+    @LlmTool(description = """
+            Search IMSLP with a flexible free-text query. More forgiving than findScore.
+
+            USE THIS WHEN:
+            - findScore returns no results
+            - You're not sure of the exact work title
+            - User wants to browse what's available
+            - Looking for arrangements, transcriptions, or lesser-known works
+
+            GOOD QUERIES:
+            - 'Brahms violin sonata' (finds all violin sonatas)
+            - 'Bach cello suite' (finds the cello suites)
+            - 'Mozart piano concerto K.467'
+            - 'Chopin nocturne' (finds all nocturnes)
+
+            ALWAYS share the IMSLP links with the user so they can click through directly.
+            The links work - don't say you 'cannot provide links'.
+            """)
     public String searchWorks(String query) {
         try {
             var results = imslpService.searchWorks(query, 10);
@@ -135,8 +165,16 @@ public record ImslpTools(
     /**
      * Search for works by a specific composer.
      */
-    @LlmTool(description = "Search IMSLP for all works by a specific composer. " +
-            "Returns a list of the composer's works available on IMSLP.")
+    @LlmTool(description = """
+            Browse works by a specific composer on IMSLP.
+
+            Use just the composer's last name: 'Beethoven', 'Chopin', 'Debussy'.
+
+            Returns a sample of their works - IMSLP has thousands of works for major composers.
+            Use findScore or searchWorks for specific pieces.
+
+            Share the links with the user so they can explore IMSLP directly.
+            """)
     public String searchByComposer(String composer) {
         try {
             // Search specifically for works by this composer

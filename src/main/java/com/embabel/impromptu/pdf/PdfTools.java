@@ -76,8 +76,15 @@ public record PdfTools(
 
             // Return message with location - format ensures LLM will relay the path
             if (location.isPresent()) {
-                return String.format("SUCCESS: PDF created.\n\nTELL THE USER THIS EXACT PATH: %s\n\nThe user can open this file directly on their computer.",
-                        location.get());
+                return String.format("""
+                        SUCCESS: PDF created and saved.
+
+                        TELL THE USER: The PDF is saved at:
+                        %s
+
+                        They can open it in Finder or run: open "%s"
+                        """,
+                        location.get(), location.get());
             } else {
                 return String.format("I've created your %s, but couldn't determine the location.", purpose);
             }

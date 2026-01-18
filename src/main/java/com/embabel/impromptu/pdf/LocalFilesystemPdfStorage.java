@@ -72,6 +72,7 @@ public class LocalFilesystemPdfStorage implements PdfStorageStrategy {
         if (info == null) {
             return Optional.empty();
         }
+        // Return plain path - browsers block file:// links from web pages
         return Optional.of(info.filePath.toAbsolutePath().toString());
     }
 
