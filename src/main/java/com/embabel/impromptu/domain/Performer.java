@@ -17,6 +17,8 @@ package com.embabel.impromptu.domain;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.fasterxml.jackson.annotation.JsonClassDescription;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -25,10 +27,13 @@ import org.jspecify.annotations.Nullable;
  * Note: Some individuals may be both composers and performers (e.g., Rachmaninoff, Liszt).
  */
 @CreationPermitted(true)
+@JsonClassDescription("A performer such as a pianist, conductor, orchestra, or singer." +
+        "User the performerType property to specify the type of performer.")
 public interface Performer extends NamedEntity {
 
     /**
      * The type of performer: pianist, conductor, violinist, orchestra, soprano, etc.
      */
+    @JsonPropertyDescription("The type of performer: pianist, conductor, violinist, orchestra, singer, etc. Use lower case")
     @Nullable String getPerformerType();
 }

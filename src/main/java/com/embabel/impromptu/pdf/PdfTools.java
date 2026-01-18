@@ -55,7 +55,8 @@ public record PdfTools(
     @LlmTool(description = "Generate a styled PDF document. " +
             "Provide: purpose (e.g., 'concert program'), content (the full text to include), " +
             "and optional style ('professional', 'minimal', or 'elegant'). " +
-            "The content should be well-structured with headings, paragraphs, and lists.")
+            "The content should be well-structured with headings, paragraphs, and lists. " +
+            "IMPORTANT: Always tell the user the exact file path returned by this tool.")
     public String generatePdf(
             String purpose,
             String content,
@@ -70,14 +71,16 @@ public record PdfTools(
             var result = pdfService.generate(request);
 
             var downloadId = delivery.store(result);
+            var location = delivery.getLocation(downloadId);
             logger.info("PDF generated successfully: {} ({} bytes)", result.filename(), result.size());
 
-            // Return message with direct download link
-            return String.format("I've created your %s.\n\n[Download %s](/api/pdf/download/%s) (%s)",
-                    purpose,
-                    result.filename(),
-                    downloadId,
-                    formatFileSize(result.size()));
+            // Return message with location - format ensures LLM will relay the path
+            if (location.isPresent()) {
+                return String.format("SUCCESS: PDF created.\n\nTELL THE USER THIS EXACT PATH: %s\n\nThe user can open this file directly on their computer.",
+                        location.get());
+            } else {
+                return String.format("I've created your %s, but couldn't determine the location.", purpose);
+            }
 
         } catch (PdfRenderingException e) {
             logger.error("PDF generation failed", e);
@@ -111,16 +114,6 @@ public record PdfTools(
         } catch (IllegalArgumentException e) {
             logger.warn("Unknown style '{}', using ELEGANT", style);
             return PdfStyle.ELEGANT;
-        }
-    }
-
-    private String formatFileSize(long bytes) {
-        if (bytes < 1024) {
-            return bytes + " B";
-        } else if (bytes < 1024 * 1024) {
-            return String.format("%.1f KB", bytes / 1024.0);
-        } else {
-            return String.format("%.1f MB", bytes / (1024.0 * 1024.0));
         }
     }
 }

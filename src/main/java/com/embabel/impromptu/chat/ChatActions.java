@@ -15,6 +15,7 @@ import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
+import com.embabel.impromptu.integrations.imslp.ImslpTools;
 import com.embabel.impromptu.integrations.metmuseum.MetMuseumTools;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.spotify.SpotifyTools;
@@ -141,6 +142,7 @@ public class ChatActions {
             tools.add(new YouTubeTools(user, youTubeService, youTubePendingPlayback));
         }
         tools.add(MetMuseumTools.DEFAULT);
+        tools.add(ImslpTools.DEFAULT);
         tools.add(new PdfTools(pdfGenerationService, pdfDelivery));
         return tools;
     }

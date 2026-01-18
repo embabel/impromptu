@@ -24,12 +24,11 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Service for temporarily storing generated PDFs for download.
- * PDFs are stored in memory with automatic expiration.
+ * Service for storing generated PDFs and managing their lifecycle.
+ * Delegates actual storage to a {@link PdfStorageStrategy}.
  */
 @Service
 public class PdfDelivery {
@@ -37,47 +36,62 @@ public class PdfDelivery {
     private static final Logger logger = LoggerFactory.getLogger(PdfDelivery.class);
     private static final int EXPIRATION_MINUTES = 30;
 
-    private final Map<String, StoredPdf> storage = new ConcurrentHashMap<>();
+    private final PdfStorageStrategy storageStrategy;
+    private final Map<String, Instant> expirationTracker = new ConcurrentHashMap<>();
+
+    public PdfDelivery(PdfStorageStrategy storageStrategy) {
+        this.storageStrategy = storageStrategy;
+        logger.info("PDF delivery initialized with storage: {}", storageStrategy.getDescription());
+    }
 
     /**
-     * Store a PDF result and return a download ID.
+     * Store a PDF result and return a storage ID.
      */
     public String store(PdfResult result) {
-        var id = UUID.randomUUID().toString();
-        var stored = new StoredPdf(result, Instant.now());
-        storage.put(id, stored);
-        logger.info("Stored PDF for download: {} ({})", id, result.filename());
+        var id = storageStrategy.store(result);
+        expirationTracker.put(id, Instant.now());
+        logger.info("PDF stored: {} ({} bytes)", result.filename(), result.size());
         return id;
     }
 
     /**
-     * Retrieve a stored PDF by its download ID.
+     * Get the user-accessible location for a stored PDF.
      */
-    public Optional<PdfResult> retrieve(String id) {
-        var stored = storage.get(id);
-        if (stored == null) {
+    public Optional<String> getLocation(String id) {
+        if (!expirationTracker.containsKey(id)) {
             return Optional.empty();
         }
-        return Optional.of(stored.result());
+        return storageStrategy.getLocation(id);
+    }
+
+    /**
+     * Retrieve a stored PDF by its storage ID.
+     */
+    public Optional<PdfResult> retrieve(String id) {
+        if (!expirationTracker.containsKey(id)) {
+            return Optional.empty();
+        }
+        return storageStrategy.retrieve(id);
     }
 
     /**
      * Retrieve and remove a stored PDF (one-time download).
      */
     public Optional<PdfResult> retrieveAndRemove(String id) {
-        var stored = storage.remove(id);
-        if (stored == null) {
-            return Optional.empty();
+        expirationTracker.remove(id);
+        var result = storageStrategy.retrieve(id);
+        if (result.isPresent()) {
+            storageStrategy.delete(id);
+            logger.info("PDF downloaded and removed: {}", id);
         }
-        logger.info("PDF downloaded and removed: {}", id);
-        return Optional.of(stored.result());
+        return result;
     }
 
     /**
      * Check if a PDF exists for the given ID.
      */
     public boolean exists(String id) {
-        return storage.containsKey(id);
+        return expirationTracker.containsKey(id);
     }
 
     /**
@@ -86,12 +100,18 @@ public class PdfDelivery {
     @Scheduled(fixedRate = 300000)
     public void cleanupExpired() {
         var cutoff = Instant.now().minus(EXPIRATION_MINUTES, ChronoUnit.MINUTES);
-        var removed = storage.entrySet().removeIf(entry -> entry.getValue().createdAt().isBefore(cutoff));
-        if (removed) {
-            logger.info("Cleaned up expired PDFs");
-        }
-    }
+        var expiredIds = expirationTracker.entrySet().stream()
+                .filter(entry -> entry.getValue().isBefore(cutoff))
+                .map(Map.Entry::getKey)
+                .toList();
 
-    private record StoredPdf(PdfResult result, Instant createdAt) {
+        for (var id : expiredIds) {
+            expirationTracker.remove(id);
+            storageStrategy.delete(id);
+        }
+
+        if (!expiredIds.isEmpty()) {
+            logger.info("Cleaned up {} expired PDFs", expiredIds.size());
+        }
     }
 }

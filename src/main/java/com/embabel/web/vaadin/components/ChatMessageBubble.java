@@ -1,11 +1,15 @@
 package com.embabel.web.vaadin.components;
 
 import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import org.commonmark.node.Link;
 import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.AttributeProvider;
 import org.commonmark.renderer.html.HtmlRenderer;
 
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 /**
@@ -19,7 +23,21 @@ import java.util.regex.Pattern;
 public class ChatMessageBubble extends Div {
 
     private static final Parser MARKDOWN_PARSER = Parser.builder().build();
-    private static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder().build();
+
+    /**
+     * AttributeProvider that adds target="_blank" to all links so they open
+     * in a new tab and bypass Vaadin's router interception.
+     */
+    private static final AttributeProvider LINK_TARGET_PROVIDER = (node, tagName, attributes) -> {
+        if (node instanceof Link) {
+            attributes.put("target", "_blank");
+            attributes.put("rel", "noopener noreferrer");
+        }
+    };
+
+    private static final HtmlRenderer HTML_RENDERER = HtmlRenderer.builder()
+            .attributeProviderFactory(context -> LINK_TARGET_PROVIDER)
+            .build();
 
     /**
      * Pattern to match PDF download markers: {{PDF_DOWNLOAD:id:filename:size}}
@@ -47,7 +65,8 @@ public class ChatMessageBubble extends Div {
         } else {
             var contentDiv = new Div();
             contentDiv.addClassName("chat-bubble-text");
-            contentDiv.add(new Html("<div>" + renderMarkdown(text) + "</div>"));
+            // Render content with PDF download buttons as proper Vaadin Anchor components
+            renderAssistantContent(contentDiv, text);
             messageDiv.add(senderSpan, contentDiv);
         }
 
@@ -55,47 +74,88 @@ public class ChatMessageBubble extends Div {
     }
 
     /**
-     * Convert markdown to HTML, then process special markers.
+     * Render assistant content, extracting PDF markers as Vaadin Anchor components.
      */
-    private static String renderMarkdown(String markdown) {
-        if (markdown == null || markdown.isBlank()) {
-            return "";
+    private static void renderAssistantContent(Div container, String text) {
+        if (text == null || text.isBlank()) {
+            return;
         }
-        // First render markdown to HTML
-        var document = MARKDOWN_PARSER.parse(markdown.strip());
+
+        // First render markdown
+        var document = MARKDOWN_PARSER.parse(text.strip());
         var html = HTML_RENDERER.render(document).strip();
-        // Then process PDF download markers on the HTML output
-        return processPdfDownloadMarkers(html);
+
+        // Find all PDF markers and split content
+        var matcher = PDF_DOWNLOAD_PATTERN.matcher(html);
+        var segments = new ArrayList<Object>(); // Either String (html) or PdfDownloadInfo
+        int lastEnd = 0;
+
+        while (matcher.find()) {
+            // Add text before this marker
+            if (matcher.start() > lastEnd) {
+                segments.add(html.substring(lastEnd, matcher.start()));
+            }
+
+            // Add the download info
+            segments.add(new PdfDownloadInfo(
+                    matcher.group(1), // id
+                    matcher.group(2), // filename
+                    Long.parseLong(matcher.group(3)) // size
+            ));
+
+            lastEnd = matcher.end();
+        }
+
+        // Add remaining text after last marker
+        if (lastEnd < html.length()) {
+            segments.add(html.substring(lastEnd));
+        }
+
+        // If no markers found, just render as HTML
+        if (segments.isEmpty()) {
+            container.add(new Html("<div>" + html + "</div>"));
+            return;
+        }
+
+        // Render each segment
+        for (var segment : segments) {
+            if (segment instanceof String htmlSegment) {
+                if (!htmlSegment.isBlank()) {
+                    container.add(new Html("<span>" + htmlSegment + "</span>"));
+                }
+            } else if (segment instanceof PdfDownloadInfo info) {
+                container.add(createPdfDownloadButton(info));
+            }
+        }
     }
 
     /**
-     * Replace PDF download markers with HTML download buttons.
+     * Create a Vaadin Anchor component for PDF download.
+     * Uses absolute URL to bypass Vaadin router completely.
      */
-    private static String processPdfDownloadMarkers(String text) {
-        var matcher = PDF_DOWNLOAD_PATTERN.matcher(text);
-        var result = new StringBuilder();
+    private static Anchor createPdfDownloadButton(PdfDownloadInfo info) {
+        // Use absolute URL to bypass Vaadin's routing - it intercepts relative URLs
+        var downloadUrl = "http://127.0.0.1:8080/api/pdf/download/" + info.id;
 
-        while (matcher.find()) {
-            var id = matcher.group(1);
-            var filename = matcher.group(2);
-            var sizeBytes = Long.parseLong(matcher.group(3));
-            var sizeDisplay = formatFileSize(sizeBytes);
+        var anchor = new Anchor(downloadUrl, "");
+        anchor.addClassName("pdf-download-btn");
+        anchor.setTarget("_blank"); // Open in new tab to trigger download
 
-            // Create a download link styled as a button
-            var downloadHtml = String.format(
-                    "<a href=\"/api/pdf/download/%s\" class=\"pdf-download-btn\" download=\"%s\">" +
-                            "<span class=\"pdf-icon\">📄</span> Download %s <span class=\"pdf-size\">(%s)</span></a>",
-                    escapeHtml(id),
-                    escapeHtml(filename),
-                    escapeHtml(filename),
-                    sizeDisplay
-            );
-            // Use quoteReplacement to handle special chars like $ in the replacement string
-            matcher.appendReplacement(result, java.util.regex.Matcher.quoteReplacement(downloadHtml));
-        }
-        matcher.appendTail(result);
-        return result.toString();
+        // Add icon and text as inner content
+        var icon = new Span("\uD83D\uDCC4"); // 📄
+        icon.addClassName("pdf-icon");
+
+        var text = new Span(" Download " + info.filename + " ");
+
+        var size = new Span("(" + formatFileSize(info.size) + ")");
+        size.addClassName("pdf-size");
+
+        anchor.add(icon, text, size);
+
+        return anchor;
     }
+
+    private record PdfDownloadInfo(String id, String filename, long size) {}
 
     /**
      * Format file size for display.
@@ -108,17 +168,6 @@ public class ChatMessageBubble extends Div {
         } else {
             return String.format("%.1f MB", bytes / (1024.0 * 1024.0));
         }
-    }
-
-    /**
-     * Escape HTML special characters.
-     */
-    private static String escapeHtml(String text) {
-        return text
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace("\"", "&quot;");
     }
 
     /**
