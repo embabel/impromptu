@@ -111,6 +111,13 @@
             <version>0.24.0</version>
         </dependency>
 
+        <!-- PDF generation with Flying Saucer -->
+        <dependency>
+            <groupId>org.xhtmlrenderer</groupId>
+            <artifactId>flying-saucer-pdf-openpdf</artifactId>
+            <version>9.4.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

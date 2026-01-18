@@ -31,6 +31,7 @@ import org.springframework.lang.Nullable;
 @ConfigurationProperties(prefix = "impromptu")
 public record ImpromptuProperties(
         @NestedConfigurationProperty LlmOptions chatLlm,
+        @NestedConfigurationProperty LlmOptions pdfGenerationLlm,
         String embeddingService,
         String objective,
         String behaviour,

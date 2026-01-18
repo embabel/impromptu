@@ -271,17 +271,33 @@ public class VaadinChatView extends VerticalLayout {
 
         content.add(voiceSelect);
 
+        // Show Tool Calls toggle
+        var showToolCallsCheckbox = new com.vaadin.flow.component.checkbox.Checkbox("Show tool calls");
+        showToolCallsCheckbox.setValue(currentUser.isShowToolCalls());
+        showToolCallsCheckbox.getElement().setAttribute("title",
+                "When enabled, shows detailed tool call progress. When disabled, only shows LLM activity.");
+        content.add(showToolCallsCheckbox);
+
         dialog.add(content);
 
         // Save button
         var saveButton = new Button("Save", e -> {
+            boolean changed = false;
             var selected = voiceSelect.getValue();
             if (selected != null && !selected.name().equals(currentUser.getVoice())) {
                 currentUser.setVoice(selected.name());
+                changed = true;
+            }
+            if (showToolCallsCheckbox.getValue() != currentUser.isShowToolCalls()) {
+                currentUser.setShowToolCalls(showToolCallsCheckbox.getValue());
+                changed = true;
+            }
+            if (changed) {
                 userService.save(currentUser);
-                logger.info("Updated user voice to: {}", selected.name());
+                logger.info("Updated user settings: voice={}, showToolCalls={}",
+                        currentUser.getVoice(), currentUser.isShowToolCalls());
                 com.vaadin.flow.component.notification.Notification.show(
-                        "Voice changed to " + selected.name() + ". Refresh to apply.",
+                        "Settings saved.",
                         3000,
                         com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
                 );
@@ -487,18 +503,25 @@ public class VaadinChatView extends VerticalLayout {
                     queue.offer(msg);
                 }
             } else if (event instanceof ProgressOutputChannelEvent progressEvent) {
-                ui.access(() -> {
-                    // Remove previous indicator if exists
-                    if (currentToolCallIndicator != null) {
-                        messagesLayout.remove(currentToolCallIndicator);
-                    }
-                    // Create new tool call indicator
-                    currentToolCallIndicator = new Div();
-                    currentToolCallIndicator.addClassName("tool-call-indicator");
-                    currentToolCallIndicator.setText(progressEvent.getMessage());
-                    messagesLayout.add(currentToolCallIndicator);
-                    scrollToBottom();
-                });
+                var message = progressEvent.getMessage();
+                // LLM calls start with "Calling LLM", tool calls start with "🔧"
+                boolean isLlmCall = message != null && message.startsWith("Calling LLM");
+
+                // Show if: it's an LLM call, OR showToolCalls is enabled (which shows tool calls too)
+                if (isLlmCall || currentUser.isShowToolCalls()) {
+                    ui.access(() -> {
+                        // Remove previous indicator if exists
+                        if (currentToolCallIndicator != null) {
+                            messagesLayout.remove(currentToolCallIndicator);
+                        }
+                        // Create new progress indicator
+                        currentToolCallIndicator = new Div();
+                        currentToolCallIndicator.addClassName("tool-call-indicator");
+                        currentToolCallIndicator.setText(message);
+                        messagesLayout.add(currentToolCallIndicator);
+                        scrollToBottom();
+                    });
+                }
             }
         }
     }

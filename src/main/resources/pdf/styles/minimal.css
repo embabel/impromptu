@@ -1,0 +1,138 @@
+/* Minimal PDF Style - Clean typography, maximum readability */
+
+@page {
+    size: letter;
+    margin: 1in;
+}
+
+body {
+    font-family: Georgia, Times, serif;
+    font-size: 11pt;
+    line-height: 1.7;
+    color: #333333;
+}
+
+/* Headers - minimal styling */
+h1 {
+    font-size: 24pt;
+    font-weight: 400;
+    color: #111111;
+    margin-top: 0;
+    margin-bottom: 24pt;
+    letter-spacing: -0.5pt;
+}
+
+h2 {
+    font-size: 16pt;
+    font-weight: 400;
+    color: #222222;
+    margin-top: 28pt;
+    margin-bottom: 12pt;
+}
+
+h3 {
+    font-size: 13pt;
+    font-weight: 600;
+    color: #333333;
+    margin-top: 20pt;
+    margin-bottom: 8pt;
+}
+
+h4 {
+    font-size: 11pt;
+    font-weight: 600;
+    color: #444444;
+    margin-top: 16pt;
+    margin-bottom: 6pt;
+}
+
+/* Paragraphs */
+p {
+    margin-top: 0;
+    margin-bottom: 12pt;
+}
+
+/* Lists */
+ul, ol {
+    margin-top: 8pt;
+    margin-bottom: 12pt;
+    padding-left: 20pt;
+}
+
+li {
+    margin-bottom: 6pt;
+}
+
+/* Tables - minimal borders */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16pt;
+    margin-bottom: 20pt;
+}
+
+th {
+    font-weight: 600;
+    padding: 10pt 8pt;
+    text-align: left;
+    border-bottom: 2pt solid #333333;
+}
+
+td {
+    padding: 8pt;
+    border-bottom: 0.5pt solid #cccccc;
+    vertical-align: top;
+}
+
+/* Blockquotes */
+blockquote {
+    margin: 16pt 0;
+    padding: 0 0 0 16pt;
+    border-left: 2pt solid #999999;
+    font-style: italic;
+    color: #555555;
+}
+
+/* Code */
+code {
+    font-family: Courier, monospace;
+    font-size: 10pt;
+}
+
+pre {
+    font-family: Courier, monospace;
+    font-size: 9pt;
+    padding: 12pt;
+    margin: 16pt 0;
+    background-color: #f9f9f9;
+    border: 0.5pt solid #eeeeee;
+}
+
+/* Horizontal rule */
+hr {
+    border: none;
+    border-top: 0.5pt solid #cccccc;
+    margin: 28pt 0;
+}
+
+/* Page breaks */
+.page-break {
+    page-break-before: always;
+}
+
+.keep-together {
+    page-break-inside: avoid;
+}
+
+/* Utility classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-muted { color: #888888; }
+.text-small { font-size: 9pt; }
+
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.mt-1 { margin-top: 12pt; }
+.mb-1 { margin-bottom: 12pt; }
+.mt-2 { margin-top: 24pt; }
+.mb-2 { margin-bottom: 24pt; }

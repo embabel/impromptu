@@ -1,0 +1,218 @@
+/* Elegant PDF Style - Concert hall aesthetic inspired by Impromptu theme */
+
+@page {
+    size: letter;
+    margin: 0.75in 1in;
+    @top-center {
+        content: element(header);
+    }
+    @bottom-center {
+        content: element(footer);
+    }
+}
+
+body {
+    font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 11pt;
+    line-height: 1.65;
+    color: #2c2c2c;
+}
+
+/* Headers - Gold accents inspired by concert programs */
+h1 {
+    font-size: 28pt;
+    font-weight: 400;
+    font-style: italic;
+    color: #1a1520;
+    margin-top: 0;
+    margin-bottom: 20pt;
+    padding-bottom: 12pt;
+    border-bottom: 2pt solid #c9a227;
+    letter-spacing: 1pt;
+}
+
+h2 {
+    font-size: 18pt;
+    font-weight: 400;
+    color: #4a3c2a;
+    margin-top: 24pt;
+    margin-bottom: 12pt;
+    padding-bottom: 4pt;
+    border-bottom: 0.5pt solid #d4af37;
+}
+
+h3 {
+    font-size: 14pt;
+    font-weight: 600;
+    color: #5a4a3a;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    font-variant: small-caps;
+    letter-spacing: 0.5pt;
+}
+
+h4 {
+    font-size: 12pt;
+    font-weight: 400;
+    font-style: italic;
+    color: #6a5a4a;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+}
+
+/* Paragraphs */
+p {
+    margin-top: 0;
+    margin-bottom: 10pt;
+    text-align: justify;
+}
+
+/* First paragraph after heading - drop cap effect via indent */
+h1 + p, h2 + p {
+    text-indent: 0;
+}
+
+p + p {
+    text-indent: 16pt;
+}
+
+/* Lists */
+ul, ol {
+    margin-top: 10pt;
+    margin-bottom: 14pt;
+    padding-left: 24pt;
+}
+
+li {
+    margin-bottom: 5pt;
+}
+
+/* Tables - elegant styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 14pt;
+    margin-bottom: 18pt;
+}
+
+th {
+    background-color: #4a1c2b;
+    color: #f5f5f0;
+    font-weight: 400;
+    font-variant: small-caps;
+    letter-spacing: 0.5pt;
+    padding: 10pt 12pt;
+    text-align: left;
+    border: none;
+}
+
+td {
+    padding: 10pt 12pt;
+    border-bottom: 0.5pt solid #d4d0c8;
+    vertical-align: top;
+}
+
+tr:nth-child(even) td {
+    background-color: #faf9f7;
+}
+
+/* Blockquotes - musical quote style */
+blockquote {
+    margin: 16pt 24pt;
+    padding: 12pt 16pt;
+    background-color: #faf8f5;
+    border-left: 3pt solid #c9a227;
+    font-style: italic;
+    color: #5a4a3a;
+}
+
+blockquote p {
+    text-indent: 0;
+}
+
+/* Code - subdued */
+code {
+    font-family: Courier, monospace;
+    font-size: 10pt;
+    color: #6b4423;
+}
+
+pre {
+    font-family: Courier, monospace;
+    font-size: 9pt;
+    background-color: #2c2520;
+    color: #e8e4dc;
+    padding: 14pt;
+    margin: 14pt 0;
+}
+
+/* Horizontal rule - decorative */
+hr {
+    border: none;
+    height: 1pt;
+    background: linear-gradient(to right, transparent, #c9a227, transparent);
+    margin: 24pt 40pt;
+}
+
+/* Page breaks */
+.page-break {
+    page-break-before: always;
+}
+
+.keep-together {
+    page-break-inside: avoid;
+}
+
+/* Header/Footer elements */
+.header {
+    position: running(header);
+    font-size: 9pt;
+    font-style: italic;
+    color: #9a8a7a;
+    text-align: center;
+}
+
+.footer {
+    position: running(footer);
+    font-size: 9pt;
+    color: #9a8a7a;
+    text-align: center;
+}
+
+/* Decorative elements */
+.ornament {
+    text-align: center;
+    color: #c9a227;
+    font-size: 14pt;
+    margin: 16pt 0;
+}
+
+/* Special classes */
+.composer-name {
+    font-variant: small-caps;
+    letter-spacing: 1pt;
+}
+
+.work-title {
+    font-style: italic;
+}
+
+.movement {
+    font-size: 10pt;
+    color: #6a5a4a;
+    margin-left: 16pt;
+}
+
+/* Utility classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-gold { color: #c9a227; }
+.text-muted { color: #9a8a7a; }
+.text-small { font-size: 9pt; }
+
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.mt-1 { margin-top: 10pt; }
+.mb-1 { margin-bottom: 10pt; }
+.mt-2 { margin-top: 20pt; }
+.mb-2 { margin-bottom: 20pt; }

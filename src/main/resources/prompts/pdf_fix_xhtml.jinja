@@ -1,0 +1,42 @@
+Fix the following invalid XHTML document for Flying Saucer PDF rendering.
+
+## Validation Error
+{{ error }}
+
+## Fix Attempt
+This is attempt {{ attempt }} of 2.
+
+## Common Issues and Fixes
+
+1. **Unclosed tags** - Ensure every opening tag has a closing tag
+   - Wrong: `<p>text`
+   - Right: `<p>text</p>`
+
+2. **Self-closing tags** - Add space and slash
+   - Wrong: `<br>`, `<hr>`, `<img src="...">`
+   - Right: `<br />`, `<hr />`, `<img src="..." />`
+
+3. **Unsupported CSS** - Replace with CSS 2.1 alternatives
+   - Replace `display: flex` with tables or floats
+   - Replace `gap` with margin/padding
+   - Replace CSS variables with actual values
+
+4. **Special characters** - Use entities
+   - & → `&amp;`
+   - < → `&lt;`
+   - > → `&gt;`
+
+5. **Missing declaration** - Document must start with:
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+   ```
+
+## Original XHTML (with errors)
+{{ xhtml }}
+
+## Output
+Generate the CORRECTED XHTML document. Fix ONLY the issues causing the error.
+Keep the content and styling intact - just fix the structural/syntax problems.
+
+Output the raw XHTML only, no markdown code blocks or explanations.

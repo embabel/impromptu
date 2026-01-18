@@ -46,6 +46,8 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     private @Nullable Instant spotifyTokenExpiry;
     private @Nullable String spotifyUserId;
 
+    private boolean showToolCalls;
+
     // User preferences
     private boolean voiceEnabled = false;
 
@@ -95,6 +97,14 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
      */
     public void setName(String name) {
         this.displayName = name;
+    }
+
+    public boolean isShowToolCalls() {
+        return showToolCalls;
+    }
+
+    public void setShowToolCalls(boolean showToolCalls) {
+        this.showToolCalls = showToolCalls;
     }
 
     @Override

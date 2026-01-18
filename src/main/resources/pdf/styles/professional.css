@@ -1,0 +1,177 @@
+/* Professional PDF Style - Clean, modern business aesthetic */
+
+@page {
+    size: letter;
+    margin: 0.75in 1in;
+    @top-center {
+        content: element(header);
+    }
+    @bottom-center {
+        content: element(footer);
+    }
+}
+
+@page :first {
+    margin-top: 1in;
+}
+
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 11pt;
+    line-height: 1.6;
+    color: #2c3e50;
+}
+
+/* Headers */
+h1 {
+    font-size: 28pt;
+    font-weight: 700;
+    color: #1a5276;
+    margin-top: 0;
+    margin-bottom: 16pt;
+    padding-bottom: 8pt;
+    border-bottom: 3pt solid #3498db;
+}
+
+h2 {
+    font-size: 18pt;
+    font-weight: 600;
+    color: #2874a6;
+    margin-top: 20pt;
+    margin-bottom: 10pt;
+}
+
+h3 {
+    font-size: 14pt;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-top: 16pt;
+    margin-bottom: 8pt;
+}
+
+h4 {
+    font-size: 12pt;
+    font-weight: 600;
+    color: #5d6d7e;
+    margin-top: 12pt;
+    margin-bottom: 6pt;
+}
+
+/* Paragraphs */
+p {
+    margin-top: 0;
+    margin-bottom: 10pt;
+    text-align: justify;
+}
+
+/* Lists */
+ul, ol {
+    margin-top: 8pt;
+    margin-bottom: 12pt;
+    padding-left: 24pt;
+}
+
+li {
+    margin-bottom: 4pt;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12pt;
+    margin-bottom: 16pt;
+}
+
+th {
+    background-color: #3498db;
+    color: white;
+    font-weight: 600;
+    padding: 10pt 12pt;
+    text-align: left;
+    border: 1pt solid #2980b9;
+}
+
+td {
+    padding: 8pt 12pt;
+    border: 1pt solid #bdc3c7;
+    vertical-align: top;
+}
+
+tr:nth-child(even) td {
+    background-color: #f8f9fa;
+}
+
+/* Blockquotes */
+blockquote {
+    margin: 12pt 0;
+    padding: 12pt 16pt;
+    background-color: #f4f6f7;
+    border-left: 4pt solid #3498db;
+    font-style: italic;
+    color: #5d6d7e;
+}
+
+/* Code */
+code {
+    font-family: Courier, monospace;
+    font-size: 10pt;
+    background-color: #f4f6f7;
+    padding: 2pt 4pt;
+}
+
+pre {
+    font-family: Courier, monospace;
+    font-size: 9pt;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    padding: 12pt;
+    margin: 12pt 0;
+    overflow: hidden;
+}
+
+/* Horizontal rule */
+hr {
+    border: none;
+    border-top: 1pt solid #bdc3c7;
+    margin: 20pt 0;
+}
+
+/* Page breaks */
+.page-break {
+    page-break-before: always;
+}
+
+.keep-together {
+    page-break-inside: avoid;
+}
+
+/* Header/Footer elements */
+.header {
+    position: running(header);
+    font-size: 9pt;
+    color: #7f8c8d;
+    border-bottom: 0.5pt solid #bdc3c7;
+    padding-bottom: 4pt;
+}
+
+.footer {
+    position: running(footer);
+    font-size: 9pt;
+    color: #7f8c8d;
+    text-align: center;
+}
+
+/* Utility classes */
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-muted { color: #7f8c8d; }
+.text-primary { color: #3498db; }
+.text-small { font-size: 9pt; }
+
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.mt-1 { margin-top: 8pt; }
+.mb-1 { margin-bottom: 8pt; }
+.mt-2 { margin-top: 16pt; }
+.mb-2 { margin-bottom: 16pt; }

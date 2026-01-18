@@ -1,0 +1,65 @@
+Generate valid XHTML 1.0 Strict for PDF rendering using Flying Saucer.
+
+## Document Purpose
+{{ purpose }}
+
+## Style
+Use the "{{ styleName }}" style: {{ styleDescription }}
+
+## CRITICAL XHTML Requirements
+
+1. **Document Structure** - MUST include:
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+   <html xmlns="http://www.w3.org/1999/xhtml">
+   ```
+
+2. **CSS 2.1 ONLY** - Flying Saucer does NOT support:
+   - NO flexbox (display: flex)
+   - NO grid (display: grid)
+   - NO gap, row-gap, column-gap
+   - NO align-items, justify-content, flex-direction
+   - NO CSS variables (var(--name))
+   - NO rem units on body (use pt, px, in, cm)
+
+3. **Use these instead:**
+   - Tables for layout
+   - Floats (float: left/right, clear: both)
+   - Absolute/relative positioning
+   - Standard CSS properties
+
+4. **Tag Rules:**
+   - All tags MUST be properly closed
+   - Self-closing tags: `<br />`, `<hr />`, `<img ... />`
+   - No unclosed tags - every `<tag>` needs `</tag>`
+   - Use `&amp;` for &, `&lt;` for <, `&gt;` for >
+
+5. **Images:**
+   - Use base64: `<img src="data:image/png;base64,..." />`
+   - Or absolute file:// URLs
+
+6. **Page Control:**
+   - `page-break-before: always;` - force page break
+   - `page-break-inside: avoid;` - keep element together
+   - `@page` rules for margins/size
+
+## Pre-built CSS Stylesheet
+The following CSS is ALREADY provided and will be injected. Generate HTML that uses these classes:
+
+```css
+{{ css }}
+```
+
+## Content to Format
+{{ content }}
+
+## Output
+Generate ONLY the complete XHTML document. Do not include explanations.
+The document should:
+1. Start with XML declaration and DOCTYPE
+2. Include a `<style>` tag with the provided CSS
+3. Have well-structured semantic HTML in the `<body>`
+4. Use the utility classes from the stylesheet (text-center, mt-1, etc.)
+
+Output the raw XHTML only, no markdown code blocks.

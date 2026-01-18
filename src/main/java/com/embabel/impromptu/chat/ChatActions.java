@@ -21,6 +21,9 @@ import com.embabel.impromptu.integrations.spotify.SpotifyTools;
 import com.embabel.impromptu.integrations.youtube.YouTubePendingPlayback;
 import com.embabel.impromptu.integrations.youtube.YouTubeService;
 import com.embabel.impromptu.integrations.youtube.YouTubeTools;
+import com.embabel.impromptu.pdf.PdfDelivery;
+import com.embabel.impromptu.pdf.PdfGenerationService;
+import com.embabel.impromptu.pdf.PdfTools;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +51,8 @@ public class ChatActions {
     private final PropositionRepository propositionRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final ImpromptuProperties impromptuProperties;
+    private final PdfGenerationService pdfGenerationService;
+    private final PdfDelivery pdfDelivery;
 
     public ChatActions(
             SearchOperations searchOperations,
@@ -57,6 +62,8 @@ public class ChatActions {
             MemoryProjector memoryProjector,
             PropositionRepository propositionRepository,
             ApplicationEventPublisher eventPublisher,
+            PdfGenerationService pdfGenerationService,
+            PdfDelivery pdfDelivery,
             ImpromptuProperties properties, ImpromptuProperties impromptuProperties) {
         this.toolishRag = new ToolishRag(
                 "sources",
@@ -71,6 +78,8 @@ public class ChatActions {
         this.properties = properties;
         this.eventPublisher = eventPublisher;
         this.impromptuProperties = impromptuProperties;
+        this.pdfGenerationService = pdfGenerationService;
+        this.pdfDelivery = pdfDelivery;
     }
 
     /**
@@ -132,6 +141,7 @@ public class ChatActions {
             tools.add(new YouTubeTools(user, youTubeService, youTubePendingPlayback));
         }
         tools.add(MetMuseumTools.DEFAULT);
+        tools.add(new PdfTools(pdfGenerationService, pdfDelivery));
         return tools;
     }
 

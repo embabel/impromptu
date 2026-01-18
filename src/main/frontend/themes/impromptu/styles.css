@@ -1148,6 +1148,47 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   display: block;
 }
 
+/* --- PDF Download Button --- */
+.pdf-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lumo-space-xs);
+  padding: var(--lumo-space-s) var(--lumo-space-m);
+  margin: var(--lumo-space-s) 0;
+  background: linear-gradient(135deg, rgba(74, 28, 43, 0.8) 0%, rgba(26, 21, 37, 0.9) 100%);
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  border-radius: var(--lumo-border-radius-m);
+  color: var(--gold-accent);
+  text-decoration: none;
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: var(--lumo-font-size-s);
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pdf-download-btn:hover {
+  background: linear-gradient(135deg, rgba(74, 28, 43, 0.95) 0%, rgba(26, 21, 37, 1) 100%);
+  border-color: var(--gold-accent);
+  box-shadow: 0 4px 16px rgba(201, 162, 39, 0.3);
+  transform: translateY(-1px);
+  color: var(--gold-soft);
+}
+
+.pdf-download-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.pdf-download-btn .pdf-icon {
+  font-size: 1.1em;
+}
+
+.pdf-download-btn .pdf-size {
+  color: var(--lumo-secondary-text-color);
+  font-size: var(--lumo-font-size-xs);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   h3::before, h3::after {
