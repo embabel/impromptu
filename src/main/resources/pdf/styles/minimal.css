@@ -12,6 +12,26 @@ body {
     color: #333333;
 }
 
+/* Images */
+img {
+    display: block;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 6.5in;
+    margin: 12pt auto;
+    page-break-inside: avoid;
+    page-break-before: avoid;
+    page-break-after: avoid;
+}
+
+figure {
+    page-break-inside: avoid;
+}
+
+.image-block {
+    page-break-inside: avoid;
+}
+
 /* Headers - minimal styling */
 h1 {
     font-size: 24pt;

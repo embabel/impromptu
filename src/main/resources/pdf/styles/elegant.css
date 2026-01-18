@@ -18,6 +18,26 @@ body {
     color: #2c2c2c;
 }
 
+/* Images */
+img {
+    display: block;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 6.5in;
+    margin: 12pt auto;
+    page-break-inside: avoid;
+    page-break-before: avoid;
+    page-break-after: avoid;
+}
+
+figure {
+    page-break-inside: avoid;
+}
+
+.image-block {
+    page-break-inside: avoid;
+}
+
 /* Headers - Gold accents inspired by concert programs */
 h1 {
     font-size: 28pt;

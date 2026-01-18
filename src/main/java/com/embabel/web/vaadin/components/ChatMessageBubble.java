@@ -49,6 +49,8 @@ public class ChatMessageBubble extends Div {
             Pattern.compile("\\[[^\\]]+\\]\\((?:sandbox:)?/api/pdf/download/([A-Fa-f0-9\\-]{36})\\)");
     private static final Pattern PDF_ENDPOINT_PATTERN =
             Pattern.compile("/api/pdf/download/([A-Fa-f0-9\\-]{36})");
+    private static final Pattern URL_PATTERN =
+            Pattern.compile("(?i)\\bhttps?://[^\\s<>()]+");
 
     public ChatMessageBubble(String sender, String text, boolean isUser) {
         addClassName("chat-bubble-container");
@@ -200,9 +202,53 @@ public class ChatMessageBubble extends Div {
     }
 
     private static void renderMarkdownSegment(Div container, String markdown) {
-        var document = MARKDOWN_PARSER.parse(markdown.strip());
+        var document = MARKDOWN_PARSER.parse(linkifyMarkdown(markdown).strip());
         var html = HTML_RENDERER.render(document).strip();
         container.add(new Html("<div>" + html + "</div>"));
+    }
+
+    private static String linkifyMarkdown(String markdown) {
+        var matcher = URL_PATTERN.matcher(markdown);
+        var sb = new StringBuilder();
+        int lastEnd = 0;
+
+        while (matcher.find()) {
+            var start = matcher.start();
+            var end = matcher.end();
+            if (start > 0) {
+                var prev = markdown.charAt(start - 1);
+                if (prev == '(' || prev == '[') {
+                    sb.append(markdown, lastEnd, end);
+                    lastEnd = end;
+                    continue;
+                }
+            }
+
+            var url = matcher.group();
+            var trimmed = url;
+            var trailing = new StringBuilder();
+
+            while (!trimmed.isEmpty()) {
+                var last = trimmed.charAt(trimmed.length() - 1);
+                if (".,;:!?)".indexOf(last) >= 0) {
+                    trailing.insert(0, last);
+                    trimmed = trimmed.substring(0, trimmed.length() - 1);
+                } else {
+                    break;
+                }
+            }
+
+            sb.append(markdown, lastEnd, start);
+            sb.append('<').append(trimmed).append('>');
+            sb.append(trailing);
+            lastEnd = end;
+        }
+
+        if (lastEnd < markdown.length()) {
+            sb.append(markdown.substring(lastEnd));
+        }
+
+        return sb.toString();
     }
 
     /**
