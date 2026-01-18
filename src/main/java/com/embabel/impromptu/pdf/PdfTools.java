@@ -56,7 +56,7 @@ public record PdfTools(
             "Provide: purpose (e.g., 'concert program'), content (the full text to include), " +
             "and optional style ('professional', 'minimal', or 'elegant'). " +
             "The content should be well-structured with headings, paragraphs, and lists. " +
-            "IMPORTANT: Always tell the user the exact file path returned by this tool.")
+            "IMPORTANT: Always return the PDF download marker from this tool response.")
     public String generatePdf(
             String purpose,
             String content,
@@ -71,23 +71,17 @@ public record PdfTools(
             var result = pdfService.generate(request);
 
             var downloadId = delivery.store(result);
-            var location = delivery.getLocation(downloadId);
             logger.info("PDF generated successfully: {} ({} bytes)", result.filename(), result.size());
 
-            // Return message with location - format ensures LLM will relay the path
-            if (location.isPresent()) {
-                return String.format("""
-                        SUCCESS: PDF created and saved.
+            var downloadMarker = String.format("{{PDF_DOWNLOAD:%s:%s:%d}}",
+                    downloadId, result.filename(), result.size());
 
-                        TELL THE USER: The PDF is saved at:
-                        %s
+            return String.format("""
+                    Your PDF is ready.
+                    %s
 
-                        They can open it in Finder or run: open "%s"
-                        """,
-                        location.get(), location.get());
-            } else {
-                return String.format("I've created your %s, but couldn't determine the location.", purpose);
-            }
+                    Download endpoint: `/api/pdf/download/%s`
+                    """, downloadMarker, downloadId);
 
         } catch (PdfRenderingException e) {
             logger.error("PDF generation failed", e);

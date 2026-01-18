@@ -45,6 +45,10 @@ public class ChatMessageBubble extends Div {
      */
     private static final Pattern PDF_DOWNLOAD_PATTERN =
             Pattern.compile("\\{\\{PDF_DOWNLOAD:([^:]+):([^:]+):(\\d+)\\}\\}");
+    private static final Pattern PDF_MARKDOWN_LINK_PATTERN =
+            Pattern.compile("\\[[^\\]]+\\]\\((?:sandbox:)?/api/pdf/download/([A-Fa-f0-9\\-]{36})\\)");
+    private static final Pattern PDF_ENDPOINT_PATTERN =
+            Pattern.compile("/api/pdf/download/([A-Fa-f0-9\\-]{36})");
 
     public ChatMessageBubble(String sender, String text, boolean isUser) {
         addClassName("chat-bubble-container");
@@ -81,19 +85,23 @@ public class ChatMessageBubble extends Div {
             return;
         }
 
-        // First render markdown
-        var document = MARKDOWN_PARSER.parse(text.strip());
-        var html = HTML_RENDERER.render(document).strip();
+        var normalized = normalizePdfLinks(text);
 
-        // Find all PDF markers and split content
-        var matcher = PDF_DOWNLOAD_PATTERN.matcher(html);
-        var segments = new ArrayList<Object>(); // Either String (html) or PdfDownloadInfo
+        // Find all PDF markers in raw text and split content
+        var matcher = PDF_DOWNLOAD_PATTERN.matcher(normalized);
+        if (!matcher.find()) {
+            renderWithEndpointFallback(container, normalized);
+            return;
+        }
+        matcher.reset();
+
+        var segments = new ArrayList<Object>(); // Either String (markdown) or PdfDownloadInfo
         int lastEnd = 0;
 
         while (matcher.find()) {
             // Add text before this marker
             if (matcher.start() > lastEnd) {
-                segments.add(html.substring(lastEnd, matcher.start()));
+                segments.add(normalized.substring(lastEnd, matcher.start()));
             }
 
             // Add the download info
@@ -107,21 +115,21 @@ public class ChatMessageBubble extends Div {
         }
 
         // Add remaining text after last marker
-        if (lastEnd < html.length()) {
-            segments.add(html.substring(lastEnd));
+        if (lastEnd < normalized.length()) {
+            segments.add(normalized.substring(lastEnd));
         }
 
         // If no markers found, just render as HTML
         if (segments.isEmpty()) {
-            container.add(new Html("<div>" + html + "</div>"));
+            renderMarkdownSegment(container, text);
             return;
         }
 
         // Render each segment
         for (var segment : segments) {
-            if (segment instanceof String htmlSegment) {
-                if (!htmlSegment.isBlank()) {
-                    container.add(new Html("<span>" + htmlSegment + "</span>"));
+            if (segment instanceof String markdownSegment) {
+                if (!markdownSegment.isBlank()) {
+                    renderMarkdownSegment(container, markdownSegment);
                 }
             } else if (segment instanceof PdfDownloadInfo info) {
                 container.add(createPdfDownloadButton(info));
@@ -129,16 +137,84 @@ public class ChatMessageBubble extends Div {
         }
     }
 
+    private static void renderWithEndpointFallback(Div container, String text) {
+        var matcher = PDF_ENDPOINT_PATTERN.matcher(text);
+        var segments = new ArrayList<Object>(); // Either String (markdown) or PdfDownloadInfo
+        int lastEnd = 0;
+
+        while (matcher.find()) {
+            if (matcher.start() > lastEnd) {
+                segments.add(text.substring(lastEnd, matcher.start()));
+            }
+
+            segments.add(new PdfDownloadInfo(
+                    matcher.group(1),
+                    "PDF",
+                    0L
+            ));
+
+            lastEnd = matcher.end();
+        }
+
+        if (lastEnd < text.length()) {
+            segments.add(text.substring(lastEnd));
+        }
+
+        if (segments.isEmpty()) {
+            renderMarkdownSegment(container, text);
+            return;
+        }
+
+        for (var segment : segments) {
+            if (segment instanceof String markdownSegment) {
+                if (!markdownSegment.isBlank()) {
+                    renderMarkdownSegment(container, markdownSegment);
+                }
+            } else if (segment instanceof PdfDownloadInfo info) {
+                container.add(createPdfDownloadButton(info));
+            }
+        }
+    }
+
+    private static String normalizePdfLinks(String text) {
+        var matcher = PDF_MARKDOWN_LINK_PATTERN.matcher(text);
+        var sb = new StringBuilder();
+        int lastEnd = 0;
+
+        while (matcher.find()) {
+            if (matcher.start() > lastEnd) {
+                sb.append(text, lastEnd, matcher.start());
+            }
+
+            sb.append("{{PDF_DOWNLOAD:")
+                    .append(matcher.group(1))
+                    .append(":PDF:0}}");
+            lastEnd = matcher.end();
+        }
+
+        if (lastEnd < text.length()) {
+            sb.append(text.substring(lastEnd));
+        }
+
+        return sb.toString();
+    }
+
+    private static void renderMarkdownSegment(Div container, String markdown) {
+        var document = MARKDOWN_PARSER.parse(markdown.strip());
+        var html = HTML_RENDERER.render(document).strip();
+        container.add(new Html("<div>" + html + "</div>"));
+    }
+
     /**
      * Create a Vaadin Anchor component for PDF download.
      * Uses absolute URL to bypass Vaadin router completely.
      */
     private static Anchor createPdfDownloadButton(PdfDownloadInfo info) {
-        // Use absolute URL to bypass Vaadin's routing - it intercepts relative URLs
-        var downloadUrl = "http://127.0.0.1:8080/api/pdf/download/" + info.id;
+        var downloadUrl = "/api/pdf/download/" + info.id;
 
         var anchor = new Anchor(downloadUrl, "");
         anchor.addClassName("pdf-download-btn");
+        anchor.getElement().setAttribute("router-ignore", true);
         anchor.setTarget("_blank"); // Open in new tab to trigger download
 
         // Add icon and text as inner content
@@ -147,10 +223,17 @@ public class ChatMessageBubble extends Div {
 
         var text = new Span(" Download " + info.filename + " ");
 
-        var size = new Span("(" + formatFileSize(info.size) + ")");
-        size.addClassName("pdf-size");
+        Span size = null;
+        if (info.size > 0) {
+            size = new Span("(" + formatFileSize(info.size) + ")");
+            size.addClassName("pdf-size");
+        }
 
-        anchor.add(icon, text, size);
+        if (size != null) {
+            anchor.add(icon, text, size);
+        } else {
+            anchor.add(icon, text);
+        }
 
         return anchor;
     }
