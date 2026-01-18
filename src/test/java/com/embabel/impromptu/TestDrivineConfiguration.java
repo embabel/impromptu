@@ -24,7 +24,7 @@ import org.drivine.manager.PersistenceManagerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.context.annotation.Profile;
 
 /**
  * Test configuration for Drivine with smart Testcontainers integration.
@@ -38,9 +38,9 @@ import org.springframework.test.context.ActiveProfiles;
  * - Or system property: -Dtest.neo4j.use-local=true
  */
 @Configuration
+@Profile("testcontainer")
 @EnableDrivine
 @EnableDrivineTestConfig
-@ActiveProfiles("test")
 public class TestDrivineConfiguration {
 
     @Bean

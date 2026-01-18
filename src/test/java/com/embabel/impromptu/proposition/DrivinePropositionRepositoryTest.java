@@ -42,7 +42,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(classes = TestDrivineConfiguration.class)
-@ActiveProfiles("test")
+@ActiveProfiles("testcontainer")
 @Transactional
 class DrivinePropositionRepositoryTest {
 

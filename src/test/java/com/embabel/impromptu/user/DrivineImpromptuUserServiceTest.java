@@ -31,7 +31,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = TestDrivineConfiguration.class)
-@ActiveProfiles("test")
+@ActiveProfiles("testcontainer")
 @Transactional
 class DrivineImpromptuUserServiceTest {
 
