@@ -1,4 +1,4 @@
-package com.embabel.impromptu.voice;
+package com.embabel.impromptu.speech;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +63,9 @@ public class TtsController {
         }
     }
 
-    public record StatusResponse(boolean available, String voice) {}
+    public record StatusResponse(boolean available, String voice) {
+    }
 
-    public record SynthesizeRequest(String text) {}
+    public record SynthesizeRequest(String text) {
+    }
 }

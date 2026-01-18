@@ -1,4 +1,4 @@
-package com.embabel.impromptu.voice;
+package com.embabel.impromptu.speech;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,9 @@ public class SttController {
         }
     }
 
-    public record StatusResponse(boolean available) {}
+    public record StatusResponse(boolean available) {
+    }
 
-    public record TranscribeResponse(String text, String error) {}
+    public record TranscribeResponse(String text, String error) {
+    }
 }

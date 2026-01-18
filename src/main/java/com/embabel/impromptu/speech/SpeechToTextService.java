@@ -1,4 +1,4 @@
-package com.embabel.impromptu.voice;
+package com.embabel.impromptu.speech;
 
 import com.embabel.impromptu.ImpromptuProperties;
 import org.slf4j.Logger;

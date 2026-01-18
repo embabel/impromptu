@@ -4,10 +4,10 @@ import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
+import com.embabel.impromptu.speech.PersonaService;
 import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.user.ImpromptuUser;
 import com.embabel.impromptu.user.ImpromptuUserService;
-import com.embabel.impromptu.voice.PersonaService;
 import com.embabel.impromptu.youtube.YouTubeService;
 import com.embabel.web.vaadin.components.PropositionsPanel;
 import com.vaadin.flow.component.Key;
@@ -55,7 +55,8 @@ public class BackstagePanel extends Div {
             Consumer<EntityMention> onMentionClick,
             ReferencesPanel.IndexStats indexStats,
             ImpromptuProperties properties
-    ) {}
+    ) {
+    }
 
     public BackstagePanel(Config config) {
         // Backdrop for closing panel when clicking outside
