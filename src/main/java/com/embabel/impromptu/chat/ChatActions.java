@@ -12,8 +12,8 @@ import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
+import com.embabel.dice.agent.Memory;
 import com.embabel.dice.projection.memory.MemoryProjector;
-import com.embabel.dice.proposition.PropositionQuery;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
@@ -110,17 +110,16 @@ public class ChatActions {
         if (youTubeService.isConfigured()) {
             tools.add(new ToolObject(new YouTubeTools(user, youTubeService, youTubePendingPlayback)));
         }
-        var userPersonaSnapshot = memoryProjector.project(
-                propositionRepository.query(
-                        PropositionQuery.againstContext(user.currentContext())
-                ));
+        var memory = Memory.forContext(user.currentContext())
+                .withRepository(propositionRepository)
+                .withProjector(memoryProjector);
 
         var assistantMessage = context.
                 ai()
                 .withLlm(properties.chatLlm())
                 .withId("chat_response")
-                .withPromptElements(user, userPersonaSnapshot)
-                .withReference(toolishRag)
+                .withPromptElements(user)
+                .withReferences(toolishRag, memory)
                 .withToolObjects(tools)
                 .withToolGroup(CoreToolGroups.WEB)
                 .withTemplate("impromptu_chat_response")

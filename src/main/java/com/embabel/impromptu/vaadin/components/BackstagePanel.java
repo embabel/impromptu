@@ -2,6 +2,7 @@ package com.embabel.impromptu.vaadin.components;
 
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.dice.proposition.EntityMention;
+import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
 import com.embabel.impromptu.spotify.SpotifyService;
 import com.embabel.impromptu.user.ImpromptuUser;
@@ -52,7 +53,8 @@ public class BackstagePanel extends Div {
             PersonaService personaService,
             ImpromptuUserService userService,
             Consumer<EntityMention> onMentionClick,
-            ReferencesPanel.IndexStats indexStats
+            ReferencesPanel.IndexStats indexStats,
+            ImpromptuProperties properties
     ) {}
 
     public BackstagePanel(Config config) {
@@ -128,7 +130,7 @@ public class BackstagePanel extends Div {
         var aboutContent = new AboutPanel();
 
         // Settings content
-        var settingsContent = createSettingsContent();
+        var settingsContent = new SettingsPanel(config.properties());
 
         contentArea.add(mediaContent, referencesContent, knowledgeContent, settingsContent, aboutContent);
         sidePanel.add(contentArea);
@@ -168,19 +170,6 @@ public class BackstagePanel extends Div {
             mediaContent.add(new Span("No media services configured"));
         }
         return mediaContent;
-    }
-
-    private VerticalLayout createSettingsContent() {
-        var content = new VerticalLayout();
-        content.setPadding(true);
-        content.setSpacing(true);
-        content.setVisible(false);
-
-        var placeholder = new Span("General settings coming soon...");
-        placeholder.getStyle().set("color", "var(--lumo-secondary-text-color)");
-        content.add(placeholder);
-
-        return content;
     }
 
     public void open() {

@@ -122,8 +122,8 @@ logging:
     com.embabel.dice.common.resolver: DEBUG
     com.embabel.dice.common.resolver.searcher: DEBUG
     # MatryoshkaTool debugging
-    com.embabel.agent.spi.loop.MatryoshkaToolInjectionStrategy: DEBUG
-    com.embabel.agent.spi.loop.support.DefaultToolLoop: DEBUG
+    com.embabel.agent.spi.loop.MatryoshkaToolInjectionStrategy: INFO
+    com.embabel.agent.spi.loop.support.DefaultToolLoop: INFO
 
 server:
   port: 8888  # Double the 88 piano keys

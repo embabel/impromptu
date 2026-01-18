@@ -155,7 +155,8 @@ public class VaadinChatView extends VerticalLayout {
                 personaService,
                 userService,
                 this::showEntityDetail,
-                indexStats
+                indexStats,
+                properties
         );
         backstagePanel = new BackstagePanel(backstageConfig);
         getElement().appendChild(backstagePanel.getElement());
