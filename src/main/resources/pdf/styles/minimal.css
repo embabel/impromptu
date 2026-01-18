@@ -17,7 +17,7 @@ img {
     display: block;
     max-width: 100% !important;
     height: auto !important;
-    max-height: 6.5in;
+    max-height: 5in;
     margin: 12pt auto;
     page-break-inside: avoid;
     page-break-before: avoid;
@@ -29,6 +29,10 @@ figure {
 }
 
 .image-block {
+    page-break-inside: avoid;
+}
+
+figure.image-block {
     page-break-inside: avoid;
 }
 
@@ -141,7 +145,7 @@ hr {
 }
 
 .keep-together {
-    page-break-inside: avoid;
+    page-break-inside: auto;
 }
 
 /* Utility classes */

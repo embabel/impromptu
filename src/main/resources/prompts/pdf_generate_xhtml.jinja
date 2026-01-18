@@ -39,8 +39,10 @@ Use the "{{ styleName }}" style: {{ styleDescription }}
    - Use base64: `<img src="data:image/png;base64,..." />`
    - Or absolute file:// URLs
    - Keep images reasonably sized; do not exceed page height
-   - Wrap each image and caption in a container with class `image-block keep-together`
-   - Prefer `<figure>` with `<figcaption>` for captions
+   - Use `<figure class="image-block">` with `<figcaption>` for captions
+   - Do NOT wrap tables and images in the same keep-together container
+   - Avoid `keep-together` on any section that includes an image
+   - If a section has a table and image, place the table first, then the figure after it
 
 6. **Page Control:**
    - `page-break-before: always;` - force page break

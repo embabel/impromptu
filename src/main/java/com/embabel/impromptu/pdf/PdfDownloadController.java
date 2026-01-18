@@ -57,7 +57,7 @@ public class PdfDownloadController {
 
         var pdf = result.get();
         var headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentType(resolveContentType(pdf.filename()));
         headers.setContentDispositionFormData("attachment", pdf.filename());
         headers.setContentLength(pdf.size());
 
@@ -74,5 +74,12 @@ public class PdfDownloadController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private MediaType resolveContentType(String filename) {
+        if (filename != null && filename.toLowerCase().endsWith(".xhtml")) {
+            return MediaType.APPLICATION_XHTML_XML;
+        }
+        return MediaType.APPLICATION_PDF;
     }
 }

@@ -21,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * LLM tools for PDF generation.
  * Uses {@link MatryoshkaTools} for progressive tool disclosure.
@@ -42,7 +44,7 @@ public record PdfTools(
     private static final Logger logger = LoggerFactory.getLogger(PdfTools.class);
 
     /**
-     * Generate a styled PDF document.
+     * Generate a styled XHTML document.
      * <p>
      * The content should be well-structured text that will be formatted into XHTML.
      * Include headings, paragraphs, lists, and tables as appropriate.
@@ -68,16 +70,18 @@ public record PdfTools(
         try {
             var pdfStyle = parseStyle(style);
             var request = new PdfRequest(purpose, content, pdfStyle);
-            var result = pdfService.generate(request);
+            var result = pdfService.generateXhtmlOnly(request);
 
-            var downloadId = delivery.store(result);
-            logger.info("PDF generated successfully: {} ({} bytes)", result.filename(), result.size());
+            var bytes = result.xhtml().getBytes(StandardCharsets.UTF_8);
+            var stored = new PdfResult(bytes, result.filename());
+            var downloadId = delivery.store(stored);
+            logger.info("XHTML generated successfully: {} ({} bytes)", result.filename(), bytes.length);
 
             var downloadMarker = String.format("{{PDF_DOWNLOAD:%s:%s:%d}}",
-                    downloadId, result.filename(), result.size());
+                    downloadId, result.filename(), bytes.length);
 
             return String.format("""
-                    Your PDF is ready.
+                    Your XHTML is ready.
                     %s
 
                     Download endpoint: `/api/pdf/download/%s`

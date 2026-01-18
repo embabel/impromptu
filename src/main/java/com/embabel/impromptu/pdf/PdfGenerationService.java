@@ -77,6 +77,22 @@ public class PdfGenerationService {
     }
 
     /**
+     * Generate validated XHTML only (no PDF rendering).
+     */
+    public XhtmlResult generateXhtmlOnly(PdfRequest request) {
+        logger.info("Starting XHTML generation for purpose: {}", request.purpose());
+
+        // Step 1: Generate initial XHTML
+        var xhtml = generateXhtml(request);
+
+        // Step 2: Validate and fix loop
+        var validated = validateAndFix(xhtml, request);
+
+        var filename = generateFilename(request.purpose()).replaceAll("(?i)\\.pdf$", "") + ".xhtml";
+        return new XhtmlResult(validated.xhtml(), filename);
+    }
+
+    /**
      * Generate a PDF from raw content with default style.
      */
     public PdfResult generate(String purpose, String content) {

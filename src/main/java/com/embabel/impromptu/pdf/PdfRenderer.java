@@ -21,6 +21,10 @@ import org.springframework.stereotype.Component;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Deterministic PDF renderer using Flying Saucer.
@@ -30,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 public class PdfRenderer {
 
     private static final Logger logger = LoggerFactory.getLogger(PdfRenderer.class);
+    private static final Path XHTML_OUTPUT_DIR = Path.of(System.getProperty("user.home"), "impromptu-pdfs");
 
     /**
      * Render validated XHTML to PDF.
@@ -45,6 +50,7 @@ public class PdfRenderer {
         }
 
         logger.info("Rendering PDF: {}", filename);
+        writeXhtmlDebugCopy(xhtml.xhtml(), filename);
 
         try {
             var renderer = new ITextRenderer();
@@ -71,5 +77,17 @@ public class PdfRenderer {
     public PdfResult render(GeneratedXhtml xhtml) {
         var filename = "document-" + System.currentTimeMillis() + ".pdf";
         return render(xhtml, filename);
+    }
+
+    private void writeXhtmlDebugCopy(String xhtml, String pdfFilename) {
+        var xhtmlFilename = pdfFilename.replaceAll("(?i)\\.pdf$", "") + ".xhtml";
+        var xhtmlPath = XHTML_OUTPUT_DIR.resolve(xhtmlFilename);
+        try {
+            Files.createDirectories(XHTML_OUTPUT_DIR);
+            Files.writeString(xhtmlPath, xhtml, StandardCharsets.UTF_8);
+            logger.info("Saved XHTML debug copy: {}", xhtmlPath.toAbsolutePath());
+        } catch (IOException e) {
+            logger.warn("Failed to write XHTML debug copy to {}", xhtmlPath.toAbsolutePath(), e);
+        }
     }
 }
