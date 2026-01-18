@@ -5,7 +5,6 @@ import com.embabel.agent.api.annotation.Condition;
 import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.OperationContext;
-import com.embabel.agent.api.common.ToolObject;
 import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.agent.rag.tools.ToolishRag;
@@ -17,6 +16,7 @@ import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
+import com.embabel.impromptu.integrations.metmuseum.MetMuseumTools;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.spotify.SpotifyTools;
 import com.embabel.impromptu.integrations.youtube.YouTubePendingPlayback;
@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.lang.NonNull;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -103,13 +104,6 @@ public class ChatActions {
             ImpromptuUser user,
             ConversationAnalysisRequestEvent.LastAnalysis lastAnalysis,
             ActionContext context) {
-        var tools = new LinkedList<ToolObject>();
-        if (user.isSpotifyLinked()) {
-            tools.add(new ToolObject(new SpotifyTools(user, spotifyService)));
-        }
-        if (youTubeService.isConfigured()) {
-            tools.add(new ToolObject(new YouTubeTools(user, youTubeService, youTubePendingPlayback)));
-        }
         var memory = Memory.forContext(user.currentContext())
                 .withRepository(propositionRepository)
                 .withProjector(memoryProjector);
@@ -120,7 +114,7 @@ public class ChatActions {
                 .withId("chat_response")
                 .withPromptElements(user)
                 .withReferences(toolishRag, memory)
-                .withToolObjects(tools)
+                .withToolObjects(toolInstancesForUser(user))
                 .withToolGroup(CoreToolGroups.WEB)
                 .withTemplate("impromptu_chat_response")
                 .respondWithSystemPrompt(
@@ -155,6 +149,18 @@ public class ChatActions {
                         conversation,
                         lastAnalysis));
         return new ConversationAnalysisRequestEvent.LastAnalysis(conversation.getMessages().size());
+    }
+
+    private List<Object> toolInstancesForUser(ImpromptuUser user) {
+        var tools = new LinkedList<>();
+        if (user.isSpotifyLinked()) {
+            tools.add(new SpotifyTools(user, spotifyService));
+        }
+        if (youTubeService.isConfigured()) {
+            tools.add(new YouTubeTools(user, youTubeService, youTubePendingPlayback));
+        }
+        tools.add(MetMuseumTools.DEFAULT);
+        return tools;
     }
 
 }
