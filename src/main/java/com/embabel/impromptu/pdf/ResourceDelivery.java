@@ -27,35 +27,35 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Service for storing generated PDFs and managing their lifecycle.
+ * Service for storing generated documents and managing their lifecycle.
  * Delegates actual storage to a {@link PdfStorageStrategy}.
  */
 @Service
-public class PdfDelivery {
+public class ResourceDelivery {
 
-    private static final Logger logger = LoggerFactory.getLogger(PdfDelivery.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResourceDelivery.class);
     private static final int EXPIRATION_MINUTES = 30;
 
     private final PdfStorageStrategy storageStrategy;
     private final Map<String, Instant> expirationTracker = new ConcurrentHashMap<>();
 
-    public PdfDelivery(PdfStorageStrategy storageStrategy) {
+    public ResourceDelivery(PdfStorageStrategy storageStrategy) {
         this.storageStrategy = storageStrategy;
-        logger.info("PDF delivery initialized with storage: {}", storageStrategy.getDescription());
+        logger.info("Resource delivery initialized with storage: {}", storageStrategy.getDescription());
     }
 
     /**
-     * Store a PDF result and return a storage ID.
+     * Store a document result and return a storage ID.
      */
     public String store(PdfResult result) {
         var id = storageStrategy.store(result);
         expirationTracker.put(id, Instant.now());
-        logger.info("PDF stored: {} ({} bytes)", result.filename(), result.size());
+        logger.info("Resource stored: {} ({} bytes)", result.filename(), result.size());
         return id;
     }
 
     /**
-     * Get the user-accessible location for a stored PDF.
+     * Get the user-accessible location for a stored document.
      */
     public Optional<String> getLocation(String id) {
         if (!expirationTracker.containsKey(id)) {
@@ -65,7 +65,7 @@ public class PdfDelivery {
     }
 
     /**
-     * Retrieve a stored PDF by its storage ID.
+     * Retrieve a stored document by its storage ID.
      */
     public Optional<PdfResult> retrieve(String id) {
         if (!expirationTracker.containsKey(id)) {
@@ -75,27 +75,27 @@ public class PdfDelivery {
     }
 
     /**
-     * Retrieve and remove a stored PDF (one-time download).
+     * Retrieve and remove a stored document (one-time download).
      */
     public Optional<PdfResult> retrieveAndRemove(String id) {
         expirationTracker.remove(id);
         var result = storageStrategy.retrieve(id);
         if (result.isPresent()) {
             storageStrategy.delete(id);
-            logger.info("PDF downloaded and removed: {}", id);
+            logger.info("Resource downloaded and removed: {}", id);
         }
         return result;
     }
 
     /**
-     * Check if a PDF exists for the given ID.
+     * Check if a document exists for the given ID.
      */
     public boolean exists(String id) {
         return expirationTracker.containsKey(id);
     }
 
     /**
-     * Clean up expired PDFs every 5 minutes.
+     * Clean up expired documents every 5 minutes.
      */
     @Scheduled(fixedRate = 300000)
     public void cleanupExpired() {
@@ -111,7 +111,7 @@ public class PdfDelivery {
         }
 
         if (!expiredIds.isEmpty()) {
-            logger.info("Cleaned up {} expired PDFs", expiredIds.size());
+            logger.info("Cleaned up {} expired resources", expiredIds.size());
         }
     }
 }

@@ -24,24 +24,24 @@ import org.springframework.lang.Nullable;
 import java.nio.charset.StandardCharsets;
 
 /**
- * LLM tools for PDF generation.
+ * LLM tools for document/resource generation.
  * Uses {@link MatryoshkaTools} for progressive tool disclosure.
  * <p>
- * The LLM first sees a "pdf" facade tool. When invoked, PDF generation tools become available.
+ * The LLM first sees a "pdf" facade tool. When invoked, document generation tools become available.
  * <p>
- * Generated PDFs are stored temporarily and a download marker is returned in the response.
+ * Generated documents are stored temporarily and a download marker is returned in the response.
  * The chat UI parses these markers and renders them as download buttons.
  */
 @MatryoshkaTools(
         name = "pdf",
-        description = "Generate PDF documents. Invoke this tool to create professional PDFs " +
-                "such as concert programs, composer biographies, listening guides, or summaries."
+        description = "Generate downloadable documents/resources such as concert programs, " +
+                "composer biographies, listening guides, or summaries."
 )
-public record PdfTools(
+public record ResourceTools(
         PdfGenerationService pdfService,
-        PdfDelivery delivery
+        ResourceDelivery delivery
 ) {
-    private static final Logger logger = LoggerFactory.getLogger(PdfTools.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResourceTools.class);
 
     /**
      * Generate a styled XHTML document.
@@ -50,21 +50,21 @@ public record PdfTools(
      * Include headings, paragraphs, lists, and tables as appropriate.
      *
      * @param purpose a short description of the document type (e.g., "concert program", "composer biography")
-     * @param content the full content to include in the PDF, formatted with markdown-like structure
+     * @param content the full content to include in the document, formatted with markdown-like structure
      * @param style   optional style: "professional" (default), "minimal", or "elegant"
      * @return confirmation message with download marker
      */
-    @LlmTool(description = "Generate a styled PDF document. " +
+    @LlmTool(description = "Generate a styled document or resource. " +
             "Provide: purpose (e.g., 'concert program'), content (the full text to include), " +
             "and optional style ('professional', 'minimal', or 'elegant'). " +
             "The content should be well-structured with headings, paragraphs, and lists. " +
-            "IMPORTANT: Always return the PDF download marker from this tool response.")
+            "IMPORTANT: Always return the download marker from this tool response.")
     public String generatePdf(
             String purpose,
             String content,
             @Nullable String style
     ) {
-        logger.info("Generating PDF: purpose='{}', style='{}', content length={}",
+        logger.info("Generating document: purpose='{}', style='{}', content length={}",
                 purpose, style, content != null ? content.length() : 0);
 
         try {
@@ -81,28 +81,28 @@ public record PdfTools(
                     downloadId, result.filename(), bytes.length);
 
             return String.format("""
-                    Your XHTML is ready.
+                    Your document is ready.
                     %s
 
-                    Download endpoint: `/api/pdf/download/%s`
+                    Download endpoint: `/api/resource/download/%s`
                     """, downloadMarker, downloadId);
 
         } catch (PdfRenderingException e) {
-            logger.error("PDF generation failed", e);
-            return "I wasn't able to generate the PDF: " + e.getMessage();
+            logger.error("Document generation failed", e);
+            return "I wasn't able to generate the document: " + e.getMessage();
         } catch (Exception e) {
-            logger.error("Unexpected error during PDF generation", e);
-            return "Sorry, something went wrong while creating the PDF. Please try again.";
+            logger.error("Unexpected error during document generation", e);
+            return "Sorry, something went wrong while creating the document. Please try again.";
         }
     }
 
     /**
-     * List available PDF styles.
+     * List available document styles.
      */
-    @LlmTool(description = "Get information about available PDF styles")
+    @LlmTool(description = "Get information about available document styles")
     public String listStyles() {
         return """
-                Available PDF styles:
+                Available document styles:
                 
                 - **professional**: Clean, modern business style with blue accents. Good for reports and summaries.
                 - **minimal**: Ultra-clean with maximum whitespace. Focus on typography and readability.

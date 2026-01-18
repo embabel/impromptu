@@ -27,31 +27,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST endpoint for downloading generated PDFs.
+ * REST endpoint for downloading generated resources.
  */
 @RestController
-@RequestMapping("/api/pdf")
-public class PdfDownloadController {
+@RequestMapping("/api/resource")
+public class ResourceDownloadController {
 
-    private static final Logger logger = LoggerFactory.getLogger(PdfDownloadController.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResourceDownloadController.class);
 
-    private final PdfDelivery delivery;
+    private final ResourceDelivery delivery;
 
-    public PdfDownloadController(PdfDelivery delivery) {
+    public ResourceDownloadController(ResourceDelivery delivery) {
         this.delivery = delivery;
     }
 
     /**
-     * Download a generated PDF by its ID.
-     * The PDF remains available for multiple downloads until it expires.
+     * Download a generated resource by its ID.
+     * The resource remains available for multiple downloads until it expires.
      */
     @GetMapping("/download/{id}")
     public ResponseEntity<byte[]> download(@PathVariable String id) {
-        logger.info("PDF download requested: {}", id);
+        logger.info("Resource download requested: {}", id);
 
         var result = delivery.retrieve(id);
         if (result.isEmpty()) {
-            logger.warn("PDF not found or expired: {}", id);
+            logger.warn("Resource not found or expired: {}", id);
             return ResponseEntity.notFound().build();
         }
 
@@ -61,12 +61,12 @@ public class PdfDownloadController {
         headers.setContentDispositionFormData("attachment", pdf.filename());
         headers.setContentLength(pdf.size());
 
-        logger.info("Serving PDF: {} ({} bytes)", pdf.filename(), pdf.size());
+        logger.info("Serving resource: {} ({} bytes)", pdf.filename(), pdf.size());
         return new ResponseEntity<>(pdf.pdfBytes(), headers, HttpStatus.OK);
     }
 
     /**
-     * Check if a PDF is available for download.
+     * Check if a resource is available for download.
      */
     @GetMapping("/exists/{id}")
     public ResponseEntity<Void> exists(@PathVariable String id) {

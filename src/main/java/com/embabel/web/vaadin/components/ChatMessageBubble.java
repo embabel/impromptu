@@ -46,9 +46,9 @@ public class ChatMessageBubble extends Div {
     private static final Pattern PDF_DOWNLOAD_PATTERN =
             Pattern.compile("\\{\\{PDF_DOWNLOAD:([^:]+):([^:]+):(\\d+)\\}\\}");
     private static final Pattern PDF_MARKDOWN_LINK_PATTERN =
-            Pattern.compile("\\[[^\\]]+\\]\\((?:sandbox:)?/api/pdf/download/([A-Fa-f0-9\\-]{36})\\)");
+            Pattern.compile("\\[[^\\]]+\\]\\((?:sandbox:)?/api/resource/download/([A-Fa-f0-9\\-]{36})\\)");
     private static final Pattern PDF_ENDPOINT_PATTERN =
-            Pattern.compile("/api/pdf/download/([A-Fa-f0-9\\-]{36})");
+            Pattern.compile("/api/resource/download/([A-Fa-f0-9\\-]{36})");
     private static final Pattern URL_PATTERN =
             Pattern.compile("(?i)\\bhttps?://[^\\s<>()]+");
 
@@ -256,7 +256,7 @@ public class ChatMessageBubble extends Div {
      * Uses absolute URL to bypass Vaadin router completely.
      */
     private static Anchor createPdfDownloadButton(PdfDownloadInfo info) {
-        var downloadUrl = "/api/pdf/download/" + info.id;
+        var downloadUrl = "/api/resource/download/" + info.id;
 
         var anchor = new Anchor(downloadUrl, "");
         anchor.addClassName("pdf-download-btn");
@@ -267,7 +267,7 @@ public class ChatMessageBubble extends Div {
         var icon = new Span("\uD83D\uDCC4"); // 📄
         icon.addClassName("pdf-icon");
 
-        var text = new Span(" Download " + info.filename + " ");
+        var text = new Span(" Download document ");
 
         Span size = null;
         if (info.size > 0) {
