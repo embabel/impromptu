@@ -6,6 +6,7 @@ import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.youtube.YouTubeService;
 import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
+import com.embabel.impromptu.rag.DocumentService;
 import com.embabel.impromptu.speech.PersonaService;
 import com.embabel.impromptu.user.ImpromptuUser;
 import com.embabel.impromptu.user.ImpromptuUserService;
@@ -50,6 +51,7 @@ public class BackstagePanel extends Div {
             YouTubeService youTubeService,
             NamedEntityDataRepository entityRepository,
             DrivinePropositionRepository propositionRepository,
+            DocumentService documentService,
             PersonaService personaService,
             ImpromptuUserService userService,
             Consumer<EntityMention> onMentionClick,
@@ -95,11 +97,12 @@ public class BackstagePanel extends Div {
         // Tabs
         var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
         var referencesTab = new Tab(VaadinIcon.RECORDS.create(), new Span("References"));
+        var memoryTab = new Tab(VaadinIcon.LIGHTBULB.create(), new Span("Memory"));
         var knowledgeTab = new Tab(VaadinIcon.BOOK.create(), new Span("Knowledge"));
         var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
         var aboutTab = new Tab(VaadinIcon.INFO_CIRCLE.create(), new Span("About"));
 
-        var tabs = new Tabs(mediaTab, referencesTab, knowledgeTab, settingsTab, aboutTab);
+        var tabs = new Tabs(mediaTab, referencesTab, memoryTab, knowledgeTab, settingsTab, aboutTab);
         tabs.setWidthFull();
         sidePanel.add(tabs);
 
@@ -115,17 +118,21 @@ public class BackstagePanel extends Div {
         // References content
         var referencesContent = new ReferencesPanel(config.entityRepository(), config.indexStats());
 
-        // Knowledge content
-        var knowledgeContent = new VerticalLayout();
-        knowledgeContent.setPadding(false);
-        knowledgeContent.setVisible(false);
+        // Memory content (user propositions)
+        var memoryContent = new VerticalLayout();
+        memoryContent.setPadding(false);
+        memoryContent.setVisible(false);
 
         var userContextId = config.user().currentContext();
         propositionsPanel = new PropositionsPanel(config.propositionRepository());
         propositionsPanel.setContextId(userContextId);
         propositionsPanel.setOnMentionClick(config.onMentionClick());
         propositionsPanel.setOnClear(() -> config.propositionRepository().clearByContext(userContextId));
-        knowledgeContent.add(propositionsPanel);
+        memoryContent.add(propositionsPanel);
+
+        // Knowledge content (documents)
+        var knowledgeContent = new KnowledgePanel(config.documentService());
+        knowledgeContent.setVisible(false);
 
         // About content
         var aboutContent = new AboutPanel();
@@ -133,7 +140,7 @@ public class BackstagePanel extends Div {
         // Settings content
         var settingsContent = new SettingsPanel(config.properties());
 
-        contentArea.add(mediaContent, referencesContent, knowledgeContent, settingsContent, aboutContent);
+        contentArea.add(mediaContent, referencesContent, memoryContent, knowledgeContent, settingsContent, aboutContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
@@ -141,11 +148,15 @@ public class BackstagePanel extends Div {
         tabs.addSelectedChangeListener(event -> {
             mediaContent.setVisible(event.getSelectedTab() == mediaTab);
             referencesContent.setVisible(event.getSelectedTab() == referencesTab);
+            memoryContent.setVisible(event.getSelectedTab() == memoryTab);
             knowledgeContent.setVisible(event.getSelectedTab() == knowledgeTab);
             settingsContent.setVisible(event.getSelectedTab() == settingsTab);
             aboutContent.setVisible(event.getSelectedTab() == aboutTab);
-            if (event.getSelectedTab() == knowledgeTab) {
+            if (event.getSelectedTab() == memoryTab) {
                 propositionsPanel.refresh();
+            }
+            if (event.getSelectedTab() == knowledgeTab) {
+                knowledgeContent.refresh();
             }
         });
 

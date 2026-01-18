@@ -15,6 +15,7 @@ import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.youtube.YouTubePendingPlayback;
 import com.embabel.impromptu.integrations.youtube.YouTubeService;
 import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
+import com.embabel.impromptu.rag.DocumentService;
 import com.embabel.impromptu.speech.PersonaService;
 import com.embabel.impromptu.user.ImpromptuUser;
 import com.embabel.impromptu.user.ImpromptuUserService;
@@ -84,6 +85,7 @@ public class VaadinChatView extends VerticalLayout {
             ImpromptuProperties properties,
             DrivineStore searchOperations,
             DrivinePropositionRepository propositionRepository,
+            DocumentService documentService,
             NamedEntityDataRepository entityRepository,
             ImpromptuUserService userService,
             SpotifyService spotifyService,
@@ -154,6 +156,7 @@ public class VaadinChatView extends VerticalLayout {
                 youTubeService,
                 entityRepository,
                 propositionRepository,
+                documentService,
                 personaService,
                 userService,
                 this::showEntityDetail,

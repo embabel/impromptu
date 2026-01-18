@@ -1057,6 +1057,97 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   50% { opacity: 1; }
 }
 
+/* --- Knowledge Panel (Document Ingestion) --- */
+.knowledge-tabs {
+  padding: 0;
+  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+}
+
+.knowledge-tabs vaadin-tab {
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: var(--lumo-font-size-s);
+}
+
+.section-title {
+  color: var(--gold-accent);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: var(--lumo-font-size-l);
+  margin: 0;
+}
+
+.section-instructions {
+  color: var(--lumo-secondary-text-color);
+  font-size: var(--lumo-font-size-s);
+  font-style: italic;
+}
+
+.stats-container {
+  background: var(--lumo-contrast-5pct);
+  border-radius: var(--lumo-border-radius-m);
+  padding: var(--lumo-space-m);
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--lumo-space-xs) 0;
+}
+
+.stat-row + .stat-row {
+  border-top: 1px solid var(--lumo-contrast-10pct);
+}
+
+.stat-label {
+  color: var(--lumo-secondary-text-color);
+  font-size: var(--lumo-font-size-s);
+}
+
+.stat-value {
+  color: var(--gold-accent);
+  font-weight: 600;
+  font-size: var(--lumo-font-size-m);
+}
+
+.documents-list {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid var(--lumo-contrast-10pct);
+  border-radius: var(--lumo-border-radius-m);
+  background: var(--lumo-shade-5pct);
+}
+
+.document-row {
+  padding: var(--lumo-space-s) var(--lumo-space-m);
+  border-bottom: 1px solid var(--lumo-contrast-5pct);
+  transition: background 0.2s;
+}
+
+.document-row:last-child {
+  border-bottom: none;
+}
+
+.document-row:hover {
+  background: var(--lumo-contrast-5pct);
+}
+
+.document-title {
+  font-size: var(--lumo-font-size-s);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+  display: block;
+}
+
+.empty-list-label {
+  color: var(--lumo-secondary-text-color);
+  font-style: italic;
+  padding: var(--lumo-space-m);
+  text-align: center;
+  display: block;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   h3::before, h3::after {
