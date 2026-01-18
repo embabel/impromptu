@@ -1,8 +1,8 @@
 package com.embabel.impromptu.vaadin.components;
 
-import com.embabel.impromptu.spotify.SpotifyService;
-import com.embabel.impromptu.spotify.SpotifyService.PlaybackState;
-import com.embabel.impromptu.spotify.SpotifyService.SpotifyDevice;
+import com.embabel.impromptu.integrations.spotify.SpotifyService;
+import com.embabel.impromptu.integrations.spotify.SpotifyService.PlaybackState;
+import com.embabel.impromptu.integrations.spotify.SpotifyService.SpotifyDevice;
 import com.embabel.impromptu.user.ImpromptuUser;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -85,7 +85,8 @@ public class SpotifyPlayerPanel extends VerticalLayout {
         var openAppLink = new Anchor("spotify:", "");
         openAppLink.add(VaadinIcon.EXTERNAL_LINK.create());
         openAppLink.getElement().setAttribute("title", "Open Spotify app");
-        openAppLink.getElement().addEventListener("click", e -> {}).addEventData("event.stopPropagation()");
+        openAppLink.getElement().addEventListener("click", e -> {
+        }).addEventData("event.stopPropagation()");
         openAppLink.addClassName("spotify-open-app-link");
 
         var refreshButton = new Button(VaadinIcon.REFRESH.create());

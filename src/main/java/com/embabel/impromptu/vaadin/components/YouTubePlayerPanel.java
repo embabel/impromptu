@@ -1,6 +1,6 @@
 package com.embabel.impromptu.vaadin.components;
 
-import com.embabel.impromptu.youtube.YouTubeService;
+import com.embabel.impromptu.integrations.youtube.YouTubeService;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -122,14 +122,14 @@ public class YouTubePlayerPanel extends HorizontalLayout {
             // Open as popup window sized to 60% of screen
             // Using a named window so subsequent videos reuse the same popup
             UI.getCurrent().getPage().executeJs("""
-                    var w = Math.round(screen.width * 0.6);
-                    var h = Math.round(screen.height * 0.6);
-                    var left = Math.round((screen.width - w) / 2);
-                    var top = Math.round((screen.height - h) / 2);
-                    window.open($0, 'youtube_player',
-                        'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top +
-                        ',menubar=no,toolbar=no,location=no,status=no,resizable=yes');
-                    """,
+                            var w = Math.round(screen.width * 0.6);
+                            var h = Math.round(screen.height * 0.6);
+                            var left = Math.round((screen.width - w) / 2);
+                            var top = Math.round((screen.height - h) / 2);
+                            window.open($0, 'youtube_player',
+                                'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top +
+                                ',menubar=no,toolbar=no,location=no,status=no,resizable=yes');
+                            """,
                     url
             );
         }

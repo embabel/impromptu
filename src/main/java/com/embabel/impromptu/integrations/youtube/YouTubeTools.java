@@ -1,4 +1,4 @@
-package com.embabel.impromptu.youtube;
+package com.embabel.impromptu.integrations.youtube;
 
 import com.embabel.agent.api.annotation.LlmTool;
 import com.embabel.agent.api.annotation.MatryoshkaTools;

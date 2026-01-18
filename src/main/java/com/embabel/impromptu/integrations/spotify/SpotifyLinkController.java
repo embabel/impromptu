@@ -1,4 +1,4 @@
-package com.embabel.impromptu.spotify;
+package com.embabel.impromptu.integrations.spotify;
 
 import com.embabel.impromptu.user.ImpromptuUserService;
 import jakarta.servlet.http.HttpServletRequest;

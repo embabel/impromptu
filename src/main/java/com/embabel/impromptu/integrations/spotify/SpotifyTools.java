@@ -1,4 +1,4 @@
-package com.embabel.impromptu.spotify;
+package com.embabel.impromptu.integrations.spotify;
 
 import com.embabel.agent.api.annotation.LlmTool;
 import com.embabel.agent.api.annotation.MatryoshkaTools;

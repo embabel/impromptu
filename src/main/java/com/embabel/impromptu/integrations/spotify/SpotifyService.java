@@ -1,4 +1,4 @@
-package com.embabel.impromptu.spotify;
+package com.embabel.impromptu.integrations.spotify;
 
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
@@ -6,10 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -81,7 +80,8 @@ public class SpotifyService {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(formBody)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         if (response == null) {
             throw new SpotifyException("Empty response from Spotify token endpoint");
@@ -107,7 +107,8 @@ public class SpotifyService {
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(formBody)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         if (response == null) {
             throw new SpotifyException("Empty response from Spotify token refresh");
@@ -157,7 +158,8 @@ public class SpotifyService {
                 .uri(SPOTIFY_API_BASE + "/me")
                 .header("Authorization", "Bearer " + token)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         return new SpotifyUser(
                 (String) response.get("id"),
@@ -176,7 +178,8 @@ public class SpotifyService {
                 .uri(SPOTIFY_API_BASE + "/me/playlists?limit=50")
                 .header("Authorization", "Bearer " + token)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
 
@@ -208,7 +211,8 @@ public class SpotifyService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         return new SpotifyPlaylist(
                 (String) response.get("id"),
@@ -250,7 +254,8 @@ public class SpotifyService {
                 .uri(url)
                 .header("Authorization", "Bearer " + token)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         Map<String, Object> tracks = (Map<String, Object>) response.get("tracks");
         List<Map<String, Object>> items = (List<Map<String, Object>>) tracks.get("items");
@@ -282,7 +287,8 @@ public class SpotifyService {
                 .uri(url)
                 .header("Authorization", "Bearer " + token)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         Map<String, Object> tracks = (Map<String, Object>) response.get("tracks");
         List<Map<String, Object>> items = (List<Map<String, Object>>) tracks.get("items");
@@ -328,7 +334,8 @@ public class SpotifyService {
                 .uri(url)
                 .header("Authorization", "Bearer " + token)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
 
@@ -466,7 +473,8 @@ public class SpotifyService {
                 .uri(SPOTIFY_API_BASE + "/me/player/devices")
                 .header("Authorization", "Bearer " + token)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         if (response == null || !response.containsKey("devices")) {
             return List.of();
@@ -496,7 +504,8 @@ public class SpotifyService {
                     .uri(SPOTIFY_API_BASE + "/me/player")
                     .header("Authorization", "Bearer " + token)
                     .retrieve()
-                    .body(new ParameterizedTypeReference<>() {});
+                    .body(new ParameterizedTypeReference<>() {
+                    });
 
             if (response == null) {
                 return PlaybackState.inactive();
@@ -664,12 +673,20 @@ public class SpotifyService {
 
     // ========== Record types for API responses ==========
 
-    public record SpotifyTokenResponse(String accessToken, String refreshToken, int expiresIn) {}
-    public record SpotifyUser(String id, String displayName) {}
-    public record SpotifyPlaylist(String id, String name, int trackCount) {}
-    public record SpotifyTrack(String uri, String name, String artist) {}
+    public record SpotifyTokenResponse(String accessToken, String refreshToken, int expiresIn) {
+    }
 
-    public record SpotifyDevice(String id, String name, String type, boolean isActive, int volumePercent) {}
+    public record SpotifyUser(String id, String displayName) {
+    }
+
+    public record SpotifyPlaylist(String id, String name, int trackCount) {
+    }
+
+    public record SpotifyTrack(String uri, String name, String artist) {
+    }
+
+    public record SpotifyDevice(String id, String name, String type, boolean isActive, int volumePercent) {
+    }
 
     /**
      * Album track info for movement grouping.
@@ -680,7 +697,8 @@ public class SpotifyService {
             String artist,
             int trackNumber,
             int discNumber
-    ) {}
+    ) {
+    }
 
     /**
      * Extended track info for better classical music matching.

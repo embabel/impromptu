@@ -1,4 +1,4 @@
-package com.embabel.impromptu.youtube;
+package com.embabel.impromptu.integrations.youtube;
 
 /**
  * Exception for YouTube API errors.

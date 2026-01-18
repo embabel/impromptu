@@ -1,4 +1,4 @@
-package com.embabel.impromptu.youtube;
+package com.embabel.impromptu.integrations.youtube;
 
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -74,7 +74,8 @@ public class YouTubeService {
         Map<String, Object> response = restClient.get()
                 .uri(url)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         if (response == null || !response.containsKey("items")) {
             return List.of();
@@ -163,7 +164,7 @@ public class YouTubeService {
         // Penalty for likely non-performance content
         String titleLower = video.title().toLowerCase();
         if (titleLower.contains("tutorial") || titleLower.contains("lesson") ||
-            titleLower.contains("how to") || titleLower.contains("learn")) {
+                titleLower.contains("how to") || titleLower.contains("learn")) {
             score -= 30;
         }
 
@@ -187,7 +188,8 @@ public class YouTubeService {
         Map<String, Object> response = restClient.get()
                 .uri(url)
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {});
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         if (response == null || !response.containsKey("items")) {
             return null;
@@ -249,7 +251,8 @@ public class YouTubeService {
             String channelTitle,
             String description,
             String thumbnailUrl
-    ) {}
+    ) {
+    }
 
     public record YouTubeVideoDetails(
             String videoId,

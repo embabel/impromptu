@@ -1,4 +1,4 @@
-package com.embabel.impromptu.spotify;
+package com.embabel.impromptu.integrations.spotify;
 
 /**
  * Exception for Spotify API errors.

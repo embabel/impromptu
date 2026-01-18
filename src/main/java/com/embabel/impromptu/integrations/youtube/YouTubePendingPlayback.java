@@ -1,4 +1,4 @@
-package com.embabel.impromptu.youtube;
+package com.embabel.impromptu.integrations.youtube;
 
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,8 @@ public class YouTubePendingPlayback {
 
     private final ConcurrentHashMap<String, PendingVideo> pendingVideos = new ConcurrentHashMap<>();
 
-    public record PendingVideo(String videoId, String title, String channelTitle) {}
+    public record PendingVideo(String videoId, String title, String channelTitle) {
+    }
 
     /**
      * Request playback for a user.
