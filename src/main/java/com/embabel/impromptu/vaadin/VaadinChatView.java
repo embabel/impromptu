@@ -3,6 +3,7 @@ package com.embabel.impromptu.vaadin;
 import com.embabel.agent.api.channel.MessageOutputChannelEvent;
 import com.embabel.agent.api.channel.OutputChannel;
 import com.embabel.agent.api.channel.OutputChannelEvent;
+import com.embabel.agent.api.channel.ProgressOutputChannelEvent;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.chat.*;
@@ -24,9 +25,11 @@ import com.embabel.web.vaadin.components.ChatMessageBubble;
 import com.embabel.web.vaadin.components.EntityCard;
 import com.embabel.web.vaadin.components.VoiceControl;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -170,18 +173,18 @@ public class VaadinChatView extends VerticalLayout {
     /**
      * Lazily creates the chat session on first message send.
      */
-    private record SessionData(ChatSession chatSession, BlockingQueue<Message> responseQueue) {
+    private record SessionData(ChatSession chatSession, BlockingQueue<Message> responseQueue, VaadinOutputChannel outputChannel) {
     }
 
-    private SessionData getOrCreateSession() {
+    private SessionData getOrCreateSession(UI ui) {
         var vaadinSession = VaadinSession.getCurrent();
         var sessionData = (SessionData) vaadinSession.getAttribute("sessionData");
 
         if (sessionData == null) {
             var responseQueue = new ArrayBlockingQueue<Message>(10);
-            var outputChannel = new QueueingOutputChannel(responseQueue);
+            var outputChannel = new VaadinOutputChannel(responseQueue, ui);
             var chatSession = chatbot.createSession(currentUser, outputChannel, UUID.randomUUID().toString());
-            sessionData = new SessionData(chatSession, responseQueue);
+            sessionData = new SessionData(chatSession, responseQueue, outputChannel);
             vaadinSession.setAttribute("sessionData", sessionData);
             logger.info("Created new chat session for user: {}", currentUser.getDisplayName());
         }
@@ -303,6 +306,9 @@ public class VaadinChatView extends VerticalLayout {
             return;
         }
 
+        var ui = getUI().orElse(null);
+        if (ui == null) return;
+
         inputField.clear();
         inputField.setEnabled(false);
         sendButton.setEnabled(false);
@@ -311,13 +317,10 @@ public class VaadinChatView extends VerticalLayout {
         messagesLayout.add(ChatMessageBubble.user(text));
         scrollToBottom();
 
-        // Get or create session
-        var sessionData = getOrCreateSession();
+        // Get or create session (needs UI for progress indicators)
+        var sessionData = getOrCreateSession(ui);
 
         // Send to chatbot asynchronously
-        var ui = getUI().orElse(null);
-        if (ui == null) return;
-
         new Thread(() -> {
             try {
                 var userMessage = new UserMessage(text);
@@ -450,9 +453,18 @@ public class VaadinChatView extends VerticalLayout {
     }
 
     /**
-     * OutputChannel that queues assistant messages for retrieval.
+     * OutputChannel that queues assistant messages and displays tool call progress in real-time.
      */
-    private record QueueingOutputChannel(BlockingQueue<Message> queue) implements OutputChannel {
+    private class VaadinOutputChannel implements OutputChannel {
+        private final BlockingQueue<Message> queue;
+        private final UI ui;
+        private Div currentToolCallIndicator;
+
+        VaadinOutputChannel(BlockingQueue<Message> queue, UI ui) {
+            this.queue = queue;
+            this.ui = ui;
+        }
+
         @Override
         public void send(OutputChannelEvent event) {
             logger.debug("OutputChannel.send() called with event type: {}", event.getClass().getSimpleName());
@@ -460,10 +472,30 @@ public class VaadinChatView extends VerticalLayout {
                 var msg = msgEvent.getMessage();
                 logger.debug("MessageOutputChannelEvent received, message type: {}", msg.getClass().getSimpleName());
                 if (msg instanceof AssistantMessage) {
+                    // Remove tool call indicator before showing response
+                    ui.access(() -> {
+                        if (currentToolCallIndicator != null) {
+                            messagesLayout.remove(currentToolCallIndicator);
+                            currentToolCallIndicator = null;
+                        }
+                    });
                     logger.debug("Queueing AssistantMessage: {}",
                             StringTrimmingUtilsKt.trim(msg.getContent(), 80, 3, "..."));
                     queue.offer(msg);
                 }
+            } else if (event instanceof ProgressOutputChannelEvent progressEvent) {
+                ui.access(() -> {
+                    // Remove previous indicator if exists
+                    if (currentToolCallIndicator != null) {
+                        messagesLayout.remove(currentToolCallIndicator);
+                    }
+                    // Create new tool call indicator
+                    currentToolCallIndicator = new Div();
+                    currentToolCallIndicator.addClassName("tool-call-indicator");
+                    currentToolCallIndicator.setText(progressEvent.getMessage());
+                    messagesLayout.add(currentToolCallIndicator);
+                    scrollToBottom();
+                });
             }
         }
     }

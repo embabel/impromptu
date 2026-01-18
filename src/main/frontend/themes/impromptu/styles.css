@@ -1039,6 +1039,24 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   padding: var(--lumo-space-m);
 }
 
+/* --- Tool Call Indicator --- */
+.tool-call-indicator {
+  color: var(--lumo-secondary-text-color);
+  font-size: var(--lumo-font-size-s);
+  padding: var(--lumo-space-xs) var(--lumo-space-m);
+  background: linear-gradient(135deg, rgba(26, 21, 37, 0.8) 0%, rgba(18, 18, 24, 0.9) 100%);
+  border-left: 3px solid var(--gold-accent);
+  border-radius: var(--lumo-border-radius-s);
+  margin: var(--lumo-space-xs) 0;
+  font-family: monospace;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   h3::before, h3::after {
