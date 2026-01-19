@@ -133,6 +133,10 @@
                 <configuration>
                     <!-- Exclude integration tests from normal test runs -->
                     <excludedGroups>integration</excludedGroups>
+                    <excludes>
+                        <!-- Exclude *IT tests (require LLM API keys) -->
+                        <exclude>**/*IT.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>

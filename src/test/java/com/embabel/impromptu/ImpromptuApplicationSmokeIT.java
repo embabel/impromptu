@@ -33,8 +33,11 @@ import org.springframework.test.context.ActiveProfiles;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Smoke test that verifies the Spring application context loads successfully
+ * Integration test that verifies the Spring application context loads successfully
  * with all core beans properly configured.
+ * <p>
+ * This test requires LLM API keys to be configured and is excluded from normal CI builds.
+ * Run manually with: mvn test -Dtest="*IT"
  * <p>
  * Uses Testcontainers for Neo4j (via @EnableDrivineTestConfig).
  */
@@ -54,7 +57,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @EnableDrivineTestConfig
 @ActiveProfiles("test")
 @Import(TestSecurityConfiguration.class)
-class ImpromptuApplicationSmokeTest {
+class ImpromptuApplicationSmokeIT {
 
     @Autowired
     private ApplicationContext applicationContext;
