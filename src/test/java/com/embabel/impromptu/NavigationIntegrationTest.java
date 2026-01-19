@@ -51,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @EnableDrivine
 @EnableDrivineTestConfig
 @ActiveProfiles("test")
-@Import(TestSecurityConfiguration.class)
+@Import({TestSecurityConfiguration.class, TestLlmConfiguration.class})
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Transactional
 class NavigationIntegrationTest {

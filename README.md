@@ -651,7 +651,7 @@ To use a different LLM:
 ```yaml
 impromptu:
   chat-llm:
-    model: gpt-4.1           # Use the larger GPT-4.1 instead
+    model: gpt-4.1           # Use the larger GPT-4.1 model
     temperature: 0.7         # More creative responses
 ```
 
