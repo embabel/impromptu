@@ -264,10 +264,12 @@ public class SpotifyService {
                 .map(item -> {
                     List<Map<String, Object>> artists = (List<Map<String, Object>>) item.get("artists");
                     String artistName = artists.isEmpty() ? "Unknown" : (String) artists.get(0).get("name");
+                    int durationMs = item.get("duration_ms") instanceof Integer d ? d : 0;
                     return new SpotifyTrack(
                             (String) item.get("uri"),
                             (String) item.get("name"),
-                            artistName
+                            artistName,
+                            durationMs
                     );
                 })
                 .toList();
@@ -306,6 +308,7 @@ public class SpotifyService {
                     String albumId = album != null ? (String) album.get("id") : null;
                     int trackNumber = item.get("track_number") instanceof Integer t ? t : 1;
                     int discNumber = item.get("disc_number") instanceof Integer d ? d : 1;
+                    int durationMs = item.get("duration_ms") instanceof Integer dur ? dur : 0;
 
                     return new SpotifyTrackDetails(
                             (String) item.get("uri"),
@@ -315,7 +318,8 @@ public class SpotifyService {
                             albumName,
                             albumId,
                             trackNumber,
-                            discNumber
+                            discNumber,
+                            durationMs
                     );
                 })
                 .toList();
@@ -682,7 +686,44 @@ public class SpotifyService {
     public record SpotifyPlaylist(String id, String name, int trackCount) {
     }
 
-    public record SpotifyTrack(String uri, String name, String artist) {
+    public record SpotifyTrack(String uri, String name, String artist, int durationMs)
+            implements com.embabel.impromptu.integrations.Playable {
+
+        @Override
+        public String id() {
+            return uri;
+        }
+
+        @Override
+        public String title() {
+            return name;
+        }
+
+        @Override
+        public int durationSeconds() {
+            return durationMs / 1000;
+        }
+
+        @Override
+        public String durationFormatted() {
+            return formatDuration(durationSeconds());
+        }
+
+        @Override
+        public String url() {
+            // Convert spotify:track:xxx to https://open.spotify.com/track/xxx
+            if (uri != null && uri.startsWith("spotify:track:")) {
+                return "https://open.spotify.com/track/" + uri.substring(14);
+            }
+            return null;
+        }
+
+        private static String formatDuration(int totalSeconds) {
+            if (totalSeconds <= 0) return null;
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+            return String.format("%d:%02d", minutes, seconds);
+        }
     }
 
     public record SpotifyDevice(String id, String name, String type, boolean isActive, int volumePercent) {
@@ -711,8 +752,41 @@ public class SpotifyService {
             String albumName,
             String albumId,
             int trackNumber,
-            int discNumber
-    ) {
+            int discNumber,
+            int durationMs
+    ) implements com.embabel.impromptu.integrations.Playable {
+
+        @Override
+        public String id() {
+            return uri;
+        }
+
+        @Override
+        public String title() {
+            return name;
+        }
+
+        @Override
+        public int durationSeconds() {
+            return durationMs / 1000;
+        }
+
+        @Override
+        public String durationFormatted() {
+            int totalSeconds = durationSeconds();
+            if (totalSeconds <= 0) return null;
+            int minutes = totalSeconds / 60;
+            int seconds = totalSeconds % 60;
+            return String.format("%d:%02d", minutes, seconds);
+        }
+
+        @Override
+        public String url() {
+            if (uri != null && uri.startsWith("spotify:track:")) {
+                return "https://open.spotify.com/track/" + uri.substring(14);
+            }
+            return null;
+        }
         /**
          * Score how well this track matches the query terms.
          * Higher score = better match.

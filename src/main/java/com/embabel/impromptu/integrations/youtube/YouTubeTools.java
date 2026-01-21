@@ -91,7 +91,7 @@ public record YouTubeTools(
 
             return "Now playing on YouTube: **" + bestMatch.title() + "**\n" +
                     "Channel: " + bestMatch.channelTitle() +
-                    (bestMatch.duration() != null ? "\nDuration: " + bestMatch.duration() : "");
+                    (bestMatch.durationSeconds() > 0 ? "\nDuration: " + bestMatch.durationFormatted() : "");
         } catch (YouTubeException e) {
             logger.error("Failed to play YouTube video", e);
             return "Failed to play video: " + e.getMessage();
@@ -120,7 +120,7 @@ public record YouTubeTools(
 
             return "Now playing on YouTube: **" + video.title() + "**\n" +
                     "Channel: " + video.channelTitle() +
-                    (video.duration() != null ? "\nDuration: " + video.duration() : "");
+                    (video.durationSeconds() > 0 ? "\nDuration: " + video.durationFormatted() : "");
         } catch (YouTubeException e) {
             logger.error("Failed to play YouTube video", e);
             return "Failed to play video: " + e.getMessage();

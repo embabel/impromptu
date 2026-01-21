@@ -105,9 +105,17 @@ public class YouTubeService {
 
     /**
      * Search with detailed scoring for classical music.
+     * Fetches durations via a follow-up API call.
      */
     public List<YouTubeVideoDetails> searchVideosDetailed(String query, int maxResults) {
         var videos = searchVideos(query, maxResults);
+        if (videos.isEmpty()) {
+            return List.of();
+        }
+
+        // Fetch durations for all videos in one API call
+        var durations = fetchVideoDurations(videos.stream().map(YouTubeVideo::videoId).toList());
+
         return videos.stream()
                 .map(v -> new YouTubeVideoDetails(
                         v.videoId(),
@@ -115,10 +123,56 @@ public class YouTubeService {
                         v.channelTitle(),
                         v.description(),
                         v.thumbnailUrl(),
-                        scoreMatch(v, query)
+                        scoreMatch(v, query),
+                        durations.getOrDefault(v.videoId(), 0)
                 ))
                 .sorted((a, b) -> Integer.compare(b.score(), a.score()))
                 .toList();
+    }
+
+    /**
+     * Fetch durations for multiple videos in a single API call.
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Integer> fetchVideoDurations(List<String> videoIds) {
+        if (videoIds.isEmpty()) {
+            return Map.of();
+        }
+
+        String ids = String.join(",", videoIds);
+        String url = YOUTUBE_API_BASE + "/videos"
+                + "?part=contentDetails"
+                + "&id=" + ids
+                + "&key=" + apiKey;
+
+        try {
+            Map<String, Object> response = restClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<>() {
+                    });
+
+            if (response == null || !response.containsKey("items")) {
+                return Map.of();
+            }
+
+            List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
+            var durations = new java.util.HashMap<String, Integer>();
+
+            for (Map<String, Object> item : items) {
+                String videoId = (String) item.get("id");
+                Map<String, Object> contentDetails = (Map<String, Object>) item.get("contentDetails");
+                if (contentDetails != null) {
+                    String isoDuration = (String) contentDetails.get("duration");
+                    durations.put(videoId, parseDurationToSeconds(isoDuration));
+                }
+            }
+
+            return durations;
+        } catch (Exception e) {
+            logger.warn("Failed to fetch video durations: {}", e.getMessage());
+            return Map.of();
+        }
     }
 
     /**
@@ -208,7 +262,7 @@ public class YouTubeService {
                 ? (Map<String, Object>) thumbnails.get("medium")
                 : null;
 
-        String duration = contentDetails != null ? (String) contentDetails.get("duration") : null;
+        String isoDuration = contentDetails != null ? (String) contentDetails.get("duration") : null;
 
         return new YouTubeVideoDetails(
                 videoId,
@@ -217,24 +271,36 @@ public class YouTubeService {
                 (String) snippet.get("description"),
                 defaultThumb != null ? (String) defaultThumb.get("url") : null,
                 0,
-                parseDuration(duration)
+                parseDurationToSeconds(isoDuration)
         );
     }
 
     /**
-     * Parse ISO 8601 duration (PT1H2M3S) to human readable.
+     * Parse ISO 8601 duration (PT1H2M3S) to seconds.
      */
-    private String parseDuration(String isoDuration) {
-        if (isoDuration == null) return null;
+    private int parseDurationToSeconds(String isoDuration) {
+        if (isoDuration == null) return 0;
 
         var pattern = Pattern.compile("PT(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?");
         var matcher = pattern.matcher(isoDuration);
 
-        if (!matcher.matches()) return isoDuration;
+        if (!matcher.matches()) return 0;
 
         int hours = matcher.group(1) != null ? Integer.parseInt(matcher.group(1)) : 0;
         int minutes = matcher.group(2) != null ? Integer.parseInt(matcher.group(2)) : 0;
         int seconds = matcher.group(3) != null ? Integer.parseInt(matcher.group(3)) : 0;
+
+        return hours * 3600 + minutes * 60 + seconds;
+    }
+
+    /**
+     * Format seconds as human-readable duration string.
+     */
+    public static String formatDuration(int totalSeconds) {
+        if (totalSeconds <= 0) return null;
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int seconds = totalSeconds % 60;
 
         if (hours > 0) {
             return String.format("%d:%02d:%02d", hours, minutes, seconds);
@@ -250,8 +316,29 @@ public class YouTubeService {
             String title,
             String channelTitle,
             String description,
-            String thumbnailUrl
-    ) {
+            String thumbnailUrl,
+            int durationSeconds
+    ) implements com.embabel.impromptu.integrations.Playable {
+
+        public YouTubeVideo(String videoId, String title, String channelTitle,
+                           String description, String thumbnailUrl) {
+            this(videoId, title, channelTitle, description, thumbnailUrl, 0);
+        }
+
+        @Override
+        public String id() {
+            return videoId;
+        }
+
+        @Override
+        public String durationFormatted() {
+            return formatDuration(durationSeconds);
+        }
+
+        @Override
+        public String url() {
+            return "https://www.youtube.com/watch?v=" + videoId;
+        }
     }
 
     public record YouTubeVideoDetails(
@@ -261,15 +348,31 @@ public class YouTubeService {
             String description,
             String thumbnailUrl,
             int score,
-            String duration
-    ) {
+            int durationSeconds
+    ) implements com.embabel.impromptu.integrations.Playable {
+
         public YouTubeVideoDetails(String videoId, String title, String channelTitle,
                                    String description, String thumbnailUrl, int score) {
-            this(videoId, title, channelTitle, description, thumbnailUrl, score, null);
+            this(videoId, title, channelTitle, description, thumbnailUrl, score, 0);
+        }
+
+        @Override
+        public String id() {
+            return videoId;
+        }
+
+        @Override
+        public String durationFormatted() {
+            return formatDuration(durationSeconds);
+        }
+
+        @Override
+        public String url() {
+            return "https://www.youtube.com/watch?v=" + videoId;
         }
 
         public String displayString() {
-            String durationStr = duration != null ? " [" + duration + "]" : "";
+            String durationStr = durationSeconds > 0 ? " [" + durationFormatted() + "]" : "";
             return title + " - " + channelTitle + durationStr;
         }
     }
