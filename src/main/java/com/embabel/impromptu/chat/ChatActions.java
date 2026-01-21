@@ -4,7 +4,6 @@ import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.OperationContext;
-import com.embabel.agent.api.tool.Tool;
 import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.agent.rag.tools.ToolishRag;
@@ -123,15 +122,14 @@ public class ChatActions {
                 .withPromptElements(user)
                 .withReferences(toolishRag, memory)
                 .withToolObjects(toolObjectsForUser(user))
-                .withTools(toolsForUser(user))
                 .withToolGroup(CoreToolGroups.WEB)
                 .withTemplate("impromptu_chat_response")
                 .respondWithSystemPrompt(
-                conversation.last(impromptuProperties.conversationWindow()),
-                Map.of(
-                        "properties", properties,
-                        "user", user
-                ));
+                        conversation.last(impromptuProperties.conversationWindow()),
+                        Map.of(
+                                "properties", properties,
+                                "user", user
+                        ));
         context.sendAndSave(assistantMessage);
 
         // Always request analysis - IncrementalAnalyzer decides if ready
@@ -152,14 +150,6 @@ public class ChatActions {
         tools.add(MetMuseumTools.DEFAULT);
         tools.add(ImslpTools.DEFAULT);
         tools.add(new ResourceTools(pdfGenerationService, pdfDelivery));
-        return tools;
-    }
-
-    /**
-     * Get Tool instances (like AgenticTool) for the user.
-     */
-    private List<Tool> toolsForUser(ImpromptuUser user) {
-        var tools = new java.util.ArrayList<Tool>();
         if (performanceFinderService.isAvailable(user)) {
             tools.add(performanceFinderService.createPerformanceFinderTool(user, null));
         }
