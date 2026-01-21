@@ -15,6 +15,7 @@ import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
+import com.embabel.impromptu.integrations.PerformanceFinderService;
 import com.embabel.impromptu.integrations.imslp.ImslpTools;
 import com.embabel.impromptu.integrations.metmuseum.MetMuseumTools;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
@@ -54,6 +55,7 @@ public class ChatActions {
     private final ImpromptuProperties impromptuProperties;
     private final PdfGenerationService pdfGenerationService;
     private final ResourceDelivery pdfDelivery;
+    private final PerformanceFinderService performanceFinderService;
 
     public ChatActions(
             SearchOperations searchOperations,
@@ -65,6 +67,7 @@ public class ChatActions {
             ApplicationEventPublisher eventPublisher,
             PdfGenerationService pdfGenerationService,
             ResourceDelivery pdfDelivery,
+            PerformanceFinderService performanceFinderService,
             ImpromptuProperties properties, ImpromptuProperties impromptuProperties) {
         this.toolishRag = new ToolishRag(
                 "sources",
@@ -81,6 +84,7 @@ public class ChatActions {
         this.impromptuProperties = impromptuProperties;
         this.pdfGenerationService = pdfGenerationService;
         this.pdfDelivery = pdfDelivery;
+        this.performanceFinderService = performanceFinderService;
     }
 
     /**
@@ -112,21 +116,28 @@ public class ChatActions {
                 .withRepository(propositionRepository)
                 .withProjector(memoryProjector);
 
-        var assistantMessage = context.
-                ai()
+        var ai = context.ai()
                 .withLlm(properties.chatLlm())
                 .withId("chat_response")
                 .withPromptElements(user)
                 .withReferences(toolishRag, memory)
                 .withToolObjects(toolInstancesForUser(user))
-                .withToolGroup(CoreToolGroups.WEB)
+                .withToolGroup(CoreToolGroups.WEB);
+
+        // Add performance finder if available
+        if (performanceFinderService.isAvailable(user)) {
+            var performanceFinder = performanceFinderService.createPerformanceFinderTool(user, null);
+            ai = ai.withTool(performanceFinder);
+        }
+
+        var assistantMessage = ai
                 .withTemplate("impromptu_chat_response")
                 .respondWithSystemPrompt(
-                        conversation.last(impromptuProperties.conversationWindow()),
-                        Map.of(
-                                "properties", properties,
-                                "user", user
-                        ));
+                conversation.last(impromptuProperties.conversationWindow()),
+                Map.of(
+                        "properties", properties,
+                        "user", user
+                ));
         context.sendAndSave(assistantMessage);
 
         // Always request analysis - IncrementalAnalyzer decides if ready
