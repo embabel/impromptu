@@ -4,6 +4,7 @@ import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.OperationContext;
+import com.embabel.agent.api.tool.Tool;
 import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.agent.rag.tools.ToolishRag;
@@ -116,21 +117,14 @@ public class ChatActions {
                 .withRepository(propositionRepository)
                 .withProjector(memoryProjector);
 
-        var ai = context.ai()
+        var assistantMessage = context.ai()
                 .withLlm(properties.chatLlm())
                 .withId("chat_response")
                 .withPromptElements(user)
                 .withReferences(toolishRag, memory)
-                .withToolObjects(toolInstancesForUser(user))
-                .withToolGroup(CoreToolGroups.WEB);
-
-        // Add performance finder if available
-        if (performanceFinderService.isAvailable(user)) {
-            var performanceFinder = performanceFinderService.createPerformanceFinderTool(user, null);
-            ai = ai.withTool(performanceFinder);
-        }
-
-        var assistantMessage = ai
+                .withToolObjects(toolObjectsForUser(user))
+                .withTools(toolsForUser(user))
+                .withToolGroup(CoreToolGroups.WEB)
                 .withTemplate("impromptu_chat_response")
                 .respondWithSystemPrompt(
                 conversation.last(impromptuProperties.conversationWindow()),
@@ -144,7 +138,10 @@ public class ChatActions {
         eventPublisher.publishEvent(new ConversationAnalysisRequestEvent(this, user, conversation));
     }
 
-    private List<Object> toolInstancesForUser(ImpromptuUser user) {
+    /**
+     * Get tool objects (classes with @LlmTool methods) for the user.
+     */
+    private List<Object> toolObjectsForUser(ImpromptuUser user) {
         var tools = new LinkedList<>();
         if (user.isSpotifyLinked()) {
             tools.add(new SpotifyTools(user, spotifyService));
@@ -155,6 +152,17 @@ public class ChatActions {
         tools.add(MetMuseumTools.DEFAULT);
         tools.add(ImslpTools.DEFAULT);
         tools.add(new ResourceTools(pdfGenerationService, pdfDelivery));
+        return tools;
+    }
+
+    /**
+     * Get Tool instances (like AgenticTool) for the user.
+     */
+    private List<Tool> toolsForUser(ImpromptuUser user) {
+        var tools = new java.util.ArrayList<Tool>();
+        if (performanceFinderService.isAvailable(user)) {
+            tools.add(performanceFinderService.createPerformanceFinderTool(user, null));
+        }
         return tools;
     }
 
