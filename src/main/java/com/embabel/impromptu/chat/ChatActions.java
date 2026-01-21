@@ -127,7 +127,7 @@ public class ChatActions {
                                 "properties", properties,
                                 "user", user
                         ));
-        context.sendMessage(conversation.addMessage(assistantMessage));
+        context.sendAndSave(assistantMessage);
 
         // Always request analysis - IncrementalAnalyzer decides if ready
         eventPublisher.publishEvent(new ConversationAnalysisRequestEvent(this, user, conversation));

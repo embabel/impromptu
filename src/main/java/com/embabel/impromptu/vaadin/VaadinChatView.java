@@ -210,6 +210,7 @@ public class VaadinChatView extends VerticalLayout {
         inputField.setPlaceholder("Type or click mic to speak...");
         inputField.setWidthFull();
         inputField.setClearButtonVisible(true);
+        inputField.getElement().setAttribute("autocomplete", "off");
         inputField.addKeyPressListener(Key.ENTER, e -> sendMessage());
 
         sendButton = new Button("Send", VaadinIcon.PAPERPLANE.create());
