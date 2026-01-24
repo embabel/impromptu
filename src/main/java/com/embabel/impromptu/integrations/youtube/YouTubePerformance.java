@@ -1,6 +1,5 @@
 package com.embabel.impromptu.integrations.youtube;
 
-import com.embabel.agent.api.common.LlmReference;
 import com.embabel.impromptu.integrations.Performance;
 import com.embabel.impromptu.integrations.Playable;
 import org.jspecify.annotations.NonNull;
@@ -22,11 +21,6 @@ public record YouTubePerformance(
     @Override
     public @NonNull String getId() {
         return video.videoId();
-    }
-
-    @Override
-    public @NonNull LlmReference reference() {
-        return null;
     }
 
     @Override
@@ -79,5 +73,21 @@ public record YouTubePerformance(
     @Override
     public String source() {
         return "youtube";
+    }
+
+    @Override
+    public String playbackInfo() {
+        return """
+                {"source":"youtube","videoId":"%s","title":"%s","performer":"%s","ensemble":"%s","conductor":"%s","channelTitle":"%s","url":"%s","durationSeconds":%d}
+                """.formatted(
+                video.videoId(),
+                video.title(),
+                performer != null ? performer : "",
+                ensemble != null ? ensemble : "",
+                conductor != null ? conductor : "",
+                video.channelTitle(),
+                url(),
+                durationSeconds()
+        ).trim();
     }
 }

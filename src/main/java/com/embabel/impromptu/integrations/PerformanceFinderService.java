@@ -81,7 +81,7 @@ public class PerformanceFinderService {
                 "Find performances of a classical work on Spotify and YouTube. " +
                         "Returns structured performance data including performers, conductors, and track lists."
         )
-                .withToolObject(searchTools)
+                .withTools(searchTools.tools().toArray(new Tool[0]))
                 .withSystemPrompt(SYSTEM_PROMPT)
                 .withParameter(Tool.Parameter.string(
                         "workQuery",

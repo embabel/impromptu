@@ -1,6 +1,5 @@
 package com.embabel.impromptu.integrations.youtube;
 
-import com.embabel.agent.api.common.LlmReference;
 import com.embabel.impromptu.integrations.Playable;
 import jakarta.annotation.PostConstruct;
 import org.jspecify.annotations.NonNull;
@@ -336,11 +335,6 @@ public class YouTubeService {
         }
 
         @Override
-        public @NonNull LlmReference reference() {
-            return null;
-        }
-
-        @Override
         public @NonNull String getId() {
             return videoId;
         }
@@ -353,6 +347,18 @@ public class YouTubeService {
         @Override
         public String url() {
             return "https://www.youtube.com/watch?v=" + videoId;
+        }
+
+        @Override
+        public String source() {
+            return "youtube";
+        }
+
+        @Override
+        public String playbackInfo() {
+            return """
+                    {"source":"youtube","videoId":"%s","title":"%s","channelTitle":"%s","url":"%s","durationSeconds":%d}
+                    """.formatted(videoId, title, channelTitle, url(), durationSeconds).trim();
         }
     }
 
@@ -378,11 +384,6 @@ public class YouTubeService {
         }
 
         @Override
-        public @NonNull LlmReference reference() {
-            return null;
-        }
-
-        @Override
         public @NonNull Instant getTimestamp() {
             return timestamp;
         }
@@ -395,6 +396,18 @@ public class YouTubeService {
         @Override
         public String url() {
             return "https://www.youtube.com/watch?v=" + videoId;
+        }
+
+        @Override
+        public String source() {
+            return "youtube";
+        }
+
+        @Override
+        public String playbackInfo() {
+            return """
+                    {"source":"youtube","videoId":"%s","title":"%s","channelTitle":"%s","url":"%s","durationSeconds":%d}
+                    """.formatted(videoId, title, channelTitle, url(), durationSeconds).trim();
         }
 
         public String displayString() {

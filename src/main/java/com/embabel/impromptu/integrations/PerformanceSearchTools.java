@@ -1,6 +1,6 @@
 package com.embabel.impromptu.integrations;
 
-import com.embabel.agent.api.annotation.LlmTool;
+import com.embabel.agent.api.tool.Tool;
 import com.embabel.impromptu.integrations.spotify.SpotifyPerformance;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.youtube.YouTubePerformance;
@@ -12,11 +12,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- * Sub-tools for the Performance finder AgenticTool.
+ * Tools for the Performance finder AgenticTool.
  * These tools are used by the LLM to search for and gather performance data
  * from Spotify and YouTube.
+ * <p>
+ * The create*Performance tools return Performance objects as artifacts,
+ * enabling the caller to access the structured data.
  */
 public class PerformanceSearchTools {
 
@@ -37,177 +43,253 @@ public class PerformanceSearchTools {
         this.objectMapper = new ObjectMapper();
     }
 
-    // ========== Spotify Tools ==========
+    /**
+     * Get all tools provided by this class.
+     */
+    public List<Tool> tools() {
+        var tools = new ArrayList<Tool>();
 
-    @LlmTool(description = "Search Spotify for tracks matching a query. Returns track details including name, artist, album, and duration.")
-    public String searchSpotifyTracks(String query) {
-        if (!spotifyService.isConfigured() || !spotifyService.isLinked(user)) {
-            return "Spotify not available";
+        // Spotify tools (if available)
+        if (spotifyService.isConfigured() && spotifyService.isLinked(user)) {
+            tools.add(searchSpotifyTracksTool());
+            tools.add(getSpotifyAlbumTracksTool());
+            tools.add(createSpotifyPerformanceTool());
         }
 
-        try {
-            var tracks = spotifyService.searchTracksDetailed(user, query, 15);
-            logger.info("Spotify search '{}' returned {} tracks", query, tracks.size());
-            return toJson(tracks.stream()
-                    .map(t -> new TrackInfo(
-                            t.uri(),
-                            t.name(),
-                            t.artist(),
-                            String.join(", ", t.allArtists()),
-                            t.albumName(),
-                            t.albumId(),
-                            t.durationSeconds(),
-                            t.trackNumber()
-                    ))
-                    .toList());
-        } catch (Exception e) {
-            logger.error("Spotify search failed", e);
-            return "Error: " + e.getMessage();
+        // YouTube tools (if available)
+        if (youTubeService.isConfigured()) {
+            tools.add(searchYouTubeVideosTool());
+            tools.add(createYouTubePerformanceTool());
         }
+
+        return tools;
     }
 
-    @LlmTool(description = "Get all tracks from a Spotify album. Use this to find all movements of a work on an album.")
-    public String getSpotifyAlbumTracks(String albumId) {
-        if (!spotifyService.isConfigured() || !spotifyService.isLinked(user)) {
-            return "Spotify not available";
-        }
+    private Tool searchSpotifyTracksTool() {
+        return Tool.create(
+                "searchSpotifyTracks",
+                "Search Spotify for tracks matching a query. Returns track details including name, artist, album, and duration.",
+                Tool.InputSchema.of(
+                        Tool.Parameter.string("query", "Search query for tracks")
+                ),
+                input -> {
+                    try {
+                        var params = objectMapper.readValue(input, java.util.Map.class);
+                        var query = (String) params.get("query");
+                        if (query == null || query.isBlank()) {
+                            return Tool.Result.text("Error: query is required");
+                        }
 
-        try {
-            var tracks = spotifyService.getAlbumTracks(user, albumId);
-            logger.info("Got {} tracks from album {}", tracks.size(), albumId);
-            return toJson(tracks.stream()
-                    .map(t -> new AlbumTrackInfo(
-                            t.uri(),
-                            t.name(),
-                            t.artist(),
-                            t.trackNumber(),
-                            t.discNumber()
-                    ))
-                    .toList());
-        } catch (Exception e) {
-            logger.error("Failed to get album tracks", e);
-            return "Error: " + e.getMessage();
-        }
+                        var tracks = spotifyService.searchTracksDetailed(user, query, 15);
+                        logger.info("Spotify search '{}' returned {} tracks", query, tracks.size());
+
+                        var trackInfos = tracks.stream()
+                                .map(t -> new TrackInfo(
+                                        t.uri(),
+                                        t.name(),
+                                        t.artist(),
+                                        String.join(", ", t.allArtists()),
+                                        t.albumName(),
+                                        t.albumId(),
+                                        t.durationSeconds(),
+                                        t.trackNumber()
+                                ))
+                                .toList();
+                        return Tool.Result.text(toJson(trackInfos));
+                    } catch (Exception e) {
+                        logger.error("Spotify search failed", e);
+                        return Tool.Result.text("Error: " + e.getMessage());
+                    }
+                }
+        );
     }
 
-    @LlmTool(description = "Create a Spotify performance object with the given details. Call this once you've identified a performance. Pass track URIs as comma-separated string.")
-    public String createSpotifyPerformance(
-            String workId,
-            String albumId,
-            String albumName,
-            String performer,
-            String ensemble,
-            String conductor,
-            String trackUrisCommaSeparated
-    ) {
-        if (!spotifyService.isConfigured() || !spotifyService.isLinked(user)) {
-            return "Spotify not available";
-        }
+    private Tool getSpotifyAlbumTracksTool() {
+        return Tool.create(
+                "getSpotifyAlbumTracks",
+                "Get all tracks from a Spotify album. Use this to find all movements of a work on an album.",
+                Tool.InputSchema.of(
+                        Tool.Parameter.string("albumId", "Spotify album ID")
+                ),
+                input -> {
+                    try {
+                        var params = objectMapper.readValue(input, java.util.Map.class);
+                        var albumId = (String) params.get("albumId");
+                        if (albumId == null || albumId.isBlank()) {
+                            return Tool.Result.text("Error: albumId is required");
+                        }
 
-        try {
-            // Parse comma-separated track URIs
-            var trackUris = java.util.Arrays.stream(trackUrisCommaSeparated.split(","))
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty())
-                    .toList();
+                        var tracks = spotifyService.getAlbumTracks(user, albumId);
+                        logger.info("Got {} tracks from album {}", tracks.size(), albumId);
 
-            if (trackUris.isEmpty()) {
-                return "Error: No track URIs provided";
-            }
+                        var trackInfos = tracks.stream()
+                                .map(t -> new AlbumTrackInfo(
+                                        t.uri(),
+                                        t.name(),
+                                        t.artist(),
+                                        t.trackNumber(),
+                                        t.discNumber()
+                                ))
+                                .toList();
+                        return Tool.Result.text(toJson(trackInfos));
+                    } catch (Exception e) {
+                        logger.error("Failed to get album tracks", e);
+                        return Tool.Result.text("Error: " + e.getMessage());
+                    }
+                }
+        );
+    }
 
-            // Create tracks from the URIs with basic info
-            var tracks = trackUris.stream()
-                    .map(uri -> new SpotifyService.SpotifyTrack(uri, "Track", performer != null ? performer : "Unknown", 0, Instant.now()))
-                    .toList();
+    private Tool createSpotifyPerformanceTool() {
+        return Tool.create(
+                "createSpotifyPerformance",
+                "Create a Spotify performance object with the given details. Call this once you've identified a performance. Returns the Performance as an artifact.",
+                Tool.InputSchema.of(
+                        Tool.Parameter.string("workId", "ID of the work being performed", false),
+                        Tool.Parameter.string("albumId", "Spotify album ID"),
+                        Tool.Parameter.string("albumName", "Album name"),
+                        Tool.Parameter.string("performer", "Primary performer name", false),
+                        Tool.Parameter.string("ensemble", "Orchestra or ensemble name", false),
+                        Tool.Parameter.string("conductor", "Conductor name", false),
+                        Tool.Parameter.string("trackUris", "Comma-separated list of Spotify track URIs")
+                ),
+                input -> {
+                    try {
+                        var params = objectMapper.readValue(input, java.util.Map.class);
+                        var workId = (String) params.get("workId");
+                        var albumId = (String) params.get("albumId");
+                        var albumName = (String) params.get("albumName");
+                        var performer = (String) params.get("performer");
+                        var ensemble = (String) params.get("ensemble");
+                        var conductor = (String) params.get("conductor");
+                        var trackUrisStr = (String) params.get("trackUris");
 
-            var performance = new SpotifyPerformance(
-                    workId, albumId, albumName, performer, ensemble, conductor, tracks
-            );
+                        if (trackUrisStr == null || trackUrisStr.isBlank()) {
+                            return Tool.Result.text("Error: trackUris is required");
+                        }
 
-            logger.info("Created Spotify performance: {} - {}", performance.title(), performance.albumName());
-            return toJson(new PerformanceResult(
-                    "spotify",
-                    performance.getId(),
-                    performance.title(),
-                    performance.albumName(),
-                    performer,
-                    ensemble,
-                    conductor,
-                    performance.durationSeconds(),
-                    performance.url(),
-                    trackUris.size()
-            ));
-        } catch (Exception e) {
-            logger.error("Failed to create performance", e);
-            return "Error: " + e.getMessage();
-        }
+                        var trackUris = Arrays.stream(trackUrisStr.split(","))
+                                .map(String::trim)
+                                .filter(s -> !s.isEmpty())
+                                .toList();
+
+                        if (trackUris.isEmpty()) {
+                            return Tool.Result.text("Error: No valid track URIs provided");
+                        }
+
+                        // Create tracks from the URIs
+                        var tracks = trackUris.stream()
+                                .map(uri -> new SpotifyService.SpotifyTrack(
+                                        uri, "Track", performer != null ? performer : "Unknown", 0, Instant.now()))
+                                .toList();
+
+                        var performance = new SpotifyPerformance(
+                                workId, albumId, albumName, performer, ensemble, conductor, tracks
+                        );
+
+                        logger.info("Created Spotify performance: {} - {} ({} tracks)",
+                                performance.title(), performance.albumName(), tracks.size());
+
+                        // Return with artifact so caller can access the Performance object
+                        return Tool.Result.withArtifact(
+                                "Created Spotify performance: " + performance.title() +
+                                        " (" + tracks.size() + " tracks) - " + performance.url(),
+                                performance
+                        );
+                    } catch (Exception e) {
+                        logger.error("Failed to create Spotify performance", e);
+                        return Tool.Result.text("Error creating performance: " + e.getMessage());
+                    }
+                }
+        );
     }
 
     // ========== YouTube Tools ==========
 
-    @LlmTool(description = "Search YouTube for videos matching a query. Returns video details including title, channel, and duration.")
-    public String searchYouTubeVideos(String query) {
-        if (!youTubeService.isConfigured()) {
-            return "YouTube not available";
-        }
+    private Tool searchYouTubeVideosTool() {
+        return Tool.create(
+                "searchYouTubeVideos",
+                "Search YouTube for videos matching a query. Returns video details including title, channel, and duration.",
+                Tool.InputSchema.of(
+                        Tool.Parameter.string("query", "Search query for videos")
+                ),
+                input -> {
+                    try {
+                        var params = objectMapper.readValue(input, java.util.Map.class);
+                        var query = (String) params.get("query");
+                        if (query == null || query.isBlank()) {
+                            return Tool.Result.text("Error: query is required");
+                        }
 
-        try {
-            var videos = youTubeService.searchVideosDetailed(query, 10);
-            logger.info("YouTube search '{}' returned {} videos", query, videos.size());
-            return toJson(videos.stream()
-                    .map(v -> new VideoInfo(
-                            v.videoId(),
-                            v.title(),
-                            v.channelTitle(),
-                            v.durationSeconds(),
-                            v.durationFormatted()
-                    ))
-                    .toList());
-        } catch (Exception e) {
-            logger.error("YouTube search failed", e);
-            return "Error: " + e.getMessage();
-        }
+                        var videos = youTubeService.searchVideosDetailed(query, 10);
+                        logger.info("YouTube search '{}' returned {} videos", query, videos.size());
+
+                        var videoInfos = videos.stream()
+                                .map(v -> new VideoInfo(
+                                        v.videoId(),
+                                        v.title(),
+                                        v.channelTitle(),
+                                        v.durationSeconds(),
+                                        v.durationFormatted()
+                                ))
+                                .toList();
+                        return Tool.Result.text(toJson(videoInfos));
+                    } catch (Exception e) {
+                        logger.error("YouTube search failed", e);
+                        return Tool.Result.text("Error: " + e.getMessage());
+                    }
+                }
+        );
     }
 
-    @LlmTool(description = "Create a YouTube performance object with the given details. Call this once you've identified a performance.")
-    public String createYouTubePerformance(
-            String workId,
-            String videoId,
-            String performer,
-            String ensemble,
-            String conductor
-    ) {
-        if (!youTubeService.isConfigured()) {
-            return "YouTube not available";
-        }
+    private Tool createYouTubePerformanceTool() {
+        return Tool.create(
+                "createYouTubePerformance",
+                "Create a YouTube performance object with the given details. Call this once you've identified a performance. Returns the Performance as an artifact.",
+                Tool.InputSchema.of(
+                        Tool.Parameter.string("workId", "ID of the work being performed", false),
+                        Tool.Parameter.string("videoId", "YouTube video ID"),
+                        Tool.Parameter.string("performer", "Primary performer name", false),
+                        Tool.Parameter.string("ensemble", "Orchestra or ensemble name", false),
+                        Tool.Parameter.string("conductor", "Conductor name", false)
+                ),
+                input -> {
+                    try {
+                        var params = objectMapper.readValue(input, java.util.Map.class);
+                        var workId = (String) params.get("workId");
+                        var videoId = (String) params.get("videoId");
+                        var performer = (String) params.get("performer");
+                        var ensemble = (String) params.get("ensemble");
+                        var conductor = (String) params.get("conductor");
 
-        try {
-            var video = youTubeService.getVideoDetails(videoId);
-            if (video == null) {
-                return "Video not found: " + videoId;
-            }
+                        if (videoId == null || videoId.isBlank()) {
+                            return Tool.Result.text("Error: videoId is required");
+                        }
 
-            var performance = new YouTubePerformance(
-                    workId, performer, ensemble, conductor, video
-            );
+                        var video = youTubeService.getVideoDetails(videoId);
+                        if (video == null) {
+                            return Tool.Result.text("Error: Video not found: " + videoId);
+                        }
 
-            logger.info("Created YouTube performance: {} - {}", performance.title(), video.title());
-            return toJson(new PerformanceResult(
-                    "youtube",
-                    performance.getId(),
-                    performance.title(),
-                    video.title(),
-                    performer,
-                    ensemble,
-                    conductor,
-                    performance.durationSeconds(),
-                    performance.url(),
-                    1
-            ));
-        } catch (Exception e) {
-            logger.error("Failed to create performance", e);
-            return "Error: " + e.getMessage();
-        }
+                        var performance = new YouTubePerformance(
+                                workId, performer, ensemble, conductor, video
+                        );
+
+                        logger.info("Created YouTube performance: {} - {}",
+                                performance.title(), video.title());
+
+                        // Return with artifact so caller can access the Performance object
+                        return Tool.Result.withArtifact(
+                                "Created YouTube performance: " + performance.title() +
+                                        " - " + performance.url(),
+                                performance
+                        );
+                    } catch (Exception e) {
+                        logger.error("Failed to create YouTube performance", e);
+                        return Tool.Result.text("Error creating performance: " + e.getMessage());
+                    }
+                }
+        );
     }
 
     // ========== Helper methods ==========
@@ -249,20 +331,6 @@ public class PerformanceSearchTools {
             String channelTitle,
             int durationSeconds,
             String durationFormatted
-    ) {
-    }
-
-    record PerformanceResult(
-            String source,
-            String id,
-            String title,
-            String albumOrVideoTitle,
-            String performer,
-            String ensemble,
-            String conductor,
-            int durationSeconds,
-            String url,
-            int trackCount
     ) {
     }
 }

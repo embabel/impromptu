@@ -1,6 +1,5 @@
 package com.embabel.impromptu.integrations.spotify;
 
-import com.embabel.agent.api.common.LlmReference;
 import com.embabel.impromptu.integrations.Playable;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.jspecify.annotations.NonNull;
@@ -704,11 +703,6 @@ public class SpotifyService {
         }
 
         @Override
-        public @NonNull LlmReference reference() {
-            return null;
-        }
-
-        @Override
         public @NonNull Instant getTimestamp() {
             return timestamp;
         }
@@ -735,6 +729,18 @@ public class SpotifyService {
                 return "https://open.spotify.com/track/" + uri.substring(14);
             }
             return null;
+        }
+
+        @Override
+        public String source() {
+            return "spotify";
+        }
+
+        @Override
+        public String playbackInfo() {
+            return """
+                    {"source":"spotify","uri":"%s","id":"%s","title":"%s","artist":"%s","url":"%s","durationSeconds":%d}
+                    """.formatted(uri, getId(), title(), artist, url(), durationSeconds()).trim();
         }
 
         private static String formatDuration(int totalSeconds) {
@@ -788,11 +794,6 @@ public class SpotifyService {
         }
 
         @Override
-        public @NonNull LlmReference reference() {
-            return null;
-        }
-
-        @Override
         public @NonNull Instant getTimestamp() {
             return timestamp;
         }
@@ -817,6 +818,18 @@ public class SpotifyService {
                 return "https://open.spotify.com/track/" + uri.substring(14);
             }
             return null;
+        }
+
+        @Override
+        public String source() {
+            return "spotify";
+        }
+
+        @Override
+        public String playbackInfo() {
+            return """
+                    {"source":"spotify","uri":"%s","id":"%s","title":"%s","artist":"%s","albumName":"%s","albumId":"%s","url":"%s","durationSeconds":%d}
+                    """.formatted(uri, getId(), title(), artist, albumName, albumId, url(), durationSeconds()).trim();
         }
 
         /**

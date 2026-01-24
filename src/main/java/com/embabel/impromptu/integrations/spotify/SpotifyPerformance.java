@@ -1,6 +1,5 @@
 package com.embabel.impromptu.integrations.spotify;
 
-import com.embabel.agent.api.common.LlmReference;
 import com.embabel.impromptu.integrations.Performance;
 import org.jspecify.annotations.NonNull;
 
@@ -29,13 +28,8 @@ public record SpotifyPerformance(
     }
 
     @Override
-    public @NonNull LlmReference reference() {
-        return null;
-    }
-
-    @Override
     public @NonNull Instant getTimestamp() {
-        return tracks.getFirst().getTimestamp();
+        return tracks.isEmpty() ? Instant.now() : tracks.getFirst().getTimestamp();
     }
 
     @Override
@@ -86,5 +80,26 @@ public record SpotifyPerformance(
         return tracks.stream()
                 .map(SpotifyService.SpotifyTrack::uri)
                 .toList();
+    }
+
+    @Override
+    public String playbackInfo() {
+        var urisJson = trackUris().stream()
+                .map(uri -> "\"" + uri + "\"")
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+        return """
+                {"source":"spotify","albumId":"%s","albumName":"%s","performer":"%s","ensemble":"%s","conductor":"%s","trackUris":[%s],"url":"%s","durationSeconds":%d,"trackCount":%d}
+                """.formatted(
+                albumId,
+                albumName != null ? albumName : "",
+                performer != null ? performer : "",
+                ensemble != null ? ensemble : "",
+                conductor != null ? conductor : "",
+                urisJson,
+                url(),
+                durationSeconds(),
+                tracks.size()
+        ).trim();
     }
 }

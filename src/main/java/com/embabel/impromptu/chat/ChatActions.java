@@ -119,12 +119,18 @@ public class ChatActions {
                 .withRepository(propositionRepository)
                 .withProjector(memoryProjector);
 
+        var assets = conversation.getAssetTracker().mostRecentlyAdded(10).references();
+        logger.info("Tracking {} assets: {}",
+                assets.size(),
+                assets.stream().map(LlmReference::getName).toList()
+        );
+
         var assistantMessage = context.ai()
                 .withLlm(properties.chatLlm())
                 .withId("chat_response")
                 .withPromptElements(user)
                 .withReferences(sources, memory)
-                .withReferences(conversation.getAssetTracker().mostRecentlyAdded(10).references())
+                .withReferences(assets)
                 .withToolObjects(toolObjectsForUser(user, conversation.getAssetTracker()))
                 .withToolGroup(CoreToolGroups.WEB)
                 .withTemplate("impromptu_chat_response")
