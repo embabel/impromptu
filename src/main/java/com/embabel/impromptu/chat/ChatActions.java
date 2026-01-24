@@ -3,6 +3,7 @@ package com.embabel.impromptu.chat;
 import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
+import com.embabel.agent.api.common.LlmReference;
 import com.embabel.agent.api.common.OperationContext;
 import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.rag.service.SearchOperations;
@@ -44,7 +45,7 @@ public class ChatActions {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatActions.class);
 
-    private final ToolishRag toolishRag;
+    private final LlmReference sources;
     private final ImpromptuProperties properties;
     private final SpotifyService spotifyService;
     private final YouTubeService youTubeService;
@@ -69,11 +70,12 @@ public class ChatActions {
             ResourceDelivery pdfDelivery,
             PerformanceFinderService performanceFinderService,
             ImpromptuProperties properties, ImpromptuProperties impromptuProperties) {
-        this.toolishRag = new ToolishRag(
+        this.sources = new ToolishRag(
                 "sources",
-                "The music criticism written by Robert Schumann: His own writings",
+                "Reference source",
                 searchOperations)
-                .withHint(TryHyDE.usingConversationContext());
+                .withHint(TryHyDE.usingConversationContext())
+                .asMatryoshka();
         this.spotifyService = spotifyService;
         this.youTubeService = youTubeService;
         this.youTubePendingPlayback = youTubePendingPlayback;
@@ -120,7 +122,9 @@ public class ChatActions {
                 .withLlm(properties.chatLlm())
                 .withId("chat_response")
                 .withPromptElements(user)
-                .withReferences(toolishRag, memory)
+                .withReferences(sources, memory)
+                // TODO window or Matryoshka references?
+                .withReferences(conversation.references())
                 .withToolObjects(toolObjectsForUser(user))
                 .withToolGroup(CoreToolGroups.WEB)
                 .withTemplate("impromptu_chat_response")
@@ -140,20 +144,25 @@ public class ChatActions {
      * Get tool objects (classes with @LlmTool methods) for the user.
      */
     private List<Object> toolObjectsForUser(ImpromptuUser user) {
-        var tools = new LinkedList<>();
+        var tools = new LinkedList<>(commonTools());
         if (user.isSpotifyLinked()) {
             tools.add(new SpotifyTools(user, spotifyService));
         }
         if (youTubeService.isConfigured()) {
             tools.add(new YouTubeTools(user, youTubeService, youTubePendingPlayback));
         }
-        tools.add(MetMuseumTools.DEFAULT);
-        tools.add(ImslpTools.DEFAULT);
-        tools.add(new ResourceTools(pdfGenerationService, pdfDelivery));
         if (performanceFinderService.isAvailable(user)) {
             tools.add(performanceFinderService.createPerformanceFinderTool(user, null));
         }
         return tools;
+    }
+
+    private List<Object> commonTools() {
+        return List.of(
+                MetMuseumTools.DEFAULT,
+                ImslpTools.DEFAULT,
+                new ResourceTools(pdfGenerationService, pdfDelivery)
+        );
     }
 
 }

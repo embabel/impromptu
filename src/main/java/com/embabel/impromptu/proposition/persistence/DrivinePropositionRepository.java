@@ -257,6 +257,157 @@ public class DrivinePropositionRepository implements PropositionRepository {
         }
     }
 
+    /**
+     * Result of building a Cypher query from a PropositionQuery.
+     * Exposed for testing.
+     */
+    public record CypherQuery(String cypher, Map<String, Object> params) {}
+
+    /**
+     * Build a Cypher query from a PropositionQuery.
+     * This method is exposed for testing purposes.
+     *
+     * @param query the proposition query
+     * @return the Cypher query string and parameters
+     */
+    public CypherQuery buildCypher(@NonNull PropositionQuery query) {
+        var whereConditions = new java.util.ArrayList<String>();
+        var params = new java.util.HashMap<String, Object>();
+
+        // Context filter
+        if (query.getContextIdValue() != null) {
+            whereConditions.add("p.contextId = $contextId");
+            params.put("contextId", query.getContextIdValue());
+        }
+
+        // Status filter
+        if (query.getStatus() != null) {
+            whereConditions.add("p.status = $status");
+            params.put("status", query.getStatus().name());
+        }
+
+        // Level filters
+        if (query.getMinLevel() != null) {
+            whereConditions.add("p.level >= $minLevel");
+            params.put("minLevel", query.getMinLevel());
+        }
+        if (query.getMaxLevel() != null) {
+            whereConditions.add("p.level <= $maxLevel");
+            params.put("maxLevel", query.getMaxLevel());
+        }
+
+        // Temporal filters - created
+        if (query.getCreatedAfter() != null) {
+            whereConditions.add("p.createdAt >= $createdAfter");
+            params.put("createdAfter", query.getCreatedAfter().toEpochMilli());
+        }
+        if (query.getCreatedBefore() != null) {
+            whereConditions.add("p.createdAt <= $createdBefore");
+            params.put("createdBefore", query.getCreatedBefore().toEpochMilli());
+        }
+
+        // Temporal filters - revised
+        if (query.getRevisedAfter() != null) {
+            whereConditions.add("p.revisedAt >= $revisedAfter");
+            params.put("revisedAfter", query.getRevisedAfter().toEpochMilli());
+        }
+        if (query.getRevisedBefore() != null) {
+            whereConditions.add("p.revisedAt <= $revisedBefore");
+            params.put("revisedBefore", query.getRevisedBefore().toEpochMilli());
+        }
+
+        // Effective confidence params (decay calculation done in post-filter)
+        if (query.getMinEffectiveConfidence() != null) {
+            var asOf = query.getEffectiveConfidenceAsOf() != null
+                    ? query.getEffectiveConfidenceAsOf()
+                    : java.time.Instant.now();
+            params.put("minEffectiveConfidence", query.getMinEffectiveConfidence());
+            params.put("asOfMillis", asOf.toEpochMilli());
+            params.put("decayK", query.getDecayK());
+        }
+
+        // Build base query - handle entity filter specially (requires join)
+        String cypher;
+        if (query.getEntityId() != null) {
+            // Join with mentions to filter by entity
+            params.put("entityId", query.getEntityId());
+            var additionalConditions = whereConditions.isEmpty() ? "" : " AND " + String.join(" AND ", whereConditions);
+            cypher = """
+                    MATCH (p:Proposition)-[:HAS_MENTION]->(m:Mention)
+                    WHERE m.resolvedId = $entityId%s
+                    RETURN DISTINCT p.id AS id
+                    """.formatted(additionalConditions);
+        } else {
+            var whereClause = whereConditions.isEmpty() ? "" : "WHERE " + String.join(" AND ", whereConditions);
+            cypher = """
+                    MATCH (p:Proposition)
+                    %s
+                    RETURN p.id AS id
+                    """.formatted(whereClause);
+        }
+
+        // Add ordering
+        cypher = switch (query.getOrderBy()) {
+            case EFFECTIVE_CONFIDENCE_DESC -> cypher.replace("RETURN", "ORDER BY p.confidence DESC RETURN");
+            case CREATED_DESC -> cypher.replace("RETURN", "ORDER BY p.createdAt DESC RETURN");
+            case REVISED_DESC -> cypher.replace("RETURN", "ORDER BY p.revisedAt DESC RETURN");
+            case NONE -> cypher;
+        };
+
+        // Add limit
+        if (query.getLimit() != null) {
+            cypher += " LIMIT " + query.getLimit();
+        }
+
+        return new CypherQuery(cypher, params);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public @NonNull List<Proposition> query(@NonNull PropositionQuery query) {
+        var cypherQuery = buildCypher(query);
+        logger.debug("Executing proposition query: {}", cypherQuery.cypher());
+
+        try {
+            var ids = persistenceManager.query(
+                    QuerySpecification
+                            .withStatement(cypherQuery.cypher())
+                            .bind(cypherQuery.params())
+                            .transform(String.class)
+            );
+
+            var results = ids.stream()
+                    .map(this::findById)
+                    .filter(p -> p != null)
+                    .toList();
+
+            // Post-filter for effective confidence if needed (decay calculation)
+            if (query.getMinEffectiveConfidence() != null) {
+                var asOf = query.getEffectiveConfidenceAsOf() != null
+                        ? query.getEffectiveConfidenceAsOf()
+                        : java.time.Instant.now();
+                var k = query.getDecayK();
+                var threshold = query.getMinEffectiveConfidence();
+
+                results = results.stream()
+                        .filter(p -> {
+                            var daysSinceRevision = java.time.Duration.between(
+                                    p.getRevised() != null ? p.getRevised() : p.getCreated(),
+                                    asOf
+                            ).toDays();
+                            var effectiveConfidence = p.getConfidence() * Math.exp(-k * daysSinceRevision / 365.0);
+                            return effectiveConfidence >= threshold;
+                        })
+                        .toList();
+            }
+
+            return results;
+        } catch (Exception e) {
+            logger.error("Proposition query failed: {}", e.getMessage(), e);
+            return List.of();
+        }
+    }
+
     @Override
     @Transactional(readOnly = true)
     public @NonNull List<SimilarityResult<Proposition>> findSimilarWithScores(
