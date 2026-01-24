@@ -1,7 +1,10 @@
 package com.embabel.impromptu.integrations.spotify;
 
+import com.embabel.agent.api.common.LlmReference;
 import com.embabel.impromptu.integrations.Performance;
+import org.jspecify.annotations.NonNull;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -19,9 +22,20 @@ public record SpotifyPerformance(
 ) implements Performance {
 
     @Override
-    public String id() {
+    @NonNull
+    public String getId() {
         // Composite ID: album + first track
-        return albumId + ":" + (tracks.isEmpty() ? "unknown" : tracks.get(0).id());
+        return albumId + ":" + (tracks.isEmpty() ? "unknown" : tracks.getFirst().getId());
+    }
+
+    @Override
+    public @NonNull LlmReference reference() {
+        return null;
+    }
+
+    @Override
+    public @NonNull Instant getTimestamp() {
+        return tracks.getFirst().getTimestamp();
     }
 
     @Override

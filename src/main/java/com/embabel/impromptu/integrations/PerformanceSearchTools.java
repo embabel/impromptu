@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.time.Instant;
 
 /**
  * Sub-tools for the Performance finder AgenticTool.
@@ -117,7 +117,7 @@ public class PerformanceSearchTools {
 
             // Create tracks from the URIs with basic info
             var tracks = trackUris.stream()
-                    .map(uri -> new SpotifyService.SpotifyTrack(uri, "Track", performer != null ? performer : "Unknown", 0))
+                    .map(uri -> new SpotifyService.SpotifyTrack(uri, "Track", performer != null ? performer : "Unknown", 0, Instant.now()))
                     .toList();
 
             var performance = new SpotifyPerformance(
@@ -127,7 +127,7 @@ public class PerformanceSearchTools {
             logger.info("Created Spotify performance: {} - {}", performance.title(), performance.albumName());
             return toJson(new PerformanceResult(
                     "spotify",
-                    performance.id(),
+                    performance.getId(),
                     performance.title(),
                     performance.albumName(),
                     performer,
@@ -194,7 +194,7 @@ public class PerformanceSearchTools {
             logger.info("Created YouTube performance: {} - {}", performance.title(), video.title());
             return toJson(new PerformanceResult(
                     "youtube",
-                    performance.id(),
+                    performance.getId(),
                     performance.title(),
                     video.title(),
                     performer,
@@ -231,7 +231,8 @@ public class PerformanceSearchTools {
             String albumId,
             int durationSeconds,
             int trackNumber
-    ) {}
+    ) {
+    }
 
     record AlbumTrackInfo(
             String uri,
@@ -239,7 +240,8 @@ public class PerformanceSearchTools {
             String artist,
             int trackNumber,
             int discNumber
-    ) {}
+    ) {
+    }
 
     record VideoInfo(
             String videoId,
@@ -247,7 +249,8 @@ public class PerformanceSearchTools {
             String channelTitle,
             int durationSeconds,
             String durationFormatted
-    ) {}
+    ) {
+    }
 
     record PerformanceResult(
             String source,
@@ -260,5 +263,6 @@ public class PerformanceSearchTools {
             int durationSeconds,
             String url,
             int trackCount
-    ) {}
+    ) {
+    }
 }

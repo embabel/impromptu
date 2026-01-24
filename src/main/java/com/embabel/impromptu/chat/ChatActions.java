@@ -9,6 +9,7 @@ import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
+import com.embabel.chat.AssetTracker;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
 import com.embabel.dice.agent.Memory;
@@ -123,9 +124,8 @@ public class ChatActions {
                 .withId("chat_response")
                 .withPromptElements(user)
                 .withReferences(sources, memory)
-                // TODO window or Matryoshka references?
-                .withReferences(conversation.references())
-                .withToolObjects(toolObjectsForUser(user))
+                .withReferences(conversation.getAssetTracker().mostRecentlyAdded(10).references())
+                .withToolObjects(toolObjectsForUser(user, conversation.getAssetTracker()))
                 .withToolGroup(CoreToolGroups.WEB)
                 .withTemplate("impromptu_chat_response")
                 .respondWithSystemPrompt(
@@ -143,7 +143,7 @@ public class ChatActions {
     /**
      * Get tool objects (classes with @LlmTool methods) for the user.
      */
-    private List<Object> toolObjectsForUser(ImpromptuUser user) {
+    private List<Object> toolObjectsForUser(ImpromptuUser user, AssetTracker assetTracker) {
         var tools = new LinkedList<>(commonTools());
         if (user.isSpotifyLinked()) {
             tools.add(new SpotifyTools(user, spotifyService));
@@ -152,7 +152,8 @@ public class ChatActions {
             tools.add(new YouTubeTools(user, youTubeService, youTubePendingPlayback));
         }
         if (performanceFinderService.isAvailable(user)) {
-            tools.add(performanceFinderService.createPerformanceFinderTool(user, null));
+            tools.add(
+                    assetTracker.addReturnedAssets(performanceFinderService.createPerformanceFinderTool(user, null)));
         }
         return tools;
     }

@@ -1,8 +1,11 @@
 package com.embabel.impromptu.integrations.youtube;
 
+import com.embabel.agent.api.common.LlmReference;
 import com.embabel.impromptu.integrations.Performance;
 import com.embabel.impromptu.integrations.Playable;
+import org.jspecify.annotations.NonNull;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -17,13 +20,23 @@ public record YouTubePerformance(
 ) implements Performance {
 
     @Override
-    public String id() {
+    public @NonNull String getId() {
         return video.videoId();
     }
 
     @Override
+    public @NonNull LlmReference reference() {
+        return null;
+    }
+
+    @Override
+    public @NonNull Instant getTimestamp() {
+        return video.timestamp();
+    }
+
+    @Override
     public String title() {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         if (performer != null && !performer.isBlank()) {
             sb.append(performer);
         }

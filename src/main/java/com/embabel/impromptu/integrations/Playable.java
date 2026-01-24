@@ -1,14 +1,11 @@
 package com.embabel.impromptu.integrations;
 
+import com.embabel.chat.Asset;
+
 /**
  * Common interface for playable media items (Spotify tracks, YouTube videos, etc.).
  */
-public interface Playable {
-
-    /**
-     * Unique identifier for the media item.
-     */
-    String id();
+public interface Playable extends Asset {
 
     /**
      * Display title of the media item.
@@ -29,4 +26,9 @@ public interface Playable {
      * URL to play or view the media item.
      */
     String url();
+
+    @Override
+    default boolean persistent() {
+        return false;
+    }
 }

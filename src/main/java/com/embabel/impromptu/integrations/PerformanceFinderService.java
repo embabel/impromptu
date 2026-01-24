@@ -73,7 +73,7 @@ public class PerformanceFinderService {
      * @param workId The ID of the Work being searched for
      * @return Configured AgenticTool
      */
-    public AgenticTool createPerformanceFinderTool(ImpromptuUser user, String workId) {
+    public Tool createPerformanceFinderTool(ImpromptuUser user, String workId) {
         var searchTools = new PerformanceSearchTools(spotifyService, youTubeService, user);
 
         return new AgenticTool(

@@ -1,6 +1,9 @@
 package com.embabel.impromptu.integrations.spotify;
 
+import com.embabel.agent.api.common.LlmReference;
+import com.embabel.impromptu.integrations.Playable;
 import com.embabel.impromptu.user.ImpromptuUser;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -269,7 +272,8 @@ public class SpotifyService {
                             (String) item.get("uri"),
                             (String) item.get("name"),
                             artistName,
-                            durationMs
+                            durationMs,
+                            Instant.now()
                     );
                 })
                 .toList();
@@ -319,7 +323,8 @@ public class SpotifyService {
                             albumId,
                             trackNumber,
                             discNumber,
-                            durationMs
+                            durationMs,
+                            Instant.now()
                     );
                 })
                 .toList();
@@ -686,12 +691,26 @@ public class SpotifyService {
     public record SpotifyPlaylist(String id, String name, int trackCount) {
     }
 
-    public record SpotifyTrack(String uri, String name, String artist, int durationMs)
-            implements com.embabel.impromptu.integrations.Playable {
+    public record SpotifyTrack(
+            String uri,
+            String name,
+            String artist, int durationMs,
+            Instant timestamp
+    ) implements Playable {
 
         @Override
-        public String id() {
+        public @NonNull String getId() {
             return uri;
+        }
+
+        @Override
+        public @NonNull LlmReference reference() {
+            return null;
+        }
+
+        @Override
+        public @NonNull Instant getTimestamp() {
+            return timestamp;
         }
 
         @Override
@@ -753,17 +772,29 @@ public class SpotifyService {
             String albumId,
             int trackNumber,
             int discNumber,
-            int durationMs
-    ) implements com.embabel.impromptu.integrations.Playable {
+            int durationMs,
+            Instant timestamp
+    ) implements Playable {
 
         @Override
-        public String id() {
+        @NonNull
+        public String getId() {
             return uri;
         }
 
         @Override
         public String title() {
             return name;
+        }
+
+        @Override
+        public @NonNull LlmReference reference() {
+            return null;
+        }
+
+        @Override
+        public @NonNull Instant getTimestamp() {
+            return timestamp;
         }
 
         @Override
@@ -787,6 +818,7 @@ public class SpotifyService {
             }
             return null;
         }
+
         /**
          * Score how well this track matches the query terms.
          * Higher score = better match.

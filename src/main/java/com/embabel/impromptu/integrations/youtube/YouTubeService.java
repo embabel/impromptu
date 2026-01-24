@@ -1,6 +1,9 @@
 package com.embabel.impromptu.integrations.youtube;
 
+import com.embabel.agent.api.common.LlmReference;
+import com.embabel.impromptu.integrations.Playable;
 import jakarta.annotation.PostConstruct;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +14,7 @@ import org.springframework.web.client.RestClient;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -124,7 +128,8 @@ public class YouTubeService {
                         v.description(),
                         v.thumbnailUrl(),
                         scoreMatch(v, query),
-                        durations.getOrDefault(v.videoId(), 0)
+                        durations.getOrDefault(v.videoId(), 0),
+                        v.timestamp
                 ))
                 .sorted((a, b) -> Integer.compare(b.score(), a.score()))
                 .toList();
@@ -271,7 +276,8 @@ public class YouTubeService {
                 (String) snippet.get("description"),
                 defaultThumb != null ? (String) defaultThumb.get("url") : null,
                 0,
-                parseDurationToSeconds(isoDuration)
+                parseDurationToSeconds(isoDuration),
+                Instant.now()
         );
     }
 
@@ -309,24 +315,33 @@ public class YouTubeService {
         }
     }
 
-    // ========== Record types ==========
-
     public record YouTubeVideo(
             String videoId,
             String title,
             String channelTitle,
             String description,
             String thumbnailUrl,
-            int durationSeconds
-    ) implements com.embabel.impromptu.integrations.Playable {
+            int durationSeconds,
+            Instant timestamp
+    ) implements Playable {
 
         public YouTubeVideo(String videoId, String title, String channelTitle,
-                           String description, String thumbnailUrl) {
-            this(videoId, title, channelTitle, description, thumbnailUrl, 0);
+                            String description, String thumbnailUrl) {
+            this(videoId, title, channelTitle, description, thumbnailUrl, 0, Instant.now());
         }
 
         @Override
-        public String id() {
+        public @NonNull Instant getTimestamp() {
+            return timestamp;
+        }
+
+        @Override
+        public @NonNull LlmReference reference() {
+            return null;
+        }
+
+        @Override
+        public @NonNull String getId() {
             return videoId;
         }
 
@@ -348,17 +363,28 @@ public class YouTubeService {
             String description,
             String thumbnailUrl,
             int score,
-            int durationSeconds
-    ) implements com.embabel.impromptu.integrations.Playable {
+            int durationSeconds,
+            Instant timestamp
+    ) implements Playable {
 
         public YouTubeVideoDetails(String videoId, String title, String channelTitle,
                                    String description, String thumbnailUrl, int score) {
-            this(videoId, title, channelTitle, description, thumbnailUrl, score, 0);
+            this(videoId, title, channelTitle, description, thumbnailUrl, score, 0, Instant.now());
         }
 
         @Override
-        public String id() {
+        public @NonNull String getId() {
             return videoId;
+        }
+
+        @Override
+        public @NonNull LlmReference reference() {
+            return null;
+        }
+
+        @Override
+        public @NonNull Instant getTimestamp() {
+            return timestamp;
         }
 
         @Override
