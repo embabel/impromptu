@@ -24,6 +24,8 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
+import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
@@ -75,12 +77,17 @@ public class DocumentListSection extends VerticalLayout {
         refresh();
     }
 
-    private Div createStatRow(String label, Span valueSpan) {
-        var row = new Div();
-        row.addClassName("stat-row");
+    private HorizontalLayout createStatRow(String label, Span valueSpan) {
+        var row = new HorizontalLayout();
+        row.setWidthFull();
+        row.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        row.setAlignItems(Alignment.CENTER);
+        row.getStyle().set("padding", "var(--lumo-space-xs) 0");
 
         var labelSpan = new Span(label);
-        labelSpan.addClassName("stat-label");
+        labelSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
+
+        valueSpan.getStyle().set("font-weight", "500");
 
         row.add(labelSpan, valueSpan);
         return row;

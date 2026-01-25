@@ -54,6 +54,11 @@ class SecurityConfiguration extends VaadinWebSecurity {
                 .permitAll()
         );
 
+        // Prevent session fixation issues - migrateSession is safest for OAuth2
+        http.sessionManagement(session -> session
+                .sessionFixation().migrateSession()
+        );
+
         // Note: /callback/spotify and /link/spotify are protected by default
         // since VaadinWebSecurity requires authentication for non-public routes
     }

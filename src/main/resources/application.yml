@@ -138,7 +138,7 @@ server:
       timeout: 600000  # 10 minutes for long-running operations like OpenOpus load
 
 vaadin:
-  heartbeat-interval: 300  # 5 minutes heartbeat
+  heartbeat-interval: 60  # 1 minute heartbeat - more frequent to keep connection alive
   close-idle-sessions: false  # Don't close sessions on missed heartbeats
 
 spring:

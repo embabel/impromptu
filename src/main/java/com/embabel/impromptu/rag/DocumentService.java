@@ -15,9 +15,11 @@
  */
 package com.embabel.impromptu.rag;
 
+import com.embabel.agent.rag.ingestion.HierarchicalContentReader;
 import com.embabel.agent.rag.ingestion.TikaHierarchicalContentReader;
-import com.embabel.agent.rag.model.NavigableDocument;
+import com.embabel.agent.rag.model.ContentRoot;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
+import kotlin.collections.CollectionsKt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,7 +29,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Service for managing document ingestion and retrieval for the Knowledge tab.
@@ -38,13 +39,17 @@ public class DocumentService {
     private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
     private final DrivineStore store;
-    private final TikaHierarchicalContentReader contentReader;
-    private final List<DocumentInfo> documents = new CopyOnWriteArrayList<>();
+    private final HierarchicalContentReader contentReader;
 
     /**
      * Summary info about an ingested document.
      */
-    public record DocumentInfo(String uri, String title, Instant ingestedAt) {
+    public record DocumentInfo(
+            String uri,
+            String title,
+            Instant ingestedAt,
+            int chunkCount
+    ) {
     }
 
     public DocumentService(DrivineStore store) {
@@ -55,39 +60,33 @@ public class DocumentService {
     /**
      * Ingest content from an input stream.
      */
-    public NavigableDocument ingestStream(InputStream inputStream, String uri, String filename) {
+    public void ingestStream(InputStream inputStream, String uri, String filename) {
         logger.info("Ingesting stream: {}", filename);
         var document = contentReader.parseContent(inputStream, uri);
         store.writeAndChunkDocument(document);
-        trackDocument(document, filename);
         logger.info("Ingested: {}", filename);
-        return document;
     }
 
     /**
      * Ingest content from a URL.
      */
-    public NavigableDocument ingestUrl(String url) {
+    public void ingestUrl(String url) {
         logger.info("Ingesting URL: {}", url);
         var document = contentReader.parseResource(url);
         store.writeAndChunkDocument(document);
-        trackDocument(document, null);
         logger.info("Ingested URL: {}", url);
-        return document;
     }
 
     /**
      * Ingest HTML content directly.
      */
-    public NavigableDocument ingestHtml(String html, String title) {
+    public void ingestHtml(String html, String title) {
         var uri = "html://" + System.currentTimeMillis() + "/" + sanitizeTitle(title);
         logger.info("Ingesting HTML: {}", title);
         var inputStream = new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8));
         var document = contentReader.parseContent(inputStream, uri);
         store.writeAndChunkDocument(document);
-        trackDocument(document, title);
         logger.info("Ingested HTML: {}", title);
-        return document;
     }
 
     private String sanitizeTitle(String title) {
@@ -97,20 +96,17 @@ public class DocumentService {
         return title.replaceAll("[^a-zA-Z0-9.-]", "_").toLowerCase();
     }
 
-    private void trackDocument(NavigableDocument document, String overrideTitle) {
-        var title = overrideTitle != null ? overrideTitle : document.getTitle();
-        documents.add(new DocumentInfo(
-                document.getUri(),
-                title,
-                Instant.now()
-        ));
-    }
-
     /**
-     * Get list of all ingested documents.
+     * Get list of all ingested documents from the database.
      */
     public List<DocumentInfo> getDocuments() {
-        return List.copyOf(documents);
+        return CollectionsKt.map(store.findAll(ContentRoot.class), root ->
+                new DocumentInfo(
+                        root.getUri(),
+                        root.getTitle(),
+                        root.getIngestionTimestamp(),
+                        0
+                ));
     }
 
     /**
@@ -119,11 +115,7 @@ public class DocumentService {
     public boolean deleteDocument(String uri) {
         logger.info("Deleting document: {}", uri);
         var result = store.deleteRootAndDescendants(uri);
-        if (result != null) {
-            documents.removeIf(doc -> doc.uri().equals(uri));
-            return true;
-        }
-        return false;
+        return result != null;
     }
 
     /**

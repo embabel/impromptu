@@ -37,10 +37,9 @@ public class KnowledgePanel extends VerticalLayout {
         // Create tabs
         var uploadTab = new Tab(VaadinIcon.UPLOAD.create(), new Span("Upload"));
         var urlTab = new Tab(VaadinIcon.GLOBE.create(), new Span("URL"));
-        var htmlTab = new Tab(VaadinIcon.CODE.create(), new Span("HTML"));
         var documentsTab = new Tab(VaadinIcon.FILE_TEXT.create(), new Span("Documents"));
 
-        var tabs = new Tabs(uploadTab, urlTab, htmlTab, documentsTab);
+        var tabs = new Tabs(uploadTab, urlTab, documentsTab);
         tabs.setWidthFull();
         tabs.addClassName("knowledge-tabs");
 
@@ -48,18 +47,15 @@ public class KnowledgePanel extends VerticalLayout {
         documentsSection = new DocumentListSection(documentService, () -> {});
         var uploadSection = new FileUploadSection(documentService, this::refreshDocuments);
         var urlSection = new UrlIngestSection(documentService, this::refreshDocuments);
-        var htmlSection = new HtmlIngestSection(documentService, this::refreshDocuments);
 
         // Default visibility
         urlSection.setVisible(false);
-        htmlSection.setVisible(false);
         documentsSection.setVisible(false);
 
         // Tab switching
         tabs.addSelectedChangeListener(event -> {
             uploadSection.setVisible(event.getSelectedTab() == uploadTab);
             urlSection.setVisible(event.getSelectedTab() == urlTab);
-            htmlSection.setVisible(event.getSelectedTab() == htmlTab);
             documentsSection.setVisible(event.getSelectedTab() == documentsTab);
             if (event.getSelectedTab() == documentsTab) {
                 documentsSection.refresh();
@@ -71,7 +67,7 @@ public class KnowledgePanel extends VerticalLayout {
         contentArea.setPadding(false);
         contentArea.setSpacing(false);
         contentArea.setSizeFull();
-        contentArea.add(uploadSection, urlSection, htmlSection, documentsSection);
+        contentArea.add(uploadSection, urlSection, documentsSection);
 
         add(tabs, contentArea);
         setFlexGrow(1, contentArea);
