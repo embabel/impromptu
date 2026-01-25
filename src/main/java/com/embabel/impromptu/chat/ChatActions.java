@@ -5,10 +5,7 @@ import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.LlmReference;
 import com.embabel.agent.api.common.OperationContext;
-import com.embabel.agent.core.CoreToolGroups;
-import com.embabel.agent.rag.service.SearchOperations;
-import com.embabel.agent.rag.tools.ToolishRag;
-import com.embabel.agent.rag.tools.TryHyDE;
+import com.embabel.agent.tools.mcp.McpToolFactory;
 import com.embabel.chat.AssetTracker;
 import com.embabel.chat.Conversation;
 import com.embabel.chat.UserMessage;
@@ -37,58 +34,27 @@ import org.springframework.lang.NonNull;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The platform can use any action to respond to user messages.
  */
 @EmbabelComponent
-public class ChatActions {
-
+public record ChatActions(
+        LlmReference sources,
+        SpotifyService spotifyService,
+        YouTubeService youTubeService,
+        YouTubePendingPlayback youTubePendingPlayback,
+        MemoryProjector memoryProjector,
+        PropositionRepository propositionRepository,
+        ApplicationEventPublisher eventPublisher,
+        PdfGenerationService pdfGenerationService,
+        ResourceDelivery pdfDelivery,
+        PerformanceFinderService performanceFinderService,
+        ImpromptuProperties properties,
+        McpToolFactory mcpToolFactory
+) {
     private static final Logger logger = LoggerFactory.getLogger(ChatActions.class);
-
-    private final LlmReference sources;
-    private final ImpromptuProperties properties;
-    private final SpotifyService spotifyService;
-    private final YouTubeService youTubeService;
-    private final YouTubePendingPlayback youTubePendingPlayback;
-    private final MemoryProjector memoryProjector;
-    private final PropositionRepository propositionRepository;
-    private final ApplicationEventPublisher eventPublisher;
-    private final ImpromptuProperties impromptuProperties;
-    private final PdfGenerationService pdfGenerationService;
-    private final ResourceDelivery pdfDelivery;
-    private final PerformanceFinderService performanceFinderService;
-
-    public ChatActions(
-            SearchOperations searchOperations,
-            SpotifyService spotifyService,
-            YouTubeService youTubeService,
-            YouTubePendingPlayback youTubePendingPlayback,
-            MemoryProjector memoryProjector,
-            PropositionRepository propositionRepository,
-            ApplicationEventPublisher eventPublisher,
-            PdfGenerationService pdfGenerationService,
-            ResourceDelivery pdfDelivery,
-            PerformanceFinderService performanceFinderService,
-            ImpromptuProperties properties, ImpromptuProperties impromptuProperties) {
-        this.sources = new ToolishRag(
-                "sources",
-                "Reference source",
-                searchOperations)
-                .withHint(TryHyDE.usingConversationContext())
-                .asMatryoshka();
-        this.spotifyService = spotifyService;
-        this.youTubeService = youTubeService;
-        this.youTubePendingPlayback = youTubePendingPlayback;
-        this.propositionRepository = propositionRepository;
-        this.memoryProjector = memoryProjector;
-        this.properties = properties;
-        this.eventPublisher = eventPublisher;
-        this.impromptuProperties = impromptuProperties;
-        this.pdfGenerationService = pdfGenerationService;
-        this.pdfDelivery = pdfDelivery;
-        this.performanceFinderService = performanceFinderService;
-    }
 
     /**
      * Bind user to AgentProcess. Will run once at the start of the process.
@@ -132,10 +98,9 @@ public class ChatActions {
                 .withReferences(sources, memory)
                 .withReferences(assets)
                 .withToolObjects(toolObjectsForUser(user, conversation.getAssetTracker()))
-                .withToolGroup(CoreToolGroups.WEB)
                 .withTemplate("impromptu_chat_response")
                 .respondWithSystemPrompt(
-                        conversation.last(impromptuProperties.conversationWindow()),
+                        conversation.last(properties.conversationWindow()),
                         Map.of(
                                 "properties", properties,
                                 "user", user
@@ -166,10 +131,14 @@ public class ChatActions {
 
     private List<Object> commonTools() {
         return List.of(
+                mcpToolFactory.requiredToolByName("brave_web_search"),
+                mcpToolFactory.matryoshkaByName(
+                        "wikipedia",
+                        "Search and find content from Wikipedia",
+                        Set.of("search_wikipedia", "get_article", "get_related_topics", "get_summary", "get_wikipedia_summary")),
                 MetMuseumTools.DEFAULT,
                 ImslpTools.DEFAULT,
                 new ResourceTools(pdfGenerationService, pdfDelivery)
         );
     }
-
 }
