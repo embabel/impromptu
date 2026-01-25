@@ -24,7 +24,6 @@ public class ChatHeader extends VerticalLayout {
     public record HeaderConfig(
             ImpromptuUser user,
             String objective,
-            String persona,
             long chunkCount,
             long documentCount,
             boolean spotifyConfigured,

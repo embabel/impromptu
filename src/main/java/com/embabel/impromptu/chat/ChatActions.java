@@ -83,6 +83,11 @@ public record ChatActions(
             ActionContext context) {
         var memory = Memory.forContext(user.currentContext())
                 .withRepository(propositionRepository)
+                .withEagerQuery(
+                        q -> q.orderedByEffectiveConfidence()
+//                                .createdSince(Duration.ofDays(10))
+                                .withLimit(10)
+                )
                 .withProjector(memoryProjector);
 
         var assets = conversation.getAssetTracker().mostRecentlyAdded(10).references();

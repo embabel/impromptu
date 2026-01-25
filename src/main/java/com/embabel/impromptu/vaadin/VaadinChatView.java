@@ -70,7 +70,7 @@ public class VaadinChatView extends VerticalLayout {
     private final YouTubeService youTubeService;
     private final YouTubePendingPlayback youTubePendingPlayback;
     private final PersonaService personaService;
-    private final String persona;
+    private final String defaultPersona;
     private final ImpromptuUser currentUser;
 
     private VerticalLayout messagesLayout;
@@ -110,16 +110,14 @@ public class VaadinChatView extends VerticalLayout {
         setSpacing(true);
 
         this.currentUser = userService.getAuthenticatedUser();
-        // Use user's defaultVoice preference if set, otherwise fall back to default
-        var defaultPersona = properties.defaultVoice() != null ? properties.defaultVoice().persona() : "impromptu";
-        this.persona = currentUser.getVoice() != null ? currentUser.getVoice() : defaultPersona;
+        // Default persona from properties, used as fallback if user hasn't set a voice
+        this.defaultPersona = properties.defaultVoice() != null ? properties.defaultVoice().persona() : "impromptu";
         var stats = searchOperations.info();
 
         // Build header
         var headerConfig = new ChatHeader.HeaderConfig(
                 currentUser,
                 properties.objective(),
-                persona,
                 stats.getChunkCount(),
                 stats.getDocumentCount(),
                 spotifyService.isConfigured(),
@@ -320,6 +318,15 @@ public class VaadinChatView extends VerticalLayout {
         }
     }
 
+    /**
+     * Get the current persona/voice name for the assistant.
+     * Uses the user's preference, falling back to the default.
+     */
+    private String getPersona() {
+        var userVoice = currentUser.getVoice();
+        return userVoice != null ? userVoice : defaultPersona;
+    }
+
     private void sendMessage() {
         var text = inputField.getValue();
         if (text == null || text.trim().isEmpty()) {
@@ -354,7 +361,7 @@ public class VaadinChatView extends VerticalLayout {
                 ui.access(() -> {
                     if (response != null) {
                         var content = response.getContent();
-                        messagesLayout.add(ChatMessageBubble.assistant(persona, content));
+                        messagesLayout.add(ChatMessageBubble.assistant(getPersona(), content));
                         // Speak the response if defaultVoice output is enabled
                         voiceControl.speak(content);
                     } else {
@@ -417,7 +424,7 @@ public class VaadinChatView extends VerticalLayout {
             if (message instanceof UserMessage) {
                 messagesLayout.add(ChatMessageBubble.user(message.getContent()));
             } else if (message instanceof AssistantMessage) {
-                messagesLayout.add(ChatMessageBubble.assistant(persona, message.getContent()));
+                messagesLayout.add(ChatMessageBubble.assistant(getPersona(), message.getContent()));
             }
         }
 
