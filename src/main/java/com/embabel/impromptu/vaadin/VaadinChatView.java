@@ -159,7 +159,8 @@ public class VaadinChatView extends VerticalLayout {
                 userService,
                 this::showEntityDetail,
                 indexStats,
-                properties
+                properties,
+                this::getAssetView
         );
         backstagePanel = new BackstagePanel(backstageConfig);
         getElement().appendChild(backstagePanel.getElement());
@@ -514,6 +515,18 @@ public class VaadinChatView extends VerticalLayout {
         dialog.add(content);
         dialog.getFooter().add(new Button("Close", e -> dialog.close()));
         dialog.open();
+    }
+
+    /**
+     * Get the AssetView from the current conversation, or null if no session exists.
+     */
+    private AssetView getAssetView() {
+        var vaadinSession = VaadinSession.getCurrent();
+        var sessionData = (SessionData) vaadinSession.getAttribute("sessionData");
+        if (sessionData == null) {
+            return null;
+        }
+        return sessionData.chatSession().getConversation().getAssetTracker();
     }
 
     /**

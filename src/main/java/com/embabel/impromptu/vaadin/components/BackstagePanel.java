@@ -1,6 +1,7 @@
 package com.embabel.impromptu.vaadin.components;
 
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
+import com.embabel.chat.AssetView;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
@@ -10,6 +11,7 @@ import com.embabel.impromptu.rag.DocumentService;
 import com.embabel.impromptu.speech.PersonaService;
 import com.embabel.impromptu.user.ImpromptuUser;
 import com.embabel.impromptu.user.ImpromptuUserService;
+import com.embabel.web.vaadin.components.AssetsPanel;
 import com.embabel.web.vaadin.components.PropositionsPanel;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
@@ -26,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Backstage panel component with tabs for Media, Library, Knowledge, About, and Settings.
@@ -56,7 +59,8 @@ public class BackstagePanel extends Div {
             ImpromptuUserService userService,
             Consumer<EntityMention> onMentionClick,
             ReferencesPanel.IndexStats indexStats,
-            ImpromptuProperties properties
+            ImpromptuProperties properties,
+            Supplier<AssetView> assetViewSupplier
     ) {
     }
 
@@ -97,12 +101,13 @@ public class BackstagePanel extends Div {
         // Tabs
         var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
         var referencesTab = new Tab(VaadinIcon.RECORDS.create(), new Span("References"));
+        var assetsTab = new Tab(VaadinIcon.CUBE.create(), new Span("Assets"));
         var memoryTab = new Tab(VaadinIcon.LIGHTBULB.create(), new Span("Memory"));
         var knowledgeTab = new Tab(VaadinIcon.BOOK.create(), new Span("Knowledge"));
         var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
         var aboutTab = new Tab(VaadinIcon.INFO_CIRCLE.create(), new Span("About"));
 
-        var tabs = new Tabs(mediaTab, referencesTab, memoryTab, knowledgeTab, settingsTab, aboutTab);
+        var tabs = new Tabs(mediaTab, referencesTab, assetsTab, memoryTab, knowledgeTab, settingsTab, aboutTab);
         tabs.setWidthFull();
         sidePanel.add(tabs);
 
@@ -117,6 +122,10 @@ public class BackstagePanel extends Div {
 
         // References content
         var referencesContent = new ReferencesPanel(config.entityRepository(), config.indexStats());
+
+        // Assets content
+        var assetsContent = new AssetsPanel(config.assetViewSupplier());
+        assetsContent.setVisible(false);
 
         // Memory content (user propositions)
         var memoryContent = new VerticalLayout();
@@ -140,7 +149,7 @@ public class BackstagePanel extends Div {
         // Settings content
         var settingsContent = new SettingsPanel(config.properties());
 
-        contentArea.add(mediaContent, referencesContent, memoryContent, knowledgeContent, settingsContent, aboutContent);
+        contentArea.add(mediaContent, referencesContent, assetsContent, memoryContent, knowledgeContent, settingsContent, aboutContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
@@ -148,10 +157,14 @@ public class BackstagePanel extends Div {
         tabs.addSelectedChangeListener(event -> {
             mediaContent.setVisible(event.getSelectedTab() == mediaTab);
             referencesContent.setVisible(event.getSelectedTab() == referencesTab);
+            assetsContent.setVisible(event.getSelectedTab() == assetsTab);
             memoryContent.setVisible(event.getSelectedTab() == memoryTab);
             knowledgeContent.setVisible(event.getSelectedTab() == knowledgeTab);
             settingsContent.setVisible(event.getSelectedTab() == settingsTab);
             aboutContent.setVisible(event.getSelectedTab() == aboutTab);
+            if (event.getSelectedTab() == assetsTab) {
+                assetsContent.refresh();
+            }
             if (event.getSelectedTab() == memoryTab) {
                 propositionsPanel.refresh();
             }
