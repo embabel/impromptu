@@ -119,6 +119,12 @@
             <version>9.4.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.embabel.agent</groupId>
+            <artifactId>embabel-agent-starter-ollama</artifactId>
+            <version>${embabel-agent.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>

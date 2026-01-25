@@ -50,7 +50,9 @@ impromptu:
     embedding-batch-size: 800
 
   chat-llm:
-    model: gpt-4.1-mini
+#    model: qwen3:4b
+    model: gpt-4.1-nano
+
     temperature: 0.0
 
   pdf-generation-llm:
@@ -112,6 +114,13 @@ embabel:
   agent:
     logging:
       personality: colossus
+    platform:
+      llm-operations:
+        prompts:
+          default-timeout: 5m
+      http-client:
+        read-timeout: 4m
+        connect-timeout: 30s
 
   models:
 
@@ -143,10 +152,11 @@ vaadin:
 
 spring:
 
-  # MCP (Model Context Protocol) tools
-  # Wikipedia MCP provides tools to search and read Wikipedia articles
-  # Requires Docker to be running
   ai:
+
+    # MCP (Model Context Protocol) tools
+    # Wikipedia MCP provides tools to search and read Wikipedia articles
+    # Requires Docker to be running
     mcp:
       client:
         enabled: true
