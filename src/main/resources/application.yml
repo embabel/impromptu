@@ -132,8 +132,14 @@ logging:
 server:
   port: 8888  # Double the 88 piano keys
   servlet:
+    session:
+      timeout: 8h  # Keep sessions alive for 8 hours
     async:
       timeout: 600000  # 10 minutes for long-running operations like OpenOpus load
+
+vaadin:
+  heartbeat-interval: 300  # 5 minutes heartbeat
+  close-idle-sessions: false  # Don't close sessions on missed heartbeats
 
 spring:
 

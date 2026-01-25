@@ -8,10 +8,10 @@ import com.vaadin.flow.theme.Theme;
 
 /**
  * Vaadin app shell configuration with Push enabled for async UI updates.
- * Using LONG_POLLING transport to avoid WebSocket configuration issues.
+ * Using WebSocket transport for reliable real-time updates.
  * Custom dark theme with classical music aesthetics.
  */
-@Push(value = PushMode.AUTOMATIC, transport = Transport.LONG_POLLING)
+@Push(value = PushMode.AUTOMATIC, transport = Transport.WEBSOCKET_XHR)
 @Theme("impromptu")
 public class AppShellConfig implements AppShellConfigurator {
 }

@@ -12,8 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -47,16 +47,14 @@ public class PerformanceSearchTools {
      * Get all tools provided by this class.
      */
     public List<Tool> tools() {
-        var tools = new ArrayList<Tool>();
+        var tools = new LinkedList<Tool>();
 
-        // Spotify tools (if available)
         if (spotifyService.isConfigured() && spotifyService.isLinked(user)) {
             tools.add(searchSpotifyTracksTool());
             tools.add(getSpotifyAlbumTracksTool());
             tools.add(createSpotifyPerformanceTool());
         }
 
-        // YouTube tools (if available)
         if (youTubeService.isConfigured()) {
             tools.add(searchYouTubeVideosTool());
             tools.add(createYouTubePerformanceTool());

@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 /**
@@ -32,9 +33,16 @@ class SecurityConfiguration extends VaadinWebSecurity {
         // Let Vaadin configure its defaults first
         super.configure(http);
 
-        // Allow voice APIs for authenticated users (disable CSRF for these endpoints)
+        // Disable CSRF for voice APIs and Vaadin PUSH endpoint
         http.csrf(csrf -> csrf
-                .ignoringRequestMatchers("/api/tts/**", "/api/stt/**")
+                .ignoringRequestMatchers("/api/tts/**", "/api/stt/**", "/VAADIN/push/**")
+        );
+
+        // Session management - allow session to be created and maintained
+        http.sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .maximumSessions(5)  // Allow multiple tabs/devices
+                .expiredUrl("/")
         );
 
         // Configure OAuth2 login - use our Vaadin login view as the login page
