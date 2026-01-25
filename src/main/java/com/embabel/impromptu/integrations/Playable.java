@@ -65,16 +65,27 @@ public interface Playable extends Asset {
     }
 
     /**
+     * Short identifier for tool naming. Defaults to source + first 8 chars of ID.
+     * Override to provide a more meaningful short name.
+     */
+    default String shortId() {
+        var id = getId();
+        var shortPart = id.length() > 8 ? id.substring(0, 8) : id;
+        return source() + "_" + shortPart;
+    }
+
+    /**
      * Default reference implementation providing a play tool.
+     * Uses shortId() for the tool prefix to keep tool names manageable.
      */
     @Override
     @NonNull
     default LlmReference reference() {
         return LlmReference.of(
-                title(),
+                shortId(),
                 "Playable media: " + title() + " (" + durationFormatted() + ")",
                 List.of(playTool()),
-                "Use the play tool to start playback. URL: " + url()
+                "Use the play tool to start playback. Title: " + title() + ". URL: " + url()
         );
     }
 }

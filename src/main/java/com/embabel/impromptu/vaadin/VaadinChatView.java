@@ -437,7 +437,44 @@ public class VaadinChatView extends VerticalLayout {
         if (video != null) {
             logger.info("Loading pending YouTube video: {} - {}", video.videoId(), video.title());
             ytPanel.loadVideo(video.videoId(), video.title(), video.channelTitle());
+            showYouTubeNotification(video.title(), video.videoId());
         }
+    }
+
+    /**
+     * Show a toast notification for YouTube video with options to view.
+     */
+    private void showYouTubeNotification(String title, String videoId) {
+        var notification = new com.vaadin.flow.component.notification.Notification();
+        notification.setPosition(com.vaadin.flow.component.notification.Notification.Position.BOTTOM_END);
+        notification.setDuration(8000);
+
+        var layout = new HorizontalLayout();
+        layout.setAlignItems(Alignment.CENTER);
+        layout.setSpacing(true);
+
+        var icon = VaadinIcon.PLAY_CIRCLE.create();
+        icon.setColor("var(--lumo-error-color)");
+
+        var text = new Span("▶ " + title);
+        text.getStyle().set("font-weight", "500");
+
+        var openButton = new Button("Watch", e -> {
+            getUI().ifPresent(ui -> ui.getPage().open(
+                    "https://www.youtube.com/watch?v=" + videoId, "_blank"));
+            notification.close();
+        });
+        openButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
+
+        var backstageButton = new Button("Backstage", e -> {
+            backstagePanel.open();
+            notification.close();
+        });
+        backstageButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+
+        layout.add(icon, text, openButton, backstageButton);
+        notification.add(layout);
+        notification.open();
     }
 
     /**

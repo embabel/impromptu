@@ -78,8 +78,10 @@ public class PerformanceFinderService {
 
         return new AgenticTool(
                 "findPerformances",
-                "Find performances of a classical work on Spotify and YouTube. " +
-                        "Returns structured performance data including performers, conductors, and track lists."
+                """
+                        Find performances of a classical work on Spotify and YouTube.
+                        Returns structured performance data including performers, conductors, and track lists.
+                        """
         )
                 .withTools(searchTools.tools().toArray(new Tool[0]))
                 .withSystemPrompt(SYSTEM_PROMPT)

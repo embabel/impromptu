@@ -98,7 +98,7 @@ public class ConversationPropositionExtraction {
      * The analyzer decides if there's enough new content to process.
      */
     public void extractPropositions(ConversationAnalysisRequestEvent event) {
-        logger.info("Starting proposition extraction for conversation with {} messages",
+        logger.debug("Received request for proposition extraction for conversation with {} messages",
                 event.conversation.getMessages().size());
         try {
             var messages = event.conversation.getMessages();

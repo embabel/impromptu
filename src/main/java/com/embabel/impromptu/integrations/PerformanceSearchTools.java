@@ -66,7 +66,10 @@ public class PerformanceSearchTools {
     private Tool searchSpotifyTracksTool() {
         return Tool.create(
                 "searchSpotifyTracks",
-                "Search Spotify for tracks matching a query. Returns track details including name, artist, album, and duration.",
+                """
+                        Search Spotify for tracks matching a query.
+                        Returns track details including name, artist, album, and duration.
+                        """,
                 Tool.InputSchema.of(
                         Tool.Parameter.string("query", "Search query for tracks")
                 ),
@@ -96,7 +99,7 @@ public class PerformanceSearchTools {
                         return Tool.Result.text(toJson(trackInfos));
                     } catch (Exception e) {
                         logger.error("Spotify search failed", e);
-                        return Tool.Result.text("Error: " + e.getMessage());
+                        return Tool.Result.text("Error: %s".formatted(e.getMessage()));
                     }
                 }
         );
@@ -105,7 +108,10 @@ public class PerformanceSearchTools {
     private Tool getSpotifyAlbumTracksTool() {
         return Tool.create(
                 "getSpotifyAlbumTracks",
-                "Get all tracks from a Spotify album. Use this to find all movements of a work on an album.",
+                """
+                        Get all tracks from a Spotify album.
+                        Use this to find all movements of a work on an album.
+                        """,
                 Tool.InputSchema.of(
                         Tool.Parameter.string("albumId", "Spotify album ID")
                 ),
@@ -132,7 +138,7 @@ public class PerformanceSearchTools {
                         return Tool.Result.text(toJson(trackInfos));
                     } catch (Exception e) {
                         logger.error("Failed to get album tracks", e);
-                        return Tool.Result.text("Error: " + e.getMessage());
+                        return Tool.Result.text("Error: %s".formatted(e.getMessage()));
                     }
                 }
         );
@@ -141,7 +147,11 @@ public class PerformanceSearchTools {
     private Tool createSpotifyPerformanceTool() {
         return Tool.create(
                 "createSpotifyPerformance",
-                "Create a Spotify performance object with the given details. Call this once you've identified a performance. Returns the Performance as an artifact.",
+                """
+                        Create a Spotify performance object with the given details.
+                        Call this once you've identified a performance.
+                        Returns the Performance as an artifact.
+                        """,
                 Tool.InputSchema.of(
                         Tool.Parameter.string("workId", "ID of the work being performed", false),
                         Tool.Parameter.string("albumId", "Spotify album ID"),
@@ -188,26 +198,27 @@ public class PerformanceSearchTools {
                         logger.info("Created Spotify performance: {} - {} ({} tracks)",
                                 performance.title(), performance.albumName(), tracks.size());
 
-                        // Return with artifact so caller can access the Performance object
                         return Tool.Result.withArtifact(
-                                "Created Spotify performance: " + performance.title() +
-                                        " (" + tracks.size() + " tracks) - " + performance.url(),
+                                """
+                                        Created Spotify performance: %s (%d tracks) - %s
+                                        """.formatted(performance.title(), tracks.size(), performance.url()).trim(),
                                 performance
                         );
                     } catch (Exception e) {
                         logger.error("Failed to create Spotify performance", e);
-                        return Tool.Result.text("Error creating performance: " + e.getMessage());
+                        return Tool.Result.text("Error creating performance: %s".formatted(e.getMessage()));
                     }
                 }
         );
     }
 
-    // ========== YouTube Tools ==========
-
     private Tool searchYouTubeVideosTool() {
         return Tool.create(
                 "searchYouTubeVideos",
-                "Search YouTube for videos matching a query. Returns video details including title, channel, and duration.",
+                """
+                        Search YouTube for videos matching a query.
+                        Returns video details including title, channel, and duration.
+                        """,
                 Tool.InputSchema.of(
                         Tool.Parameter.string("query", "Search query for videos")
                 ),
@@ -234,7 +245,7 @@ public class PerformanceSearchTools {
                         return Tool.Result.text(toJson(videoInfos));
                     } catch (Exception e) {
                         logger.error("YouTube search failed", e);
-                        return Tool.Result.text("Error: " + e.getMessage());
+                        return Tool.Result.text("Error: %s".formatted(e.getMessage()));
                     }
                 }
         );
@@ -243,7 +254,11 @@ public class PerformanceSearchTools {
     private Tool createYouTubePerformanceTool() {
         return Tool.create(
                 "createYouTubePerformance",
-                "Create a YouTube performance object with the given details. Call this once you've identified a performance. Returns the Performance as an artifact.",
+                """
+                        Create a YouTube performance object with the given details.
+                        Call this once you've identified a performance.
+                        Returns the Performance as an artifact.
+                        """,
                 Tool.InputSchema.of(
                         Tool.Parameter.string("workId", "ID of the work being performed", false),
                         Tool.Parameter.string("videoId", "YouTube video ID"),
@@ -266,7 +281,7 @@ public class PerformanceSearchTools {
 
                         var video = youTubeService.getVideoDetails(videoId);
                         if (video == null) {
-                            return Tool.Result.text("Error: Video not found: " + videoId);
+                            return Tool.Result.text("Error: Video not found: %s".formatted(videoId));
                         }
 
                         var performance = new YouTubePerformance(
@@ -276,15 +291,15 @@ public class PerformanceSearchTools {
                         logger.info("Created YouTube performance: {} - {}",
                                 performance.title(), video.title());
 
-                        // Return with artifact so caller can access the Performance object
                         return Tool.Result.withArtifact(
-                                "Created YouTube performance: " + performance.title() +
-                                        " - " + performance.url(),
+                                """
+                                        Created YouTube performance: %s - %s
+                                        """.formatted(performance.title(), performance.url()).trim(),
                                 performance
                         );
                     } catch (Exception e) {
                         logger.error("Failed to create YouTube performance", e);
-                        return Tool.Result.text("Error creating performance: " + e.getMessage());
+                        return Tool.Result.text("Error creating performance: %s".formatted(e.getMessage()));
                     }
                 }
         );
