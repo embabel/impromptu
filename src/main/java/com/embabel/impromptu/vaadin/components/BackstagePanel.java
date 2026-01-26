@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * Backstage panel component with tabs for Media, Library, Knowledge, About, and Settings.
+ * Backstage panel component with tabs for Media, References, Assets, Memory, Sources, Settings, and About.
  */
 public class BackstagePanel extends Div {
 
@@ -98,18 +98,52 @@ public class BackstagePanel extends Div {
         header.setFlexGrow(1, title);
         sidePanel.add(header);
 
-        // Tabs
+        // Session tabs (per-conversation/user)
+        var sessionLabel = new Span("Session");
+        sessionLabel.getStyle()
+                .set("font-size", "var(--lumo-font-size-xs)")
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("padding", "var(--lumo-space-xs) var(--lumo-space-m)")
+                .set("text-transform", "uppercase")
+                .set("letter-spacing", "0.05em");
+
         var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
-        var referencesTab = new Tab(VaadinIcon.RECORDS.create(), new Span("References"));
         var assetsTab = new Tab(VaadinIcon.CUBE.create(), new Span("Assets"));
         var memoryTab = new Tab(VaadinIcon.LIGHTBULB.create(), new Span("Memory"));
-        var knowledgeTab = new Tab(VaadinIcon.BOOK.create(), new Span("Knowledge"));
+
+        var sessionTabs = new Tabs(mediaTab, assetsTab, memoryTab);
+        sessionTabs.setWidthFull();
+
+        // Library tabs (global/application)
+        var libraryLabel = new Span("Library");
+        libraryLabel.getStyle()
+                .set("font-size", "var(--lumo-font-size-xs)")
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("padding", "var(--lumo-space-xs) var(--lumo-space-m)")
+                .set("text-transform", "uppercase")
+                .set("letter-spacing", "0.05em");
+
+        var referencesTab = new Tab(VaadinIcon.RECORDS.create(), new Span("References"));
+        var sourcesTab = new Tab(VaadinIcon.BOOK.create(), new Span("Sources"));
         var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
         var aboutTab = new Tab(VaadinIcon.INFO_CIRCLE.create(), new Span("About"));
 
-        var tabs = new Tabs(mediaTab, referencesTab, assetsTab, memoryTab, knowledgeTab, settingsTab, aboutTab);
-        tabs.setWidthFull();
-        sidePanel.add(tabs);
+        var libraryTabs = new Tabs(referencesTab, sourcesTab, settingsTab, aboutTab);
+        libraryTabs.setWidthFull();
+
+        // Deselect other row when selecting a tab
+        sessionTabs.addSelectedChangeListener(e -> {
+            if (e.getSelectedTab() != null) {
+                libraryTabs.setSelectedTab(null);
+            }
+        });
+        libraryTabs.addSelectedChangeListener(e -> {
+            if (e.getSelectedTab() != null) {
+                sessionTabs.setSelectedTab(null);
+            }
+        });
+
+        sidePanel.add(sessionLabel, sessionTabs, libraryLabel, libraryTabs);
 
         // Content area
         var contentArea = new VerticalLayout();
@@ -139,9 +173,9 @@ public class BackstagePanel extends Div {
         propositionsPanel.setOnClear(() -> config.propositionRepository().clearByContext(userContextId));
         memoryContent.add(propositionsPanel);
 
-        // Knowledge content (documents)
-        var knowledgeContent = new KnowledgePanel(config.documentService());
-        knowledgeContent.setVisible(false);
+        // Sources content (documents)
+        var sourcesContent = new SourcesPanel(config.documentService());
+        sourcesContent.setVisible(false);
 
         // About content
         var aboutContent = new AboutPanel();
@@ -149,29 +183,37 @@ public class BackstagePanel extends Div {
         // Settings content
         var settingsContent = new SettingsPanel(config.properties());
 
-        contentArea.add(mediaContent, referencesContent, assetsContent, memoryContent, knowledgeContent, settingsContent, aboutContent);
+        contentArea.add(mediaContent, referencesContent, assetsContent, memoryContent, sourcesContent, settingsContent, aboutContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
-        // Tab switching
-        tabs.addSelectedChangeListener(event -> {
-            mediaContent.setVisible(event.getSelectedTab() == mediaTab);
-            referencesContent.setVisible(event.getSelectedTab() == referencesTab);
-            assetsContent.setVisible(event.getSelectedTab() == assetsTab);
-            memoryContent.setVisible(event.getSelectedTab() == memoryTab);
-            knowledgeContent.setVisible(event.getSelectedTab() == knowledgeTab);
-            settingsContent.setVisible(event.getSelectedTab() == settingsTab);
-            aboutContent.setVisible(event.getSelectedTab() == aboutTab);
-            if (event.getSelectedTab() == assetsTab) {
+        // Tab switching - helper to update content visibility
+        Runnable updateVisibility = () -> {
+            var sessionSelected = sessionTabs.getSelectedTab();
+            var librarySelected = libraryTabs.getSelectedTab();
+
+            mediaContent.setVisible(sessionSelected == mediaTab);
+            assetsContent.setVisible(sessionSelected == assetsTab);
+            memoryContent.setVisible(sessionSelected == memoryTab);
+
+            referencesContent.setVisible(librarySelected == referencesTab);
+            sourcesContent.setVisible(librarySelected == sourcesTab);
+            settingsContent.setVisible(librarySelected == settingsTab);
+            aboutContent.setVisible(librarySelected == aboutTab);
+
+            if (sessionSelected == assetsTab) {
                 assetsContent.refresh();
             }
-            if (event.getSelectedTab() == memoryTab) {
+            if (sessionSelected == memoryTab) {
                 propositionsPanel.refresh();
             }
-            if (event.getSelectedTab() == knowledgeTab) {
-                knowledgeContent.refresh();
+            if (librarySelected == sourcesTab) {
+                sourcesContent.refresh();
             }
-        });
+        };
+
+        sessionTabs.addSelectedChangeListener(e -> updateVisibility.run());
+        libraryTabs.addSelectedChangeListener(e -> updateVisibility.run());
 
         // Add elements
         getElement().appendChild(backdrop.getElement());

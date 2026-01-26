@@ -32,13 +32,6 @@ public class AboutPanel extends VerticalLayout {
         definition.setText("impromptu (noun): a short piece of instrumental music, especially a solo, that is reminiscent of an improvisation.");
         add(definition);
 
-        // Copyright
-        var copyright = new Span("\u00A9 Embabel 2026");
-        copyright.getStyle()
-                .set("font-weight", "bold")
-                .set("font-size", "1.75rem");
-        add(copyright);
-
         // Primary author
         var author = new Span("Primary author: Rod Johnson");
         author.getStyle()
@@ -91,8 +84,13 @@ public class AboutPanel extends VerticalLayout {
         add(uiInfo);
 
         // Built with Claude Code
-        var claudeInfo = new Span("Built using Claude Code");
-        claudeInfo.getStyle().set("margin-top", "var(--lumo-space-s)");
+        var claudeInfo = new HorizontalLayout();
+        claudeInfo.setAlignItems(Alignment.CENTER);
+        claudeInfo.setSpacing(true);
+        var claudeLabel = new Span("Built using ");
+        var claudeLink = new Anchor("https://claude.ai/claude-code", "Claude Code");
+        claudeLink.setTarget("_blank");
+        claudeInfo.add(claudeLabel, claudeLink);
         add(claudeInfo);
 
         // License
@@ -112,5 +110,13 @@ public class AboutPanel extends VerticalLayout {
         repoLink.setTarget("_blank");
         repoRow.add(repoLabel, repoLink);
         add(repoRow);
+
+        // Copyright at bottom
+        var copyright = new Span("\u00A9 Embabel 2026");
+        copyright.getStyle()
+                .set("font-size", "1rem")
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("margin-top", "var(--lumo-space-l)");
+        add(copyright);
     }
 }
