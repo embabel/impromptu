@@ -1,0 +1,102 @@
+/*
+ * Theme: London
+ * Display Name: London
+ * Description: Modern sophistication inspired by the London Philharmonic
+ * Default: false
+ */
+
+/* Variable definitions - use :root so dynamic injection overrides static defaults */
+:root {
+  --concert-black: #000000;
+  --piano-black: #0a0a0a;
+  --velvet-purple: #0d0d0d;
+  --accent-primary: #e91e63;
+  --accent-soft: #f06292;
+  --accent-glow: rgba(233, 30, 99, 0.15);
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --text-muted: #9e9e9e;
+  --panel-bg-start: #1a1a1a;
+  --panel-bg-end: #0d0d0d;
+
+  /* Legacy variable aliases */
+  --ivory-white: #ffffff;
+  --silver-string: #9e9e9e;
+
+  /* Lumo overrides */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--accent-primary);
+  --lumo-primary-color-50pct: rgba(233, 30, 99, 0.5);
+  --lumo-primary-text-color: var(--accent-primary);
+  --lumo-primary-contrast-color: #ffffff;
+
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
+  --lumo-tertiary-text-color: #757575;
+  --lumo-disabled-text-color: #616161;
+
+  --lumo-contrast: var(--text-primary);
+  --lumo-contrast-90pct: rgba(255, 255, 255, 0.9);
+  --lumo-contrast-80pct: rgba(255, 255, 255, 0.8);
+  --lumo-contrast-70pct: rgba(255, 255, 255, 0.7);
+  --lumo-contrast-60pct: rgba(255, 255, 255, 0.6);
+  --lumo-contrast-50pct: rgba(255, 255, 255, 0.5);
+  --lumo-contrast-40pct: rgba(255, 255, 255, 0.4);
+  --lumo-contrast-30pct: rgba(255, 255, 255, 0.3);
+  --lumo-contrast-20pct: rgba(255, 255, 255, 0.2);
+  --lumo-contrast-10pct: rgba(255, 255, 255, 0.1);
+  --lumo-contrast-5pct: rgba(255, 255, 255, 0.05);
+
+  --lumo-shade: var(--concert-black);
+  --lumo-shade-5pct: rgba(0, 0, 0, 0.05);
+  --lumo-shade-10pct: rgba(0, 0, 0, 0.1);
+  --lumo-shade-20pct: rgba(0, 0, 0, 0.2);
+  --lumo-shade-30pct: rgba(0, 0, 0, 0.3);
+  --lumo-shade-40pct: rgba(0, 0, 0, 0.4);
+  --lumo-shade-50pct: rgba(0, 0, 0, 0.5);
+
+  /* Modern border radius */
+  --lumo-border-radius-m: 8px;
+  --lumo-border-radius-l: 12px;
+
+  /* Modern sans-serif font */
+  --lumo-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Status colors */
+  --lumo-error-color: #ef4444;
+  --lumo-success-color: #22c55e;
+
+  /* Clean black background */
+  --bg-gradient: linear-gradient(180deg, #000000 0%, #0a0a0a 100%);
+}
+
+/* Theme class for component-specific overrides */
+html.theme-london,
+body.theme-london {
+  /* Variables also set here for specificity */
+  --accent-primary: #e91e63;
+  --accent-soft: #f06292;
+  --lumo-primary-color: #e91e63;
+}
+
+/* London theme: clean, no musical flourishes */
+body.theme-london h3::before,
+body.theme-london h3::after {
+  content: none;
+}
+
+/* London theme: no italics */
+body.theme-london .login-title,
+body.theme-london .header-title-impromptu,
+body.theme-london .header-title-subtitle {
+  font-style: normal;
+}
+
+body.theme-london .header-title-subtitle {
+  letter-spacing: 0.08em;
+}
+
+body.theme-london .login-button {
+  color: #ffffff;
+}

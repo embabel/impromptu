@@ -32,6 +32,8 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     private String username;
     private String email;
 
+    private String theme;
+
     // Location data from IP geolocation
     private @Nullable String countryCode;
     private @Nullable String city;
@@ -69,6 +71,8 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
         this.username = username;
         this.email = email;
         this.currentContextName = "default";
+        // Don't set theme here - let getTheme() return the default if null
+        // This allows Drivine to set the theme from Neo4j after construction
     }
 
     @Override
@@ -115,7 +119,7 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     // TODO this is questionable, needed for Vaadin to not crash with serialization errors
     @Override
     @JsonIgnore
-    public Map<String, Object> getMetadata() {
+    public @NonNull Map<String, Object> getMetadata() {
         return Map.of();
     }
 
@@ -283,6 +287,29 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
      */
     public void setVoice(String voice) {
         this.voice = voice != null ? voice : DEFAULT_VOICE;
+    }
+
+    /**
+     * Default theme name.
+     */
+    public static final String DEFAULT_THEME = "gold";
+
+    /**
+     * Get the user's preferred UI theme.
+     *
+     * @return the theme name (defaults to {@link #DEFAULT_THEME})
+     */
+    public String getTheme() {
+        return theme != null ? theme : DEFAULT_THEME;
+    }
+
+    /**
+     * Set the user's preferred UI theme.
+     *
+     * @param theme the theme name (use {@link #DEFAULT_THEME} for default)
+     */
+    public void setTheme(String theme) {
+        this.theme = theme != null ? theme : DEFAULT_THEME;
     }
 
     @Override

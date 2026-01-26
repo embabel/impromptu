@@ -1,0 +1,100 @@
+/*
+ * Theme: Bayreuth
+ * Display Name: Bayreuth
+ * Description: Minimalist elegance inspired by the Bayreuth Festival
+ * Default: false
+ */
+
+/* Variable definitions - use :root so dynamic injection overrides static defaults */
+:root {
+  --concert-black: #0a0a0a;
+  --piano-black: #1a1a1a;
+  --velvet-purple: #2a1a1a;
+  --accent-primary: #a90416;
+  --accent-soft: #c41e30;
+  --accent-glow: rgba(169, 4, 22, 0.2);
+  --text-primary: #f5f5f5;
+  --text-secondary: #e0e0e0;
+  --text-muted: #ab8a44;
+  --panel-bg-start: #2a1515;
+  --panel-bg-end: #1a1a1a;
+
+  /* Legacy variable aliases */
+  --ivory-white: #f5f5f5;
+  --silver-string: #ab8a44;
+
+  /* Lumo overrides */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--accent-primary);
+  --lumo-primary-color-50pct: rgba(169, 4, 22, 0.5);
+  --lumo-primary-text-color: var(--accent-primary);
+  --lumo-primary-contrast-color: #ffffff;
+
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
+  --lumo-tertiary-text-color: #8a7035;
+  --lumo-disabled-text-color: #6a5525;
+
+  --lumo-contrast: var(--text-primary);
+  --lumo-contrast-90pct: rgba(245, 245, 245, 0.9);
+  --lumo-contrast-80pct: rgba(245, 245, 245, 0.8);
+  --lumo-contrast-70pct: rgba(245, 245, 245, 0.7);
+  --lumo-contrast-60pct: rgba(245, 245, 245, 0.6);
+  --lumo-contrast-50pct: rgba(245, 245, 245, 0.5);
+  --lumo-contrast-40pct: rgba(245, 245, 245, 0.4);
+  --lumo-contrast-30pct: rgba(245, 245, 245, 0.3);
+  --lumo-contrast-20pct: rgba(245, 245, 245, 0.2);
+  --lumo-contrast-10pct: rgba(245, 245, 245, 0.1);
+  --lumo-contrast-5pct: rgba(245, 245, 245, 0.05);
+
+  --lumo-shade: var(--concert-black);
+  --lumo-shade-5pct: rgba(10, 10, 10, 0.05);
+  --lumo-shade-10pct: rgba(10, 10, 10, 0.1);
+  --lumo-shade-20pct: rgba(10, 10, 10, 0.2);
+  --lumo-shade-30pct: rgba(10, 10, 10, 0.3);
+  --lumo-shade-40pct: rgba(10, 10, 10, 0.4);
+  --lumo-shade-50pct: rgba(10, 10, 10, 0.5);
+
+  /* Clean border radius */
+  --lumo-border-radius-m: 6px;
+  --lumo-border-radius-l: 10px;
+
+  /* Elegant serif font */
+  --lumo-font-family: 'Crimson Pro', 'Georgia', serif;
+
+  /* Status colors */
+  --lumo-error-color: #ef4444;
+  --lumo-success-color: #22c55e;
+
+  /* Dark gradient with burgundy hint */
+  --bg-gradient: linear-gradient(180deg, #0a0a0a 0%, #1a1010 50%, #0a0a0a 100%);
+}
+
+/* Theme class for component-specific overrides */
+html.theme-bayreuth,
+body.theme-bayreuth {
+  --accent-primary: #a90416;
+  --accent-soft: #c41e30;
+  --lumo-primary-color: #a90416;
+}
+
+/* Bayreuth theme: Wagner-inspired ring symbols */
+body.theme-bayreuth h3::before {
+  content: "\25CB";
+  margin-right: 0.5rem;
+  opacity: 0.6;
+}
+
+body.theme-bayreuth h3::after {
+  content: "\25CB";
+  margin-left: 0.5rem;
+  opacity: 0.6;
+}
+
+/* Bayreuth theme: restrained elegance, no italics */
+body.theme-bayreuth .login-title,
+body.theme-bayreuth .header-title-impromptu {
+  font-style: normal;
+  letter-spacing: 0.1em;
+}

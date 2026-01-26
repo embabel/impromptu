@@ -1,0 +1,91 @@
+/*
+ * Theme: Gold
+ * Display Name: Gold
+ * Description: Classic concert hall elegance with warm gold accents
+ * Default: true
+ */
+
+/* Variable definitions - use :root so dynamic injection overrides static defaults */
+:root {
+  --concert-black: #0a0a0f;
+  --piano-black: #121218;
+  --velvet-purple: #1a1525;
+  --accent-primary: #c9a227;
+  --accent-soft: #d4af37;
+  --accent-glow: rgba(201, 162, 39, 0.15);
+  --text-primary: #f5f5f0;
+  --text-secondary: #e8e8e3;
+  --text-muted: #9ca3af;
+  --panel-bg-start: #4a1c2b;
+  --panel-bg-end: #1a1525;
+
+  /* Legacy variable aliases */
+  --ivory-white: #f5f5f0;
+  --silver-string: #9ca3af;
+
+  /* Lumo overrides */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--accent-primary);
+  --lumo-primary-color-50pct: rgba(201, 162, 39, 0.5);
+  --lumo-primary-text-color: var(--accent-primary);
+  --lumo-primary-contrast-color: var(--concert-black);
+
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
+  --lumo-tertiary-text-color: #6b7280;
+  --lumo-disabled-text-color: #4b5563;
+
+  --lumo-contrast: var(--text-primary);
+  --lumo-contrast-90pct: rgba(245, 245, 240, 0.9);
+  --lumo-contrast-80pct: rgba(245, 245, 240, 0.8);
+  --lumo-contrast-70pct: rgba(245, 245, 240, 0.7);
+  --lumo-contrast-60pct: rgba(245, 245, 240, 0.6);
+  --lumo-contrast-50pct: rgba(245, 245, 240, 0.5);
+  --lumo-contrast-40pct: rgba(245, 245, 240, 0.4);
+  --lumo-contrast-30pct: rgba(245, 245, 240, 0.3);
+  --lumo-contrast-20pct: rgba(245, 245, 240, 0.2);
+  --lumo-contrast-10pct: rgba(245, 245, 240, 0.1);
+  --lumo-contrast-5pct: rgba(245, 245, 240, 0.05);
+
+  --lumo-shade: var(--concert-black);
+  --lumo-shade-5pct: rgba(10, 10, 15, 0.05);
+  --lumo-shade-10pct: rgba(10, 10, 15, 0.1);
+  --lumo-shade-20pct: rgba(10, 10, 15, 0.2);
+  --lumo-shade-30pct: rgba(10, 10, 15, 0.3);
+  --lumo-shade-40pct: rgba(10, 10, 15, 0.4);
+  --lumo-shade-50pct: rgba(10, 10, 15, 0.5);
+
+  --lumo-border-radius-m: 12px;
+  --lumo-border-radius-l: 16px;
+
+  --lumo-font-family: 'Crimson Pro', 'Georgia', serif;
+
+  /* Status colors */
+  --lumo-error-color: #ef4444;
+  --lumo-success-color: #22c55e;
+
+  /* Background gradient */
+  --bg-gradient: linear-gradient(135deg, #0a0a0f 0%, #1a1525 50%, #121218 100%);
+}
+
+/* Theme class for component-specific overrides */
+html.theme-gold,
+body.theme-gold {
+  --accent-primary: #c9a227;
+  --accent-soft: #d4af37;
+  --lumo-primary-color: #c9a227;
+}
+
+/* Gold theme: show musical flourishes */
+body.theme-gold h3::before {
+  content: "♪";
+  margin-right: 0.5rem;
+  opacity: 0.7;
+}
+
+body.theme-gold h3::after {
+  content: "♫";
+  margin-left: 0.5rem;
+  opacity: 0.7;
+}

@@ -17,6 +17,7 @@ import com.embabel.impromptu.integrations.youtube.YouTubeService;
 import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
 import com.embabel.impromptu.rag.DocumentService;
 import com.embabel.impromptu.speech.PersonaService;
+import com.embabel.impromptu.theme.ThemeService;
 import com.embabel.impromptu.user.ImpromptuUser;
 import com.embabel.impromptu.user.ImpromptuUserService;
 import com.embabel.impromptu.vaadin.components.BackstagePanel;
@@ -70,6 +71,7 @@ public class VaadinChatView extends VerticalLayout {
     private final YouTubeService youTubeService;
     private final YouTubePendingPlayback youTubePendingPlayback;
     private final PersonaService personaService;
+    private final ThemeService themeService;
     private final String defaultPersona;
     private final ImpromptuUser currentUser;
 
@@ -93,6 +95,7 @@ public class VaadinChatView extends VerticalLayout {
             YouTubeService youTubeService,
             YouTubePendingPlayback youTubePendingPlayback,
             PersonaService personaService,
+            ThemeService themeService,
             ApplicationEventPublisher eventPublisher,
             @Value("${database.datasources.neo.host:localhost}") String neo4jHost,
             @Value("${database.datasources.neo.port:7687}") int neo4jPort,
@@ -106,6 +109,7 @@ public class VaadinChatView extends VerticalLayout {
         this.youTubeService = youTubeService;
         this.youTubePendingPlayback = youTubePendingPlayback;
         this.personaService = personaService;
+        this.themeService = themeService;
         setSizeFull();
         setPadding(true);
         setSpacing(true);
@@ -113,6 +117,13 @@ public class VaadinChatView extends VerticalLayout {
         this.currentUser = userService.getAuthenticatedUser();
         // Default persona from properties, used as fallback if user hasn't set a voice
         this.defaultPersona = properties.defaultVoice() != null ? properties.defaultVoice().persona() : "impromptu";
+
+        // Apply initial theme after attach (ensures DOM is ready)
+        addAttachListener(event -> {
+            logger.info("Loading theme for user {}: {}", currentUser.getDisplayName(), currentUser.getTheme());
+            applyTheme(currentUser.getTheme());
+        });
+
         var stats = searchOperations.info();
 
         // Build header
@@ -166,9 +177,11 @@ public class VaadinChatView extends VerticalLayout {
                 youTubePendingPlayback,
                 propositionRepository,
                 personaService,
+                themeService,
                 this::showEntityDetail,
                 this::getAssetView,
-                this::onPersonaChange
+                this::onPersonaChange,
+                this::onThemeChange
         );
         sessionPanel = new SessionPanel(sessionConfig);
         getElement().appendChild(sessionPanel.getElement());
@@ -248,6 +261,60 @@ public class VaadinChatView extends VerticalLayout {
                     com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
             );
         }
+    }
+
+    /**
+     * Handle theme change from the SessionPanel.
+     */
+    private void onThemeChange(String themeName) {
+        if (themeName != null && !themeName.equals(currentUser.getTheme())) {
+            currentUser.setTheme(themeName);
+            userService.save(currentUser);
+            applyTheme(themeName);
+            logger.info("Updated user theme to: {}", themeName);
+            com.vaadin.flow.component.notification.Notification.show(
+                    "Theme updated.",
+                    3000,
+                    com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
+            );
+        }
+    }
+
+    /**
+     * Apply a theme by setting CSS variables directly on the document element.
+     * This uses inline styles which have the highest CSS priority.
+     */
+    private void applyTheme(String themeName) {
+        var theme = themeName != null ? themeName : "gold";
+        var variables = themeService.getThemeVariables(theme);
+
+        if (variables == null || variables.isEmpty()) {
+            logger.warn("No variables found for theme: {}", theme);
+            return;
+        }
+
+        // Build JavaScript to set each variable
+        var js = new StringBuilder();
+        js.append("(function() {\n");
+        js.append("  var root = document.documentElement;\n");
+        js.append("  var themeName = '").append(theme).append("';\n");
+        js.append("  // Set theme class\n");
+        js.append("  root.className = root.className.replace(/\\btheme-\\w+/g, '').trim();\n");
+        js.append("  document.body.className = document.body.className.replace(/\\btheme-\\w+/g, '').trim();\n");
+        js.append("  root.classList.add('theme-' + themeName);\n");
+        js.append("  document.body.classList.add('theme-' + themeName);\n");
+        js.append("  // Set CSS variables directly (inline style = highest priority)\n");
+
+        for (var entry : variables.entrySet()) {
+            String varName = entry.getKey();
+            String varValue = entry.getValue().replace("'", "\\'");
+            js.append("  root.style.setProperty('").append(varName).append("', '").append(varValue).append("');\n");
+        }
+
+        js.append("  console.log('Applied theme:', themeName, '(").append(variables.size()).append(" variables)');\n");
+        js.append("})();");
+
+        getUI().ifPresent(ui -> ui.getPage().executeJs(js.toString()));
     }
 
     private void onVoiceInput(String text) {

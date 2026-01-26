@@ -1,33 +1,36 @@
-/* Impromptu - A Dark Theme for Classical Music Chat */
+/* Impromptu - Themeable Dark Theme for Classical Music Chat */
+/* Theme variables are loaded dynamically from /api/themes/{name}.css */
 
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Default theme variables (Gold) - overridden by dynamic theme CSS */
 :root {
-  /* Dark color palette inspired by a concert hall */
   --concert-black: #0a0a0f;
   --piano-black: #121218;
   --velvet-purple: #1a1525;
-  --gold-accent: #c9a227;
-  --gold-soft: #d4af37;
-  --gold-glow: rgba(201, 162, 39, 0.15);
+  --accent-primary: #c9a227;
+  --accent-soft: #d4af37;
+  --accent-glow: rgba(201, 162, 39, 0.15);
+  --text-primary: #f5f5f0;
+  --text-secondary: #e8e8e3;
+  --text-muted: #9ca3af;
+  --panel-bg-start: #4a1c2b;
+  --panel-bg-end: #1a1525;
   --ivory-white: #f5f5f0;
-  --ivory-soft: #e8e8e3;
   --silver-string: #9ca3af;
-  --deep-burgundy: #4a1c2b;
-  --soft-burgundy: #6b2c3f;
-
-  /* Lumo overrides for dark theme */
   --lumo-base-color: var(--piano-black);
-  --lumo-primary-color: var(--gold-accent);
+  --lumo-primary-color: var(--accent-primary);
   --lumo-primary-color-50pct: rgba(201, 162, 39, 0.5);
-  --lumo-primary-text-color: var(--gold-accent);
+  --lumo-primary-text-color: var(--accent-primary);
   --lumo-primary-contrast-color: var(--concert-black);
-
-  --lumo-header-text-color: var(--ivory-white);
-  --lumo-body-text-color: var(--ivory-soft);
-  --lumo-secondary-text-color: var(--silver-string);
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
   --lumo-tertiary-text-color: #6b7280;
   --lumo-disabled-text-color: #4b5563;
-
-  --lumo-contrast: var(--ivory-white);
+  --lumo-contrast: var(--text-primary);
   --lumo-contrast-90pct: rgba(245, 245, 240, 0.9);
   --lumo-contrast-80pct: rgba(245, 245, 240, 0.8);
   --lumo-contrast-70pct: rgba(245, 245, 240, 0.7);
@@ -38,7 +41,6 @@
   --lumo-contrast-20pct: rgba(245, 245, 240, 0.2);
   --lumo-contrast-10pct: rgba(245, 245, 240, 0.1);
   --lumo-contrast-5pct: rgba(245, 245, 240, 0.05);
-
   --lumo-shade: var(--concert-black);
   --lumo-shade-5pct: rgba(10, 10, 15, 0.05);
   --lumo-shade-10pct: rgba(10, 10, 15, 0.1);
@@ -46,27 +48,17 @@
   --lumo-shade-30pct: rgba(10, 10, 15, 0.3);
   --lumo-shade-40pct: rgba(10, 10, 15, 0.4);
   --lumo-shade-50pct: rgba(10, 10, 15, 0.5);
-
   --lumo-error-color: #ef4444;
   --lumo-success-color: #22c55e;
-
   --lumo-border-radius-m: 12px;
   --lumo-border-radius-l: 16px;
-
   --lumo-font-family: 'Crimson Pro', 'Georgia', serif;
-  --lumo-font-size-xl: 1.375rem;
-  --lumo-font-size-l: 1.125rem;
-  --lumo-font-size-m: 1rem;
-  --lumo-font-size-s: 0.875rem;
-  --lumo-font-size-xs: 0.75rem;
+  --bg-gradient: linear-gradient(135deg, #0a0a0f 0%, #1a1525 50%, #121218 100%);
 }
-
-/* Import elegant serif font */
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 /* Body styling */
 html {
-  background: linear-gradient(135deg, var(--concert-black) 0%, var(--velvet-purple) 50%, var(--piano-black) 100%);
+  background: var(--bg-gradient);
   min-height: 100vh;
 }
 
@@ -86,11 +78,11 @@ vaadin-vertical-layout {
 
 /* Header styling with musical flourish */
 h3 {
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: var(--lumo-font-family);
   font-weight: 600;
   letter-spacing: 0.02em;
-  color: var(--gold-accent);
-  text-shadow: 0 0 30px var(--gold-glow);
+  color: var(--accent-primary);
+  text-shadow: 0 0 30px var(--accent-glow);
   position: relative;
 }
 
@@ -115,9 +107,9 @@ span[style*="font-size: var(--lumo-font-size-s)"] {
 /* Chat messages container - styled like a concert program */
 vaadin-scroller {
   background: linear-gradient(180deg,
-    rgba(26, 21, 37, 0.8) 0%,
-    rgba(18, 18, 24, 0.9) 100%);
-  border: 1px solid rgba(201, 162, 39, 0.2) !important;
+    var(--lumo-contrast-5pct) 0%,
+    var(--lumo-shade-10pct) 100%);
+  border: 1px solid var(--accent-glow) !important;
   border-radius: 16px !important;
   box-shadow:
     inset 0 2px 20px rgba(0, 0, 0, 0.3),
@@ -127,18 +119,18 @@ vaadin-scroller {
 
 /* User message bubbles - elegant ivory */
 div[style*="background: var(--lumo-primary-color)"] {
-  background: linear-gradient(135deg, var(--gold-accent) 0%, var(--gold-soft) 100%) !important;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-soft) 100%) !important;
   color: var(--concert-black) !important;
   box-shadow:
-    0 4px 15px rgba(201, 162, 39, 0.3),
-    0 0 30px rgba(201, 162, 39, 0.1);
+    0 4px 15px var(--accent-glow),
+    0 0 30px var(--accent-glow);
   font-weight: 500;
 }
 
 /* Assistant message bubbles - rich velvet */
 div[style*="background: var(--lumo-contrast-10pct)"] {
-  background: linear-gradient(135deg, var(--velvet-purple) 0%, rgba(74, 28, 43, 0.6) 100%) !important;
-  border: 1px solid rgba(201, 162, 39, 0.15);
+  background: linear-gradient(135deg, var(--velvet-purple) 0%, var(--panel-bg-end) 100%) !important;
+  border: 1px solid var(--accent-glow);
   box-shadow:
     0 4px 15px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -146,7 +138,7 @@ div[style*="background: var(--lumo-contrast-10pct)"] {
 
 /* Sender name styling */
 span[style*="font-weight: bold"] {
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: var(--lumo-font-family);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 0.7rem !important;
@@ -155,27 +147,25 @@ span[style*="font-weight: bold"] {
 /* Text input field - piano key inspired */
 vaadin-text-field {
   --vaadin-input-field-background: var(--piano-black);
-  --vaadin-input-field-border-color: rgba(201, 162, 39, 0.3);
-  --vaadin-input-field-focused-border-color: var(--gold-accent);
+  --vaadin-input-field-border-color: var(--accent-glow);
+  --vaadin-input-field-focused-border-color: var(--accent-primary);
 }
 
 vaadin-text-field::part(input-field) {
-  background: linear-gradient(180deg,
-    rgba(18, 18, 24, 0.9) 0%,
-    rgba(10, 10, 15, 0.95) 100%);
-  border: 1px solid rgba(201, 162, 39, 0.3);
+  background: var(--piano-black);
+  border: 1px solid var(--accent-glow);
   border-radius: 12px;
   box-shadow:
     inset 0 2px 8px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(201, 162, 39, 0.1);
+    0 0 0 1px var(--accent-glow);
   transition: all 0.3s ease;
 }
 
 vaadin-text-field:focus-within::part(input-field) {
-  border-color: var(--gold-accent);
+  border-color: var(--accent-primary);
   box-shadow:
     inset 0 2px 8px rgba(0, 0, 0, 0.3),
-    0 0 20px rgba(201, 162, 39, 0.2);
+    0 0 20px var(--accent-glow);
 }
 
 vaadin-text-field::part(value) {
@@ -187,25 +177,25 @@ vaadin-text-field::placeholder {
   font-style: italic;
 }
 
-/* Send button - golden accent */
+/* Send button - accent color */
 vaadin-button[theme~="primary"] {
-  background: linear-gradient(135deg, var(--gold-accent) 0%, #b8922a 100%);
-  color: var(--concert-black);
-  font-family: 'Crimson Pro', Georgia, serif;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-soft) 100%);
+  color: var(--lumo-primary-contrast-color);
+  font-family: var(--lumo-font-family);
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   border-radius: 12px;
   box-shadow:
-    0 4px 15px rgba(201, 162, 39, 0.4),
+    0 4px 15px var(--accent-glow),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
 }
 
 vaadin-button[theme~="primary"]:hover {
-  background: linear-gradient(135deg, var(--gold-soft) 0%, var(--gold-accent) 100%);
+  background: linear-gradient(135deg, var(--accent-soft) 0%, var(--accent-primary) 100%);
   box-shadow:
-    0 6px 25px rgba(201, 162, 39, 0.5),
+    0 6px 25px var(--accent-glow),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
 }
@@ -213,13 +203,13 @@ vaadin-button[theme~="primary"]:hover {
 vaadin-button[theme~="primary"]:active {
   transform: translateY(0);
   box-shadow:
-    0 2px 10px rgba(201, 162, 39, 0.3),
+    0 2px 10px var(--accent-glow),
     inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Footer text */
 p[style*="text-align: center"] {
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: var(--lumo-font-family);
   font-style: italic;
   color: var(--silver-string);
   opacity: 0.7;
@@ -235,8 +225,8 @@ p[style*="text-align: center"]::after {
 
 /* Error messages */
 div[style*="background: var(--lumo-error-color-10pct)"] {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.1) 100%) !important;
-  border-left-color: #ef4444 !important;
+  background: var(--lumo-shade-10pct) !important;
+  border-left-color: var(--lumo-error-color) !important;
 }
 
 /* Scrollbar styling */
@@ -250,12 +240,12 @@ div[style*="background: var(--lumo-error-color-10pct)"] {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--gold-accent) 0%, #9a7b1e 100%);
+  background: linear-gradient(180deg, var(--accent-primary) 0%, var(--accent-soft) 100%);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gold-soft);
+  background: var(--accent-soft);
 }
 
 /* Musical decorative elements */
@@ -268,9 +258,9 @@ vaadin-vertical-layout::before {
   height: 3px;
   background: linear-gradient(90deg,
     transparent 0%,
-    var(--gold-accent) 20%,
-    var(--gold-soft) 50%,
-    var(--gold-accent) 80%,
+    var(--accent-primary) 20%,
+    var(--accent-soft) 50%,
+    var(--accent-primary) 80%,
     transparent 100%);
   opacity: 0.6;
 }
@@ -288,8 +278,8 @@ vaadin-vertical-layout::after {
     0deg,
     transparent,
     transparent 7px,
-    rgba(201, 162, 39, 0.1) 7px,
-    rgba(201, 162, 39, 0.1) 8px
+    var(--accent-glow) 7px,
+    var(--accent-glow) 8px
   );
   opacity: 0.5;
   pointer-events: none;
@@ -314,42 +304,42 @@ div[style*="flex-direction: column"] > div {
 /* Knowledge Base / Propositions Panel */
 vaadin-details {
   --vaadin-details-content-padding: 0;
-  background: linear-gradient(180deg, rgba(26, 21, 37, 0.6) 0%, rgba(18, 18, 24, 0.8) 100%);
-  border: 1px solid rgba(201, 162, 39, 0.15);
+  background: linear-gradient(180deg, var(--panel-bg-end) 0%, var(--piano-black) 100%);
+  border: 1px solid var(--accent-glow);
   border-radius: var(--lumo-border-radius-l);
 }
 
 vaadin-details::part(summary) {
-  background: linear-gradient(135deg, rgba(74, 28, 43, 0.3) 0%, rgba(26, 21, 37, 0.5) 100%);
-  border-bottom: 1px solid rgba(201, 162, 39, 0.1);
+  background: linear-gradient(135deg, var(--panel-bg-start) 0%, var(--panel-bg-end) 100%);
+  border-bottom: 1px solid var(--accent-glow);
 }
 
 vaadin-details::part(summary):hover {
-  background: linear-gradient(135deg, rgba(74, 28, 43, 0.4) 0%, rgba(26, 21, 37, 0.6) 100%);
+  background: linear-gradient(135deg, var(--panel-bg-start) 0%, var(--velvet-purple) 100%);
 }
 
 vaadin-details[opened]::part(summary) {
-  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+  border-bottom: 1px solid var(--accent-glow);
 }
 
 /* Proposition cards */
 .proposition-card,
 div[style*="background: var(--lumo-contrast-5pct)"] {
-  background: linear-gradient(135deg, rgba(26, 21, 37, 0.8) 0%, rgba(18, 18, 24, 0.9) 100%) !important;
-  border: 1px solid rgba(201, 162, 39, 0.1);
+  background: linear-gradient(135deg, var(--panel-bg-end) 0%, var(--piano-black) 100%) !important;
+  border: 1px solid var(--accent-glow);
   transition: all 0.2s ease;
 }
 
 .proposition-card:hover,
 div[style*="background: var(--lumo-contrast-5pct)"]:hover {
-  border-color: rgba(201, 162, 39, 0.25);
+  border-color: var(--accent-primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Confidence badges */
 span[style*="background: var(--lumo-contrast-10pct)"] {
-  background: linear-gradient(135deg, rgba(201, 162, 39, 0.15) 0%, rgba(201, 162, 39, 0.1) 100%) !important;
-  border: 1px solid rgba(201, 162, 39, 0.2);
+  background: linear-gradient(135deg, var(--accent-glow) 0%, var(--accent-glow) 100%) !important;
+  border: 1px solid var(--accent-glow);
 }
 
 /* ===========================================
@@ -376,23 +366,23 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 }
 
 .login-title {
-  color: var(--gold-accent);
-  font-family: 'Crimson Pro', Georgia, serif;
+  color: var(--accent-primary);
+  font-family: var(--lumo-font-family);
   font-size: 4.5rem;
   font-weight: 600;
   font-style: italic;
   letter-spacing: 0.08em;
   margin: var(--lumo-space-m) 0;
-  text-shadow: 0 0 40px rgba(201, 162, 39, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
-  background: linear-gradient(135deg, #d4af37 0%, var(--gold-accent) 50%, #b8922a 100%);
+  text-shadow: 0 0 40px var(--accent-glow), 0 2px 4px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, var(--accent-soft) 0%, var(--accent-primary) 50%, var(--accent-primary) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .login-subtitle {
-  color: var(--ivory-white);
-  font-family: 'Crimson Pro', Georgia, serif;
+  color: var(--text-primary);
+  font-family: var(--lumo-font-family);
   font-size: 1.25rem;
   margin-bottom: var(--lumo-space-l);
 }
@@ -400,21 +390,20 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 .login-button {
   display: inline-block;
   padding: var(--lumo-space-m) var(--lumo-space-xl);
-  background: linear-gradient(135deg, var(--gold-accent) 0%, #b8922a 100%);
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-soft) 100%);
   color: var(--concert-black);
   text-decoration: none;
-  border-radius: 12px;
-  font-family: 'Crimson Pro', Georgia, serif;
+  border-radius: var(--lumo-border-radius-m);
+  font-family: var(--lumo-font-family);
   font-weight: 600;
   font-size: 1.1rem;
   letter-spacing: 0.05em;
-  box-shadow: 0 4px 15px rgba(201, 162, 39, 0.4);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px var(--accent-glow);
 }
 
 .login-button:hover {
-  background: linear-gradient(135deg, var(--gold-soft) 0%, var(--gold-accent) 100%);
-  box-shadow: 0 6px 25px rgba(201, 162, 39, 0.5);
+  background: linear-gradient(135deg, var(--accent-soft) 0%, var(--accent-primary) 100%);
+  box-shadow: 0 6px 25px var(--accent-glow);
   transform: translateY(-2px);
 }
 
@@ -431,10 +420,10 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   justify-content: center;
   background: linear-gradient(90deg,
     var(--piano-black) 0%,
-    rgba(18, 18, 24, 0.95) 5%,
+    var(--lumo-shade-50pct) 5%,
     transparent 15%,
     transparent 85%,
-    rgba(18, 18, 24, 0.95) 95%,
+    var(--lumo-shade-50pct) 95%,
     var(--piano-black) 100%);
   padding: 0 80px;
   border-radius: var(--lumo-border-radius-l);
@@ -445,7 +434,7 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 }
 
 .header-logo-container:hover {
-  box-shadow: 0 4px 30px rgba(201, 162, 39, 0.3);
+  box-shadow: 0 4px 30px var(--accent-glow);
 }
 
 .header-logo {
@@ -456,29 +445,29 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 }
 
 .header-title-impromptu {
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: var(--lumo-font-family);
   font-size: 2rem;
   font-weight: 600;
   font-style: italic;
   letter-spacing: 0.05em;
-  color: var(--gold-accent);
-  text-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
+  color: var(--accent-primary);
+  text-shadow: 0 0 20px var(--accent-glow);
   margin-right: 0.5rem;
 }
 
 .header-title-subtitle {
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: var(--lumo-font-family);
   font-size: 1.5rem;
   font-weight: 500;
   font-style: italic;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  background: linear-gradient(135deg, #d4af37 0%, var(--gold-accent) 40%, #f5e6a3 60%, var(--gold-accent) 100%);
+  background: linear-gradient(135deg, var(--accent-soft) 0%, var(--accent-primary) 40%, var(--accent-soft) 60%, var(--accent-primary) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: none;
-  filter: drop-shadow(0 0 8px rgba(201, 162, 39, 0.3));
+  filter: drop-shadow(0 0 8px var(--accent-glow));
   margin-left: var(--lumo-space-xl);
 }
 
@@ -531,7 +520,7 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 
 .footer-logo {
   height: 24px;
-  filter: drop-shadow(0 0 4px rgba(201, 162, 39, 0.5));
+  filter: drop-shadow(0 0 4px var(--accent-glow));
   opacity: 0.85;
 }
 
@@ -699,8 +688,8 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   bottom: 0;
   width: 400px;
   max-width: 90vw;
-  background: linear-gradient(180deg, rgba(18, 18, 24, 0.98) 0%, rgba(10, 10, 15, 0.99) 100%);
-  border-left: 1px solid rgba(201, 162, 39, 0.3);
+  background: linear-gradient(180deg, var(--piano-black) 0%, var(--concert-black) 100%);
+  border-left: 1px solid var(--accent-glow);
   box-shadow: -8px 0 32px rgba(0, 0, 0, 0.5);
   transform: translateX(100%);
   transition: transform 0.3s ease;
@@ -718,14 +707,14 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   align-items: center;
   justify-content: space-between;
   padding: var(--lumo-space-m);
-  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+  border-bottom: 1px solid var(--lumo-primary-color-50pct);
 }
 
 .side-panel-title {
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: var(--lumo-font-family);
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--gold-accent);
+  color: var(--accent-primary);
 }
 
 .side-panel-close {
@@ -739,27 +728,27 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 }
 
 .side-panel-close:hover {
-  color: var(--gold-accent);
-  background: rgba(201, 162, 39, 0.1);
+  color: var(--accent-primary);
+  background: var(--accent-glow);
 }
 
 .side-panel vaadin-tabs {
-  --lumo-contrast-60pct: var(--gold-accent);
+  --lumo-contrast-60pct: var(--accent-primary);
   padding: 0 var(--lumo-space-m);
 }
 
 .side-panel vaadin-tab {
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: var(--lumo-font-family);
   font-size: var(--lumo-font-size-s);
   color: var(--lumo-secondary-text-color);
 }
 
 .side-panel vaadin-tab[selected] {
-  color: var(--gold-accent);
+  color: var(--accent-primary);
 }
 
 .side-panel vaadin-tab::before {
-  background: var(--gold-accent);
+  background: var(--accent-primary);
 }
 
 .side-panel-content {
@@ -774,11 +763,11 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   top: 50%;
   transform: translateY(-50%);
   z-index: 150;
-  background: linear-gradient(135deg, rgba(74, 28, 43, 0.8) 0%, rgba(26, 21, 37, 0.9) 100%);
-  border: 1px solid rgba(201, 162, 39, 0.4);
+  background: linear-gradient(135deg, var(--panel-bg-start) 0%, var(--panel-bg-end) 100%);
+  border: 1px solid var(--lumo-primary-color-50pct);
   border-radius: var(--lumo-border-radius-m) 0 0 var(--lumo-border-radius-m);
   border-right: none;
-  color: var(--gold-accent);
+  color: var(--accent-primary);
   padding: var(--lumo-space-m) var(--lumo-space-s);
   cursor: pointer;
   transition: all 0.3s ease;
@@ -786,8 +775,8 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 }
 
 .side-panel-toggle:hover {
-  background: linear-gradient(135deg, rgba(74, 28, 43, 0.9) 0%, rgba(26, 21, 37, 1) 100%);
-  border-color: var(--gold-accent);
+  background: linear-gradient(135deg, var(--panel-bg-start) 0%, var(--panel-bg-end) 100%);
+  border-color: var(--accent-primary);
   padding-right: var(--lumo-space-m);
 }
 
@@ -1054,8 +1043,8 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   color: var(--lumo-secondary-text-color);
   font-size: var(--lumo-font-size-s);
   padding: var(--lumo-space-xs) var(--lumo-space-m);
-  background: linear-gradient(135deg, rgba(26, 21, 37, 0.8) 0%, rgba(18, 18, 24, 0.9) 100%);
-  border-left: 3px solid var(--gold-accent);
+  background: linear-gradient(135deg, var(--panel-bg-end) 0%, var(--piano-black) 100%);
+  border-left: 3px solid var(--accent-primary);
   border-radius: var(--lumo-border-radius-s);
   margin: var(--lumo-space-xs) 0;
   font-family: monospace;
@@ -1076,17 +1065,17 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 /* --- Knowledge Panel (Document Ingestion) --- */
 .knowledge-tabs {
   padding: 0;
-  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+  border-bottom: 1px solid var(--accent-glow);
 }
 
 .knowledge-tabs vaadin-tab {
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: var(--lumo-font-family);
   font-size: var(--lumo-font-size-s);
 }
 
 .section-title {
-  color: var(--gold-accent);
-  font-family: 'Crimson Pro', Georgia, serif;
+  color: var(--accent-primary);
+  font-family: var(--lumo-font-family);
   font-size: var(--lumo-font-size-l);
   margin: 0;
 }
@@ -1120,7 +1109,7 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 }
 
 .stat-value {
-  color: var(--gold-accent);
+  color: var(--accent-primary);
   font-weight: 600;
   font-size: var(--lumo-font-size-m);
 }
@@ -1171,12 +1160,12 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   gap: var(--lumo-space-xs);
   padding: var(--lumo-space-s) var(--lumo-space-m);
   margin: var(--lumo-space-s) 0;
-  background: linear-gradient(135deg, rgba(74, 28, 43, 0.8) 0%, rgba(26, 21, 37, 0.9) 100%);
-  border: 1px solid rgba(201, 162, 39, 0.4);
+  background: linear-gradient(135deg, var(--panel-bg-start) 0%, var(--panel-bg-end) 100%);
+  border: 1px solid var(--accent-glow);
   border-radius: var(--lumo-border-radius-m);
-  color: var(--gold-accent);
+  color: var(--accent-primary);
   text-decoration: none;
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: var(--lumo-font-family);
   font-size: var(--lumo-font-size-s);
   font-weight: 500;
   transition: all 0.3s ease;
@@ -1184,11 +1173,11 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 }
 
 .pdf-download-btn:hover {
-  background: linear-gradient(135deg, rgba(74, 28, 43, 0.95) 0%, rgba(26, 21, 37, 1) 100%);
-  border-color: var(--gold-accent);
-  box-shadow: 0 4px 16px rgba(201, 162, 39, 0.3);
+  background: linear-gradient(135deg, var(--panel-bg-start) 0%, var(--velvet-purple) 100%);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 16px var(--accent-glow);
   transform: translateY(-1px);
-  color: var(--gold-soft);
+  color: var(--accent-soft);
 }
 
 .pdf-download-btn:active {
@@ -1211,7 +1200,7 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   border-radius: var(--lumo-border-radius-m);
   background: var(--lumo-contrast-5pct);
   margin-bottom: var(--lumo-space-s);
-  border-left: 3px solid var(--gold-accent);
+  border-left: 3px solid var(--accent-primary);
   transition: background 0.2s;
 }
 
@@ -1229,7 +1218,7 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 .asset-name {
   font-weight: 600;
   font-size: var(--lumo-font-size-m);
-  color: var(--gold-accent);
+  color: var(--accent-primary);
 }
 
 .asset-time {

@@ -1,0 +1,99 @@
+/*
+ * Theme: Bastille
+ * Display Name: Bastille
+ * Description: Modern elegance inspired by the Opera Bastille in Paris
+ * Default: false
+ */
+
+/* Variable definitions - use :root so dynamic injection overrides static defaults */
+:root {
+  --concert-black: #05080a;
+  --piano-black: #0a1015;
+  --velvet-purple: #101820;
+  --accent-primary: #3b82f6;
+  --accent-soft: #60a5fa;
+  --accent-glow: rgba(59, 130, 246, 0.15);
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --panel-bg-start: #1e293b;
+  --panel-bg-end: #0f172a;
+
+  /* Legacy variable aliases */
+  --ivory-white: #f8fafc;
+  --silver-string: #94a3b8;
+
+  /* Lumo overrides */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--accent-primary);
+  --lumo-primary-color-50pct: rgba(59, 130, 246, 0.5);
+  --lumo-primary-text-color: var(--accent-primary);
+  --lumo-primary-contrast-color: #ffffff;
+
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
+  --lumo-tertiary-text-color: #64748b;
+  --lumo-disabled-text-color: #475569;
+
+  --lumo-contrast: var(--text-primary);
+  --lumo-contrast-90pct: rgba(248, 250, 252, 0.9);
+  --lumo-contrast-80pct: rgba(248, 250, 252, 0.8);
+  --lumo-contrast-70pct: rgba(248, 250, 252, 0.7);
+  --lumo-contrast-60pct: rgba(248, 250, 252, 0.6);
+  --lumo-contrast-50pct: rgba(248, 250, 252, 0.5);
+  --lumo-contrast-40pct: rgba(248, 250, 252, 0.4);
+  --lumo-contrast-30pct: rgba(248, 250, 252, 0.3);
+  --lumo-contrast-20pct: rgba(248, 250, 252, 0.2);
+  --lumo-contrast-10pct: rgba(248, 250, 252, 0.1);
+  --lumo-contrast-5pct: rgba(248, 250, 252, 0.05);
+
+  --lumo-shade: var(--concert-black);
+  --lumo-shade-5pct: rgba(5, 8, 10, 0.05);
+  --lumo-shade-10pct: rgba(5, 8, 10, 0.1);
+  --lumo-shade-20pct: rgba(5, 8, 10, 0.2);
+  --lumo-shade-30pct: rgba(5, 8, 10, 0.3);
+  --lumo-shade-40pct: rgba(5, 8, 10, 0.4);
+  --lumo-shade-50pct: rgba(5, 8, 10, 0.5);
+
+  /* Modern geometric border radius */
+  --lumo-border-radius-m: 4px;
+  --lumo-border-radius-l: 8px;
+
+  /* Contemporary sans-serif font */
+  --lumo-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Status colors */
+  --lumo-error-color: #ef4444;
+  --lumo-success-color: #22c55e;
+
+  /* Deep blue-black gradient like granite */
+  --bg-gradient: linear-gradient(180deg, #05080a 0%, #0f172a 50%, #05080a 100%);
+}
+
+/* Theme class for component-specific overrides */
+html.theme-bastille,
+body.theme-bastille {
+  --accent-primary: #3b82f6;
+  --accent-soft: #60a5fa;
+  --lumo-primary-color: #3b82f6;
+}
+
+/* Bastille theme: modern, clean - no musical flourishes */
+body.theme-bastille h3::before,
+body.theme-bastille h3::after {
+  content: none;
+}
+
+/* Bastille theme: clean modern typography */
+body.theme-bastille .login-title,
+body.theme-bastille .header-title-impromptu,
+body.theme-bastille .header-title-subtitle {
+  font-style: normal;
+  font-weight: 600;
+}
+
+body.theme-bastille .header-title-subtitle {
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}

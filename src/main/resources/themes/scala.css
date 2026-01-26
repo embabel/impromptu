@@ -1,0 +1,105 @@
+/*
+ * Theme: Scala
+ * Display Name: La Scala
+ * Description: Timeless Italian elegance inspired by Teatro alla Scala
+ * Default: false
+ */
+
+/* Variable definitions - use :root so dynamic injection overrides static defaults */
+:root {
+  --concert-black: #0f0a08;
+  --piano-black: #1a1410;
+  --velvet-purple: #261c18;
+  --accent-primary: #b8860b;
+  --accent-soft: #daa520;
+  --accent-glow: rgba(184, 134, 11, 0.2);
+  --text-primary: #faf8f5;
+  --text-secondary: #ebe5dc;
+  --text-muted: #c4b8a8;
+  --panel-bg-start: #3d2820;
+  --panel-bg-end: #1a1410;
+
+  /* Legacy variable aliases */
+  --ivory-white: #faf8f5;
+  --silver-string: #c4b8a8;
+
+  /* Lumo overrides */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--accent-primary);
+  --lumo-primary-color-50pct: rgba(184, 134, 11, 0.5);
+  --lumo-primary-text-color: var(--accent-primary);
+  --lumo-primary-contrast-color: #0f0a08;
+
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
+  --lumo-tertiary-text-color: #a09080;
+  --lumo-disabled-text-color: #807060;
+
+  --lumo-contrast: var(--text-primary);
+  --lumo-contrast-90pct: rgba(250, 248, 245, 0.9);
+  --lumo-contrast-80pct: rgba(250, 248, 245, 0.8);
+  --lumo-contrast-70pct: rgba(250, 248, 245, 0.7);
+  --lumo-contrast-60pct: rgba(250, 248, 245, 0.6);
+  --lumo-contrast-50pct: rgba(250, 248, 245, 0.5);
+  --lumo-contrast-40pct: rgba(250, 248, 245, 0.4);
+  --lumo-contrast-30pct: rgba(250, 248, 245, 0.3);
+  --lumo-contrast-20pct: rgba(250, 248, 245, 0.2);
+  --lumo-contrast-10pct: rgba(250, 248, 245, 0.1);
+  --lumo-contrast-5pct: rgba(250, 248, 245, 0.05);
+
+  --lumo-shade: var(--concert-black);
+  --lumo-shade-5pct: rgba(15, 10, 8, 0.05);
+  --lumo-shade-10pct: rgba(15, 10, 8, 0.1);
+  --lumo-shade-20pct: rgba(15, 10, 8, 0.2);
+  --lumo-shade-30pct: rgba(15, 10, 8, 0.3);
+  --lumo-shade-40pct: rgba(15, 10, 8, 0.4);
+  --lumo-shade-50pct: rgba(15, 10, 8, 0.5);
+
+  /* Classic elegant border radius */
+  --lumo-border-radius-m: 10px;
+  --lumo-border-radius-l: 14px;
+
+  /* Classic Italian serif font */
+  --lumo-font-family: 'Crimson Pro', 'Georgia', serif;
+
+  /* Status colors */
+  --lumo-error-color: #ef4444;
+  --lumo-success-color: #22c55e;
+
+  /* Warm brown-gold gradient evoking velvet and gilding */
+  --bg-gradient: linear-gradient(135deg, #0f0a08 0%, #261c18 50%, #1a1410 100%);
+}
+
+/* Theme class for component-specific overrides */
+html.theme-scala,
+body.theme-scala {
+  --accent-primary: #b8860b;
+  --accent-soft: #daa520;
+  --lumo-primary-color: #b8860b;
+}
+
+/* La Scala theme: elegant Italian flourishes */
+body.theme-scala h3::before {
+  content: "\2727";
+  margin-right: 0.5rem;
+  opacity: 0.7;
+}
+
+body.theme-scala h3::after {
+  content: "\2727";
+  margin-left: 0.5rem;
+  opacity: 0.7;
+}
+
+/* La Scala theme: classic Italian elegance */
+body.theme-scala .login-title,
+body.theme-scala .header-title-impromptu {
+  font-style: italic;
+  letter-spacing: 0.05em;
+}
+
+body.theme-scala .header-title-subtitle {
+  font-style: normal;
+  letter-spacing: 0.12em;
+}

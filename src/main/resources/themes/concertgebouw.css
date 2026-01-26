@@ -1,0 +1,99 @@
+/*
+ * Theme: Concertgebouw
+ * Display Name: Concertgebouw
+ * Description: Bold modern design inspired by Amsterdam's Royal Concertgebouw
+ * Default: false
+ */
+
+/* Variable definitions - use :root so dynamic injection overrides static defaults */
+:root {
+  --concert-black: #1a1518;
+  --piano-black: #2d2528;
+  --velvet-purple: #3e2b2e;
+  --accent-primary: #e4002b;
+  --accent-soft: #ff3355;
+  --accent-glow: rgba(228, 0, 43, 0.2);
+  --text-primary: #f4f4f2;
+  --text-secondary: #d9d9d6;
+  --text-muted: #a0a0a0;
+  --panel-bg-start: #3e2b2e;
+  --panel-bg-end: #2d2528;
+
+  /* Legacy variable aliases */
+  --ivory-white: #f4f4f2;
+  --silver-string: #a0a0a0;
+
+  /* Lumo overrides */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--accent-primary);
+  --lumo-primary-color-50pct: rgba(228, 0, 43, 0.5);
+  --lumo-primary-text-color: var(--accent-primary);
+  --lumo-primary-contrast-color: #ffffff;
+
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
+  --lumo-tertiary-text-color: #808080;
+  --lumo-disabled-text-color: #606060;
+
+  --lumo-contrast: var(--text-primary);
+  --lumo-contrast-90pct: rgba(244, 244, 242, 0.9);
+  --lumo-contrast-80pct: rgba(244, 244, 242, 0.8);
+  --lumo-contrast-70pct: rgba(244, 244, 242, 0.7);
+  --lumo-contrast-60pct: rgba(244, 244, 242, 0.6);
+  --lumo-contrast-50pct: rgba(244, 244, 242, 0.5);
+  --lumo-contrast-40pct: rgba(244, 244, 242, 0.4);
+  --lumo-contrast-30pct: rgba(244, 244, 242, 0.3);
+  --lumo-contrast-20pct: rgba(244, 244, 242, 0.2);
+  --lumo-contrast-10pct: rgba(244, 244, 242, 0.1);
+  --lumo-contrast-5pct: rgba(244, 244, 242, 0.05);
+
+  --lumo-shade: var(--concert-black);
+  --lumo-shade-5pct: rgba(26, 21, 24, 0.05);
+  --lumo-shade-10pct: rgba(26, 21, 24, 0.1);
+  --lumo-shade-20pct: rgba(26, 21, 24, 0.2);
+  --lumo-shade-30pct: rgba(26, 21, 24, 0.3);
+  --lumo-shade-40pct: rgba(26, 21, 24, 0.4);
+  --lumo-shade-50pct: rgba(26, 21, 24, 0.5);
+
+  /* Modern bold border radius */
+  --lumo-border-radius-m: 6px;
+  --lumo-border-radius-l: 10px;
+
+  /* Modern sans-serif font */
+  --lumo-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Status colors */
+  --lumo-error-color: #ef4444;
+  --lumo-success-color: #22c55e;
+
+  /* Warm charcoal gradient */
+  --bg-gradient: linear-gradient(180deg, #1a1518 0%, #3e2b2e 50%, #2d2528 100%);
+}
+
+/* Theme class for component-specific overrides */
+html.theme-concertgebouw,
+body.theme-concertgebouw {
+  --accent-primary: #e4002b;
+  --accent-soft: #ff3355;
+  --lumo-primary-color: #e4002b;
+}
+
+/* Concertgebouw theme: modern, bold - no musical flourishes */
+body.theme-concertgebouw h3::before,
+body.theme-concertgebouw h3::after {
+  content: none;
+}
+
+/* Concertgebouw theme: bold modern typography */
+body.theme-concertgebouw .login-title,
+body.theme-concertgebouw .header-title-impromptu,
+body.theme-concertgebouw .header-title-subtitle {
+  font-style: normal;
+  font-weight: 700;
+}
+
+body.theme-concertgebouw .header-title-subtitle {
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}

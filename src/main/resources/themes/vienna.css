@@ -1,0 +1,93 @@
+/*
+ * Theme: Vienna
+ * Display Name: Vienna
+ * Description: Imperial elegance inspired by the Musikverein concert hall
+ * Default: false
+ */
+
+/* Variable definitions - use :root so dynamic injection overrides static defaults */
+:root {
+  --concert-black: #1a0a0a;
+  --piano-black: #2d1515;
+  --velvet-purple: #3d1a1a;
+  --accent-primary: #8b0000;
+  --accent-soft: #b22222;
+  --accent-glow: rgba(139, 0, 0, 0.2);
+  --text-primary: #faf0e6;
+  --text-secondary: #f5deb3;
+  --text-muted: #d2b48c;
+  --panel-bg-start: #4a2020;
+  --panel-bg-end: #2d1515;
+
+  /* Legacy variable aliases */
+  --ivory-white: #faf0e6;
+  --silver-string: #d2b48c;
+
+  /* Lumo overrides */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--accent-primary);
+  --lumo-primary-color-50pct: rgba(139, 0, 0, 0.5);
+  --lumo-primary-text-color: var(--accent-primary);
+  --lumo-primary-contrast-color: var(--text-primary);
+
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
+  --lumo-tertiary-text-color: #a0826d;
+  --lumo-disabled-text-color: #8b7355;
+
+  --lumo-contrast: var(--text-primary);
+  --lumo-contrast-90pct: rgba(250, 240, 230, 0.9);
+  --lumo-contrast-80pct: rgba(250, 240, 230, 0.8);
+  --lumo-contrast-70pct: rgba(250, 240, 230, 0.7);
+  --lumo-contrast-60pct: rgba(250, 240, 230, 0.6);
+  --lumo-contrast-50pct: rgba(250, 240, 230, 0.5);
+  --lumo-contrast-40pct: rgba(250, 240, 230, 0.4);
+  --lumo-contrast-30pct: rgba(250, 240, 230, 0.3);
+  --lumo-contrast-20pct: rgba(250, 240, 230, 0.2);
+  --lumo-contrast-10pct: rgba(250, 240, 230, 0.1);
+  --lumo-contrast-5pct: rgba(250, 240, 230, 0.05);
+
+  --lumo-shade: var(--concert-black);
+  --lumo-shade-5pct: rgba(26, 10, 10, 0.05);
+  --lumo-shade-10pct: rgba(26, 10, 10, 0.1);
+  --lumo-shade-20pct: rgba(26, 10, 10, 0.2);
+  --lumo-shade-30pct: rgba(26, 10, 10, 0.3);
+  --lumo-shade-40pct: rgba(26, 10, 10, 0.4);
+  --lumo-shade-50pct: rgba(26, 10, 10, 0.5);
+
+  /* Ornate border radius */
+  --lumo-border-radius-m: 8px;
+  --lumo-border-radius-l: 12px;
+
+  /* Elegant serif font */
+  --lumo-font-family: 'Crimson Pro', 'Georgia', serif;
+
+  /* Status colors */
+  --lumo-error-color: #ef4444;
+  --lumo-success-color: #22c55e;
+
+  /* Rich burgundy gradient */
+  --bg-gradient: linear-gradient(135deg, #1a0a0a 0%, #3d1a1a 50%, #2d1515 100%);
+}
+
+/* Theme class for component-specific overrides */
+html.theme-vienna,
+body.theme-vienna {
+  --accent-primary: #8b0000;
+  --accent-soft: #b22222;
+  --lumo-primary-color: #8b0000;
+}
+
+/* Vienna theme: ornate musical symbols */
+body.theme-vienna h3::before {
+  content: "\1D11E";
+  margin-right: 0.5rem;
+  opacity: 0.8;
+}
+
+body.theme-vienna h3::after {
+  content: "\1D122";
+  margin-left: 0.5rem;
+  opacity: 0.8;
+}

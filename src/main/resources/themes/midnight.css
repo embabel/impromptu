@@ -1,0 +1,99 @@
+/*
+ * Theme: Midnight
+ * Display Name: Midnight
+ * Description: Cool blues and silvers evoking a nocturne under starlight
+ * Default: false
+ */
+
+/* Variable definitions - use :root so dynamic injection overrides static defaults */
+:root {
+  --concert-black: #0a0a14;
+  --piano-black: #0f0f1a;
+  --velvet-purple: #141428;
+  --accent-primary: #4a9eff;
+  --accent-soft: #7bb8ff;
+  --accent-glow: rgba(74, 158, 255, 0.15);
+  --text-primary: #e8eef5;
+  --text-secondary: #c4d4e8;
+  --text-muted: #8ba4c4;
+  --panel-bg-start: #1a1a3a;
+  --panel-bg-end: #0f0f1a;
+
+  /* Legacy variable aliases */
+  --ivory-white: #e8eef5;
+  --silver-string: #8ba4c4;
+
+  /* Lumo overrides */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--accent-primary);
+  --lumo-primary-color-50pct: rgba(74, 158, 255, 0.5);
+  --lumo-primary-text-color: var(--accent-primary);
+  --lumo-primary-contrast-color: var(--concert-black);
+
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
+  --lumo-tertiary-text-color: #6a84a4;
+  --lumo-disabled-text-color: #4a6484;
+
+  --lumo-contrast: var(--text-primary);
+  --lumo-contrast-90pct: rgba(232, 238, 245, 0.9);
+  --lumo-contrast-80pct: rgba(232, 238, 245, 0.8);
+  --lumo-contrast-70pct: rgba(232, 238, 245, 0.7);
+  --lumo-contrast-60pct: rgba(232, 238, 245, 0.6);
+  --lumo-contrast-50pct: rgba(232, 238, 245, 0.5);
+  --lumo-contrast-40pct: rgba(232, 238, 245, 0.4);
+  --lumo-contrast-30pct: rgba(232, 238, 245, 0.3);
+  --lumo-contrast-20pct: rgba(232, 238, 245, 0.2);
+  --lumo-contrast-10pct: rgba(232, 238, 245, 0.1);
+  --lumo-contrast-5pct: rgba(232, 238, 245, 0.05);
+
+  --lumo-shade: var(--concert-black);
+  --lumo-shade-5pct: rgba(10, 10, 20, 0.05);
+  --lumo-shade-10pct: rgba(10, 10, 20, 0.1);
+  --lumo-shade-20pct: rgba(10, 10, 20, 0.2);
+  --lumo-shade-30pct: rgba(10, 10, 20, 0.3);
+  --lumo-shade-40pct: rgba(10, 10, 20, 0.4);
+  --lumo-shade-50pct: rgba(10, 10, 20, 0.5);
+
+  /* Soft border radius */
+  --lumo-border-radius-m: 10px;
+  --lumo-border-radius-l: 14px;
+
+  /* Clean modern font */
+  --lumo-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Status colors */
+  --lumo-error-color: #ef4444;
+  --lumo-success-color: #22c55e;
+
+  /* Deep blue gradient */
+  --bg-gradient: linear-gradient(180deg, #0a0a14 0%, #141428 60%, #0a1428 100%);
+}
+
+/* Theme class for component-specific overrides */
+html.theme-midnight,
+body.theme-midnight {
+  --accent-primary: #4a9eff;
+  --accent-soft: #7bb8ff;
+  --lumo-primary-color: #4a9eff;
+}
+
+/* Midnight theme: subtle star symbols */
+body.theme-midnight h3::before {
+  content: "✦";
+  margin-right: 0.5rem;
+  opacity: 0.6;
+}
+
+body.theme-midnight h3::after {
+  content: "✦";
+  margin-left: 0.5rem;
+  opacity: 0.6;
+}
+
+/* Midnight theme: no italics for modern feel */
+body.theme-midnight .login-title,
+body.theme-midnight .header-title-impromptu {
+  font-style: normal;
+}

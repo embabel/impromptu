@@ -22,6 +22,7 @@ import com.embabel.impromptu.integrations.youtube.YouTubePendingPlayback;
 import com.embabel.impromptu.integrations.youtube.YouTubeService;
 import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
 import com.embabel.impromptu.speech.PersonaService;
+import com.embabel.impromptu.theme.ThemeService;
 import com.embabel.impromptu.user.ImpromptuUser;
 import com.embabel.web.vaadin.components.AssetsPanel;
 import com.embabel.web.vaadin.components.PropositionsPanel;
@@ -67,9 +68,11 @@ public class SessionPanel extends Div {
             YouTubePendingPlayback youTubePendingPlayback,
             DrivinePropositionRepository propositionRepository,
             PersonaService personaService,
+            ThemeService themeService,
             Consumer<EntityMention> onMentionClick,
             Supplier<AssetView> assetViewSupplier,
-            Consumer<String> onPersonaChange
+            Consumer<String> onPersonaChange,
+            Consumer<String> onThemeChange
     ) {
     }
 
@@ -131,8 +134,9 @@ public class SessionPanel extends Div {
         var assetsTab = new Tab(VaadinIcon.CUBE.create(), new Span("Assets"));
         var memoryTab = new Tab(VaadinIcon.LIGHTBULB.create(), new Span("Memory"));
         var voiceTab = new Tab(VaadinIcon.USER.create(), new Span("Voice"));
+        var themeTab = new Tab(VaadinIcon.PAINT_ROLL.create(), new Span("Theme"));
 
-        var tabs = new Tabs(mediaTab, assetsTab, memoryTab, voiceTab);
+        var tabs = new Tabs(mediaTab, assetsTab, memoryTab, voiceTab, themeTab);
         tabs.setWidthFull();
         sidePanel.add(tabs);
 
@@ -165,7 +169,11 @@ public class SessionPanel extends Div {
         var voiceContent = new VoiceSelectionPanel(config.personaService(), config.user(), config.onPersonaChange());
         voiceContent.setVisible(false);
 
-        contentArea.add(mediaContent, assetsContent, memoryContent, voiceContent);
+        // Theme content
+        var themeContent = new ThemeSelectionPanel(config.themeService(), config.user(), config.onThemeChange());
+        themeContent.setVisible(false);
+
+        contentArea.add(mediaContent, assetsContent, memoryContent, voiceContent, themeContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
@@ -176,6 +184,7 @@ public class SessionPanel extends Div {
             assetsContent.setVisible(selected == assetsTab);
             memoryContent.setVisible(selected == memoryTab);
             voiceContent.setVisible(selected == voiceTab);
+            themeContent.setVisible(selected == themeTab);
 
             if (selected == assetsTab) {
                 assetsContent.refresh();
