@@ -11,6 +11,10 @@ import com.embabel.dice.common.resolver.EscalatingEntityResolver;
 import com.embabel.dice.common.resolver.LlmCandidateBakeoff;
 import com.embabel.dice.common.support.InMemorySchemaRegistry;
 import com.embabel.dice.pipeline.PropositionPipeline;
+import com.embabel.dice.projection.graph.GraphProjector;
+import com.embabel.dice.projection.graph.GraphRelationshipPersister;
+import com.embabel.dice.projection.graph.NamedEntityDataRepositoryGraphRelationshipPersister;
+import com.embabel.dice.projection.graph.RelationBasedGraphProjector;
 import com.embabel.dice.proposition.PropositionExtractor;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.extraction.LlmPropositionExtractor;
@@ -21,6 +25,10 @@ import com.embabel.impromptu.domain.Composer;
 import com.embabel.impromptu.domain.MusicPlace;
 import com.embabel.impromptu.domain.Performer;
 import com.embabel.impromptu.domain.Work;
+import com.embabel.impromptu.integrations.spotify.SpotifyPerformance;
+import com.embabel.impromptu.integrations.spotify.SpotifyTrack;
+import com.embabel.impromptu.integrations.youtube.YouTubePerformance;
+import com.embabel.impromptu.integrations.youtube.YouTubeVideo;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.drivine.manager.GraphObjectManager;
 import org.drivine.manager.PersistenceManager;
@@ -56,7 +64,11 @@ class PropositionConfiguration {
 //                MusicDomainTypes.Instrument.class,
                 MusicPlace.class,
 //                MusicDomainTypes.MusicalConcept.class,
-                ImpromptuUser.class
+                ImpromptuUser.class,
+                SpotifyPerformance.class,
+                SpotifyTrack.class,
+                YouTubePerformance.class,
+                YouTubeVideo.class
         );
         logger.info("Created music domain schema with {} types", schema.getDomainTypes().size());
         return schema;
@@ -81,6 +93,23 @@ class PropositionConfiguration {
                         ImpromptuUser.class, KnowledgeType.SEMANTIC,
                         "loves", "likes", "dislikes", "knows", "is_interested_in"
                 );
+    }
+
+    /**
+     * Graph projector that creates semantic relationships from propositions.
+     * Uses predicate matching (no LLM) to map proposition text to relationship types.
+     */
+    @Bean
+    GraphProjector graphProjector(Relations relations) {
+        return RelationBasedGraphProjector.from(relations);
+    }
+
+    /**
+     * Persister for projected graph relationships.
+     */
+    @Bean
+    GraphRelationshipPersister graphRelationshipPersister(NamedEntityDataRepository repository) {
+        return new NamedEntityDataRepositoryGraphRelationshipPersister(repository);
     }
 
     /**

@@ -86,16 +86,16 @@ public record SpotifyTools(
         }
 
         try {
-            List<SpotifyService.SpotifyTrack> tracks = spotifyService.searchTracks(user, query, 10);
+            List<SpotifyTrack> tracks = spotifyService.searchTracks(user, query, 10);
             if (tracks.isEmpty()) {
                 return "No tracks found for: " + query;
             }
 
             StringBuilder sb = new StringBuilder("Found tracks:\n\n");
             for (int i = 0; i < tracks.size(); i++) {
-                SpotifyService.SpotifyTrack track = tracks.get(i);
-                sb.append(i + 1).append(". **").append(track.name()).append("** by ")
-                        .append(track.artist()).append("\n");
+                SpotifyTrack track = tracks.get(i);
+                sb.append(i + 1).append(". **").append(track.title()).append("** by ")
+                        .append(track.getArtist()).append("\n");
             }
             return sb.toString();
         } catch (SpotifyException e) {
@@ -152,8 +152,8 @@ public record SpotifyTools(
             // Search and collect track URIs
             List<String> trackUris = trackQueries.stream()
                     .map(query -> {
-                        List<SpotifyService.SpotifyTrack> results = spotifyService.searchTracks(user, query, 1);
-                        return results.isEmpty() ? null : results.get(0).uri();
+                        List<SpotifyTrack> results = spotifyService.searchTracks(user, query, 1);
+                        return results.isEmpty() ? null : results.get(0).getUri();
                     })
                     .filter(uri -> uri != null)
                     .collect(Collectors.toList());
@@ -198,8 +198,8 @@ public record SpotifyTools(
             // Search and collect track URIs
             List<String> trackUris = trackQueries.stream()
                     .map(query -> {
-                        List<SpotifyService.SpotifyTrack> results = spotifyService.searchTracks(user, query, 1);
-                        return results.isEmpty() ? null : results.get(0).uri();
+                        List<SpotifyTrack> results = spotifyService.searchTracks(user, query, 1);
+                        return results.isEmpty() ? null : results.get(0).getUri();
                     })
                     .filter(uri -> uri != null)
                     .collect(Collectors.toList());

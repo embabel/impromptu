@@ -51,8 +51,8 @@ public record YouTubeTools(
             var sb = new StringBuilder("Found YouTube videos:\n\n");
             for (int i = 0; i < Math.min(5, videos.size()); i++) {
                 var video = videos.get(i);
-                sb.append(i + 1).append(". **").append(video.title()).append("**\n");
-                sb.append("   Channel: ").append(video.channelTitle()).append("\n");
+                sb.append(i + 1).append(". **").append(video.getTitle()).append("**\n");
+                sb.append("   Channel: ").append(video.getChannelTitle()).append("\n");
             }
             return sb.toString();
         } catch (YouTubeException e) {
@@ -80,17 +80,17 @@ public record YouTubeTools(
             // Best match is first (already sorted by score)
             var bestMatch = videos.getFirst();
 
-            logger.info("Best YouTube match for '{}': {} (score: {})",
-                    query, bestMatch.title(), bestMatch.score());
+            logger.info("Best YouTube match for '{}': {}",
+                    query, bestMatch.getTitle());
 
             // Request playback via shared cache
-            pendingPlayback.requestPlayback(user.getId(), bestMatch.videoId(), bestMatch.title(), bestMatch.channelTitle());
+            pendingPlayback.requestPlayback(user.getId(), bestMatch.getVideoId(), bestMatch.getTitle(), bestMatch.getChannelTitle());
 
             logger.info("Requested YouTube playback: {} - {}",
-                    bestMatch.videoId(), bestMatch.title());
+                    bestMatch.getVideoId(), bestMatch.getTitle());
 
-            return "Now playing on YouTube: **" + bestMatch.title() + "**\n" +
-                    "Channel: " + bestMatch.channelTitle() +
+            return "Now playing on YouTube: **" + bestMatch.getTitle() + "**\n" +
+                    "Channel: " + bestMatch.getChannelTitle() +
                     (bestMatch.durationSeconds() > 0 ? "\nDuration: " + bestMatch.durationFormatted() : "");
         } catch (YouTubeException e) {
             logger.error("Failed to play YouTube video", e);
@@ -113,13 +113,13 @@ public record YouTubeTools(
                 return "Video not found: " + videoId;
             }
 
-            pendingPlayback.requestPlayback(user.getId(), video.videoId(), video.title(), video.channelTitle());
+            pendingPlayback.requestPlayback(user.getId(), video.getVideoId(), video.getTitle(), video.getChannelTitle());
 
             logger.info("Requested YouTube playback by ID: {} - {}",
-                    video.videoId(), video.title());
+                    video.getVideoId(), video.getTitle());
 
-            return "Now playing on YouTube: **" + video.title() + "**\n" +
-                    "Channel: " + video.channelTitle() +
+            return "Now playing on YouTube: **" + video.getTitle() + "**\n" +
+                    "Channel: " + video.getChannelTitle() +
                     (video.durationSeconds() > 0 ? "\nDuration: " + video.durationFormatted() : "");
         } catch (YouTubeException e) {
             logger.error("Failed to play YouTube video", e);

@@ -25,7 +25,17 @@ public interface Playable extends Asset {
     /**
      * Human-readable duration string (e.g., "3:45" or "1:23:45").
      */
-    String durationFormatted();
+    default String durationFormatted() {
+        int total = durationSeconds();
+        if (total <= 0) return null;
+        int hours = total / 3600;
+        int minutes = (total % 3600) / 60;
+        int seconds = total % 60;
+        if (hours > 0) {
+            return String.format("%d:%02d:%02d", hours, minutes, seconds);
+        }
+        return String.format("%d:%02d", minutes, seconds);
+    }
 
     /**
      * URL to play or view the media item.

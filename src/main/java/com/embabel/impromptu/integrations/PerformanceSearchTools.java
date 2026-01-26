@@ -1,9 +1,11 @@
 package com.embabel.impromptu.integrations;
 
 import com.embabel.agent.api.tool.Tool;
-import com.embabel.impromptu.integrations.spotify.SpotifyPerformance;
+import com.embabel.impromptu.integrations.spotify.SpotifyPerformanceImpl;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
-import com.embabel.impromptu.integrations.youtube.YouTubePerformance;
+import com.embabel.impromptu.integrations.spotify.SpotifyTrack;
+import com.embabel.impromptu.integrations.spotify.SpotifyTrackImpl;
+import com.embabel.impromptu.integrations.youtube.YouTubePerformanceImpl;
 import com.embabel.impromptu.integrations.youtube.YouTubeService;
 import com.embabel.impromptu.user.ImpromptuUser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -187,11 +189,11 @@ public class PerformanceSearchTools {
 
                         // Create tracks from the URIs
                         var tracks = trackUris.stream()
-                                .map(uri -> new SpotifyService.SpotifyTrack(
-                                        uri, "Track", performer != null ? performer : "Unknown", 0, Instant.now()))
+                                .<SpotifyTrack>map(uri -> SpotifyTrackImpl.fromApi(
+                                        uri, "Track", performer != null ? performer : "Unknown", 0))
                                 .toList();
 
-                        var performance = new SpotifyPerformance(
+                        var performance = SpotifyPerformanceImpl.create(
                                 workId, albumId, albumName, performer, ensemble, conductor, tracks
                         );
 
@@ -235,9 +237,9 @@ public class PerformanceSearchTools {
 
                         var videoInfos = videos.stream()
                                 .map(v -> new VideoInfo(
-                                        v.videoId(),
-                                        v.title(),
-                                        v.channelTitle(),
+                                        v.getVideoId(),
+                                        v.getTitle(),
+                                        v.getChannelTitle(),
                                         v.durationSeconds(),
                                         v.durationFormatted()
                                 ))
@@ -284,12 +286,12 @@ public class PerformanceSearchTools {
                             return Tool.Result.text("Error: Video not found: %s".formatted(videoId));
                         }
 
-                        var performance = new YouTubePerformance(
+                        var performance = YouTubePerformanceImpl.create(
                                 workId, performer, ensemble, conductor, video
                         );
 
                         logger.info("Created YouTube performance: {} - {}",
-                                performance.title(), video.title());
+                                performance.title(), video.getTitle());
 
                         return Tool.Result.withArtifact(
                                 """

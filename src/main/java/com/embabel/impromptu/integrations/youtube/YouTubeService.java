@@ -1,8 +1,6 @@
 package com.embabel.impromptu.integrations.youtube;
 
-import com.embabel.impromptu.integrations.Playable;
 import jakarta.annotation.PostConstruct;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -87,7 +85,7 @@ public class YouTubeService {
         List<Map<String, Object>> items = (List<Map<String, Object>>) response.get("items");
 
         return items.stream()
-                .map(item -> {
+                .<YouTubeVideo>map(item -> {
                     Map<String, Object> id = (Map<String, Object>) item.get("id");
                     Map<String, Object> snippet = (Map<String, Object>) item.get("snippet");
                     Map<String, Object> thumbnails = (Map<String, Object>) snippet.get("thumbnails");
@@ -95,7 +93,7 @@ public class YouTubeService {
                             ? (Map<String, Object>) thumbnails.get("medium")
                             : null;
 
-                    return new YouTubeVideo(
+                    return YouTubeVideoImpl.fromApi(
                             (String) id.get("videoId"),
                             (String) snippet.get("title"),
                             (String) snippet.get("channelTitle"),
@@ -109,28 +107,31 @@ public class YouTubeService {
     /**
      * Search with detailed scoring for classical music.
      * Fetches durations via a follow-up API call.
+     * Returns videos sorted by match score (best first).
      */
-    public List<YouTubeVideoDetails> searchVideosDetailed(String query, int maxResults) {
+    public List<YouTubeVideo> searchVideosDetailed(String query, int maxResults) {
         var videos = searchVideos(query, maxResults);
         if (videos.isEmpty()) {
             return List.of();
         }
 
         // Fetch durations for all videos in one API call
-        var durations = fetchVideoDurations(videos.stream().map(YouTubeVideo::videoId).toList());
+        var durations = fetchVideoDurations(videos.stream().map(YouTubeVideo::getVideoId).toList());
 
+        // Score and sort videos
+        record ScoredVideo(YouTubeVideo video, int score) {}
         return videos.stream()
-                .map(v -> new YouTubeVideoDetails(
-                        v.videoId(),
-                        v.title(),
-                        v.channelTitle(),
-                        v.description(),
-                        v.thumbnailUrl(),
-                        scoreMatch(v, query),
-                        durations.getOrDefault(v.videoId(), 0),
-                        v.timestamp
-                ))
+                .map(v -> {
+                    int duration = durations.getOrDefault(v.getVideoId(), 0);
+                    // Create a new video with duration if needed
+                    YouTubeVideo videoWithDuration = duration > 0
+                            ? YouTubeVideoImpl.fromApi(v.getVideoId(), v.getTitle(), v.getChannelTitle(),
+                                    v.getVideoDescription(), v.getThumbnailUrl(), duration, v.getTimestamp())
+                            : v;
+                    return new ScoredVideo(videoWithDuration, scoreMatch(v, query));
+                })
                 .sorted((a, b) -> Integer.compare(b.score(), a.score()))
+                .map(ScoredVideo::video)
                 .toList();
     }
 
@@ -186,7 +187,8 @@ public class YouTubeService {
         String queryLower = query.toLowerCase();
         String[] terms = queryLower.split("\\s+");
 
-        String searchable = (video.title() + " " + video.channelTitle() + " " + video.description()).toLowerCase();
+        String description = video.getVideoDescription() != null ? video.getVideoDescription() : "";
+        String searchable = (video.getTitle() + " " + video.getChannelTitle() + " " + description).toLowerCase();
 
         int score = 0;
         for (String term : terms) {
@@ -194,7 +196,7 @@ public class YouTubeService {
             if (searchable.contains(term)) {
                 score += 10;
                 // Bonus for title match
-                if (video.title().toLowerCase().contains(term)) {
+                if (video.getTitle().toLowerCase().contains(term)) {
                     score += 15;
                 }
             }
@@ -204,7 +206,7 @@ public class YouTubeService {
         String[] classicalTerms = {"symphony", "sonata", "concerto", "quartet", "opus", "op.",
                 "no.", "major", "minor", "orchestra", "philharmonic", "chamber"};
         for (String term : classicalTerms) {
-            if (video.title().toLowerCase().contains(term)) {
+            if (video.getTitle().toLowerCase().contains(term)) {
                 score += 5;
             }
         }
@@ -214,13 +216,13 @@ public class YouTubeService {
                 "perlman", "heifetz", "oistrakh", "menuhin", "horowitz", "richter", "rubinstein",
                 "karajan", "bernstein", "abbado", "rattle", "dudamel"};
         for (String performer : performers) {
-            if (video.title().toLowerCase().contains(performer)) {
+            if (video.getTitle().toLowerCase().contains(performer)) {
                 score += 20;
             }
         }
 
         // Penalty for likely non-performance content
-        String titleLower = video.title().toLowerCase();
+        String titleLower = video.getTitle().toLowerCase();
         if (titleLower.contains("tutorial") || titleLower.contains("lesson") ||
                 titleLower.contains("how to") || titleLower.contains("learn")) {
             score -= 30;
@@ -233,7 +235,7 @@ public class YouTubeService {
      * Get video details by ID (for duration, etc.).
      */
     @SuppressWarnings("unchecked")
-    public YouTubeVideoDetails getVideoDetails(String videoId) {
+    public YouTubeVideo getVideoDetails(String videoId) {
         if (!isConfigured()) {
             throw new YouTubeException("YouTube API key not configured");
         }
@@ -268,13 +270,12 @@ public class YouTubeService {
 
         String isoDuration = contentDetails != null ? (String) contentDetails.get("duration") : null;
 
-        return new YouTubeVideoDetails(
+        return YouTubeVideoImpl.fromApi(
                 videoId,
                 (String) snippet.get("title"),
                 (String) snippet.get("channelTitle"),
                 (String) snippet.get("description"),
                 defaultThumb != null ? (String) defaultThumb.get("url") : null,
-                0,
                 parseDurationToSeconds(isoDuration),
                 Instant.now()
         );
@@ -314,105 +315,4 @@ public class YouTubeService {
         }
     }
 
-    public record YouTubeVideo(
-            String videoId,
-            String title,
-            String channelTitle,
-            String description,
-            String thumbnailUrl,
-            int durationSeconds,
-            Instant timestamp
-    ) implements Playable {
-
-        public YouTubeVideo(String videoId, String title, String channelTitle,
-                            String description, String thumbnailUrl) {
-            this(videoId, title, channelTitle, description, thumbnailUrl, 0, Instant.now());
-        }
-
-        @Override
-        public @NonNull Instant getTimestamp() {
-            return timestamp;
-        }
-
-        @Override
-        public @NonNull String getId() {
-            return videoId;
-        }
-
-        @Override
-        public String durationFormatted() {
-            return formatDuration(durationSeconds);
-        }
-
-        @Override
-        public String url() {
-            return "https://www.youtube.com/watch?v=" + videoId;
-        }
-
-        @Override
-        public String source() {
-            return "youtube";
-        }
-
-        @Override
-        public String playbackInfo() {
-            return """
-                    {"source":"youtube","videoId":"%s","title":"%s","channelTitle":"%s","url":"%s","durationSeconds":%d}
-                    """.formatted(videoId, title, channelTitle, url(), durationSeconds).trim();
-        }
-    }
-
-    public record YouTubeVideoDetails(
-            String videoId,
-            String title,
-            String channelTitle,
-            String description,
-            String thumbnailUrl,
-            int score,
-            int durationSeconds,
-            Instant timestamp
-    ) implements Playable {
-
-        public YouTubeVideoDetails(String videoId, String title, String channelTitle,
-                                   String description, String thumbnailUrl, int score) {
-            this(videoId, title, channelTitle, description, thumbnailUrl, score, 0, Instant.now());
-        }
-
-        @Override
-        public @NonNull String getId() {
-            return videoId;
-        }
-
-        @Override
-        public @NonNull Instant getTimestamp() {
-            return timestamp;
-        }
-
-        @Override
-        public String durationFormatted() {
-            return formatDuration(durationSeconds);
-        }
-
-        @Override
-        public String url() {
-            return "https://www.youtube.com/watch?v=" + videoId;
-        }
-
-        @Override
-        public String source() {
-            return "youtube";
-        }
-
-        @Override
-        public String playbackInfo() {
-            return """
-                    {"source":"youtube","videoId":"%s","title":"%s","channelTitle":"%s","url":"%s","durationSeconds":%d}
-                    """.formatted(videoId, title, channelTitle, url(), durationSeconds).trim();
-        }
-
-        public String displayString() {
-            String durationStr = durationSeconds > 0 ? " [" + durationFormatted() + "]" : "";
-            return title + " - " + channelTitle + durationStr;
-        }
-    }
 }

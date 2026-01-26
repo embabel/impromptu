@@ -263,16 +263,15 @@ public class SpotifyService {
         List<Map<String, Object>> items = (List<Map<String, Object>>) tracks.get("items");
 
         return items.stream()
-                .map(item -> {
+                .<SpotifyTrack>map(item -> {
                     List<Map<String, Object>> artists = (List<Map<String, Object>>) item.get("artists");
                     String artistName = artists.isEmpty() ? "Unknown" : (String) artists.get(0).get("name");
                     int durationMs = item.get("duration_ms") instanceof Integer d ? d : 0;
-                    return new SpotifyTrack(
+                    return SpotifyTrackImpl.fromApi(
                             (String) item.get("uri"),
                             (String) item.get("name"),
                             artistName,
-                            durationMs,
-                            Instant.now()
+                            durationMs
                     );
                 })
                 .toList();
@@ -690,67 +689,6 @@ public class SpotifyService {
     public record SpotifyPlaylist(String id, String name, int trackCount) {
     }
 
-    public record SpotifyTrack(
-            String uri,
-            String name,
-            String artist, int durationMs,
-            Instant timestamp
-    ) implements Playable {
-
-        @Override
-        public @NonNull String getId() {
-            return uri;
-        }
-
-        @Override
-        public @NonNull Instant getTimestamp() {
-            return timestamp;
-        }
-
-        @Override
-        public String title() {
-            return name;
-        }
-
-        @Override
-        public int durationSeconds() {
-            return durationMs / 1000;
-        }
-
-        @Override
-        public String durationFormatted() {
-            return formatDuration(durationSeconds());
-        }
-
-        @Override
-        public String url() {
-            // Convert spotify:track:xxx to https://open.spotify.com/track/xxx
-            if (uri != null && uri.startsWith("spotify:track:")) {
-                return "https://open.spotify.com/track/" + uri.substring(14);
-            }
-            return null;
-        }
-
-        @Override
-        public String source() {
-            return "spotify";
-        }
-
-        @Override
-        public String playbackInfo() {
-            return """
-                    {"source":"spotify","uri":"%s","id":"%s","title":"%s","artist":"%s","url":"%s","durationSeconds":%d}
-                    """.formatted(uri, getId(), title(), artist, url(), durationSeconds()).trim();
-        }
-
-        private static String formatDuration(int totalSeconds) {
-            if (totalSeconds <= 0) return null;
-            int minutes = totalSeconds / 60;
-            int seconds = totalSeconds % 60;
-            return String.format("%d:%02d", minutes, seconds);
-        }
-    }
-
     public record SpotifyDevice(String id, String name, String type, boolean isActive, int volumePercent) {
     }
 
@@ -801,15 +739,6 @@ public class SpotifyService {
         @Override
         public int durationSeconds() {
             return durationMs / 1000;
-        }
-
-        @Override
-        public String durationFormatted() {
-            int totalSeconds = durationSeconds();
-            if (totalSeconds <= 0) return null;
-            int minutes = totalSeconds / 60;
-            int seconds = totalSeconds % 60;
-            return String.format("%d:%02d", minutes, seconds);
         }
 
         @Override

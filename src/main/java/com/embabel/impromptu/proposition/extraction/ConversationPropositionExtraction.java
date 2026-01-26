@@ -12,6 +12,8 @@ import com.embabel.dice.incremental.*;
 import com.embabel.dice.incremental.proposition.PropositionIncrementalAnalyzer;
 import com.embabel.dice.pipeline.ChunkPropositionResult;
 import com.embabel.dice.pipeline.PropositionPipeline;
+import com.embabel.dice.projection.graph.GraphProjector;
+import com.embabel.dice.projection.graph.GraphRelationshipPersister;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.dice.proposition.ReferencesEntities;
@@ -43,6 +45,8 @@ public class ConversationPropositionExtraction {
     private final PropositionRepository propositionRepository;
     private final NamedEntityDataRepository entityRepository;
     private final EntityResolver entityResolver;
+    private final GraphProjector graphProjector;
+    private final GraphRelationshipPersister graphRelationshipPersister;
 
     public ConversationPropositionExtraction(
             PropositionPipeline propositionPipeline,
@@ -52,12 +56,16 @@ public class ConversationPropositionExtraction {
             PropositionRepository propositionRepository,
             NamedEntityDataRepository entityRepository,
             EntityResolver entityResolver,
+            GraphProjector graphProjector,
+            GraphRelationshipPersister graphRelationshipPersister,
             ImpromptuProperties properties) {
         this.dataDictionary = dataDictionary;
         this.relations = relations;
         this.propositionRepository = propositionRepository;
         this.entityRepository = entityRepository;
         this.entityResolver = entityResolver;
+        this.graphProjector = graphProjector;
+        this.graphRelationshipPersister = graphRelationshipPersister;
 
         // Configure analyzer with properties
         var extraction = properties.extraction();
@@ -164,6 +172,14 @@ public class ConversationPropositionExtraction {
                 );
             } else {
                 logger.info("No new data to persist (all propositions were duplicates)");
+            }
+
+            // Project propositions to semantic graph relationships (e.g., User -[:LIKES]-> Composer)
+            var projectionResults = graphProjector.projectAll(propsToSave, dataDictionary);
+            if (!projectionResults.getProjected().isEmpty()) {
+                var persistenceResult = graphRelationshipPersister.persist(projectionResults);
+                logger.info("Projected {} semantic relationships from propositions",
+                        persistenceResult.getPersistedCount());
             }
         } catch (Exception e) {
             // Don't let extraction failures break the chat flow

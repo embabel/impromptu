@@ -1,5 +1,8 @@
 package com.embabel.impromptu.integrations;
 
+import com.embabel.agent.rag.model.NamedEntity;
+import org.jspecify.annotations.NonNull;
+
 import java.util.List;
 
 /**
@@ -11,20 +14,27 @@ import java.util.List;
  * <p>
  * On YouTube, a performance is often a single video. On Spotify, it's typically
  * multiple tracks from the same album.
+ *
+ * @param <T> the type of tracks in this performance
  */
-public interface Performance extends Playable {
+public interface Performance<T extends Playable> extends Playable, NamedEntity {
 
     /**
      * ID of the Work being performed (links to domain entity).
      */
     String workId();
 
+    @Override
+    default @NonNull String getName() {
+        return title();
+    }
+
     /**
      * The individual tracks/movements that make up this performance.
      * For YouTube, this is often a single video.
      * For Spotify, this is typically multiple tracks (one per movement).
      */
-    List<? extends Playable> tracks();
+    List<T> tracks();
 
     /**
      * Primary performer (soloist for concertos, lead ensemble for chamber music).
