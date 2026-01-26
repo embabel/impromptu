@@ -1218,6 +1218,53 @@ impromptu:
 
 No code changes required - just restart the application.
 
+## Development Notes
+
+### Integration Tests (`*IT.java`)
+
+Tests with the `IT` suffix (e.g., `RjIngestionIT.java`) are **not executed by CI**. These are integration tests designed for developers to run locally against a real LLM and Neo4j database.
+
+**Key characteristics:**
+
+- **Real LLM calls**: These tests make actual API calls to OpenAI/Anthropic, requiring valid API keys
+- **Real database**: Tests run against the local Neo4j instance started via Docker Compose
+- **Transactional rollback**: Tests use Spring's `@Transactional` annotation to automatically roll back all database changes after each test, leaving the database in its original state
+- **Excluded from CI**: The Maven Surefire plugin is configured to exclude `*IT.java` files and tests tagged with `@Tag("integration")`
+
+**Running integration tests locally:**
+
+```bash
+# Ensure Neo4j is running
+docker compose up -d
+
+# Run a specific integration test
+./mvnw test -Dtest=RjIngestionIT
+
+# Run all integration tests (requires API keys)
+./mvnw test -DexcludedGroups= -Dtest="**/*IT"
+```
+
+**Example integration test structure:**
+
+```java
+@SpringBootTest
+@Transactional  // Rolls back all changes after each test
+@Tag("integration")
+class MyFeatureIT {
+
+    @Autowired
+    private SomeService service;
+
+    @Test
+    void testWithRealLlm() {
+        // This test calls real APIs and writes to Neo4j
+        // All database changes are rolled back automatically
+    }
+}
+```
+
+This pattern allows developers to test against real infrastructure while keeping the database clean for subsequent test runs.
+
 ## Miscellaneous
 
 ### Killing a Stuck Server Process

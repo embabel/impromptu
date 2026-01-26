@@ -25,7 +25,6 @@ import com.embabel.impromptu.TestSecurityConfiguration;
 import com.embabel.impromptu.user.ImpromptuUser;
 import com.embabel.impromptu.user.ImpromptuUserService;
 import org.junit.jupiter.api.DisplayName;
-// import org.junit.jupiter.api.Tag;  // Temporarily disabled
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -54,7 +53,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
  *   <li>Valid LLM API keys configured</li>
  * </ul>
  */
-// @Tag("integration") // Temporarily disabled for testing
 @SpringBootTest(
         properties = {
                 "spring.main.allow-bean-definition-overriding=true",

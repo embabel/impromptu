@@ -143,6 +143,8 @@
                         <!-- Exclude *IT tests (require LLM API keys) -->
                         <exclude>**/*IT.java</exclude>
                     </excludes>
+                    <!-- Allow Mockito's dynamic agent loading on JDK 21+ -->
+                    <argLine>-XX:+EnableDynamicAgentLoading</argLine>
                 </configuration>
             </plugin>
         </plugins>
