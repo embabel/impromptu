@@ -22,6 +22,7 @@ import com.embabel.impromptu.user.ImpromptuUserService;
 import com.embabel.impromptu.vaadin.components.BackstagePanel;
 import com.embabel.impromptu.vaadin.components.ChatFooter;
 import com.embabel.impromptu.vaadin.components.ChatHeader;
+import com.embabel.impromptu.vaadin.components.SessionPanel;
 import com.embabel.web.vaadin.components.ChatMessageBubble;
 import com.embabel.web.vaadin.components.EntityCard;
 import com.embabel.web.vaadin.components.VoiceControl;
@@ -36,7 +37,6 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -79,6 +79,7 @@ public class VaadinChatView extends VerticalLayout {
     private Button sendButton;
     private VoiceControl voiceControl;
     private BackstagePanel backstagePanel;
+    private SessionPanel sessionPanel;
 
     public VaadinChatView(
             Chatbot chatbot,
@@ -145,25 +146,32 @@ public class VaadinChatView extends VerticalLayout {
         // Input section
         add(createInputSection());
 
-        // Backstage panel
+        // Backstage panel (app-level content)
         var indexStats = new com.embabel.impromptu.vaadin.components.ReferencesPanel.IndexStats(
                 stats.getChunkCount(), stats.getDocumentCount());
         var backstageConfig = new BackstagePanel.Config(
-                currentUser,
-                spotifyService,
-                youTubeService,
                 entityRepository,
-                propositionRepository,
                 documentService,
-                personaService,
-                userService,
-                this::showEntityDetail,
                 indexStats,
-                properties,
-                this::getAssetView
+                properties
         );
         backstagePanel = new BackstagePanel(backstageConfig);
         getElement().appendChild(backstagePanel.getElement());
+
+        // Session panel (user/session-level content)
+        var sessionConfig = new SessionPanel.Config(
+                currentUser,
+                spotifyService,
+                youTubeService,
+                youTubePendingPlayback,
+                propositionRepository,
+                personaService,
+                this::showEntityDetail,
+                this::getAssetView,
+                this::onPersonaChange
+        );
+        sessionPanel = new SessionPanel(sessionConfig);
+        getElement().appendChild(sessionPanel.getElement());
 
         // Footer
         var neo4jConfig = new ChatFooter.Neo4jConfig(
@@ -223,93 +231,23 @@ public class VaadinChatView extends VerticalLayout {
     }
 
     private void showUserProfileDialog() {
-        var dialog = new Dialog();
-        dialog.setHeaderTitle("User Settings");
-        dialog.setWidth("400px");
+        sessionPanel.open();
+    }
 
-        var content = new VerticalLayout();
-        content.setPadding(false);
-        content.setSpacing(true);
-
-        // User name display
-        var userNameLabel = new Span(currentUser.getDisplayName());
-        userNameLabel.getStyle().set("font-weight", "bold");
-        userNameLabel.getStyle().set("font-size", "var(--lumo-font-size-l)");
-        content.add(userNameLabel);
-
-        // Voice/Persona selection
-        var voiceSelect = new Select<PersonaService.PersonaInfo>();
-        voiceSelect.setLabel("Voice");
-        voiceSelect.setWidthFull();
-        voiceSelect.setItemLabelGenerator(PersonaService.PersonaInfo::displayName);
-
-        // Custom renderer to show description in dropdown
-        voiceSelect.setRenderer(new com.vaadin.flow.data.renderer.ComponentRenderer<>(persona -> {
-            var item = new VerticalLayout();
-            item.setPadding(false);
-            item.setSpacing(false);
-            item.getStyle().set("padding", "var(--lumo-space-xs) 0");
-
-            var name = new Span(persona.displayName());
-            name.getStyle().set("font-weight", "500");
-
-            var desc = new Span(persona.description());
-            desc.getStyle().set("color", "var(--lumo-secondary-text-color)");
-            desc.getStyle().set("font-size", "var(--lumo-font-size-s)");
-
-            item.add(name, desc);
-            return item;
-        }));
-
-        var personas = personaService.getAvailablePersonas();
-        voiceSelect.setItems(personas);
-
-        personas.stream()
-                .filter(p -> p.name().equals(currentUser.getVoice()))
-                .findFirst()
-                .ifPresent(voiceSelect::setValue);
-
-        content.add(voiceSelect);
-
-        // Show Tool Calls toggle
-        var showToolCallsCheckbox = new com.vaadin.flow.component.checkbox.Checkbox("Show tool calls");
-        showToolCallsCheckbox.setValue(currentUser.isShowToolCalls());
-        showToolCallsCheckbox.getElement().setAttribute("title",
-                "When enabled, shows detailed tool call progress. When disabled, only shows LLM activity.");
-        content.add(showToolCallsCheckbox);
-
-        dialog.add(content);
-
-        // Save button
-        var saveButton = new Button("Save", e -> {
-            boolean changed = false;
-            var selected = voiceSelect.getValue();
-            if (selected != null && !selected.name().equals(currentUser.getVoice())) {
-                currentUser.setVoice(selected.name());
-                changed = true;
-            }
-            if (showToolCallsCheckbox.getValue() != currentUser.isShowToolCalls()) {
-                currentUser.setShowToolCalls(showToolCallsCheckbox.getValue());
-                changed = true;
-            }
-            if (changed) {
-                userService.save(currentUser);
-                logger.info("Updated user settings: voice={}, showToolCalls={}",
-                        currentUser.getVoice(), currentUser.isShowToolCalls());
-                com.vaadin.flow.component.notification.Notification.show(
-                        "Settings saved.",
-                        3000,
-                        com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
-                );
-            }
-            dialog.close();
-        });
-        saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        var cancelButton = new Button("Cancel", e -> dialog.close());
-
-        dialog.getFooter().add(cancelButton, saveButton);
-        dialog.open();
+    /**
+     * Handle persona/voice change from the SessionPanel.
+     */
+    private void onPersonaChange(String personaName) {
+        if (personaName != null && !personaName.equals(currentUser.getVoice())) {
+            currentUser.setVoice(personaName);
+            userService.save(currentUser);
+            logger.info("Updated user voice to: {}", personaName);
+            com.vaadin.flow.component.notification.Notification.show(
+                    "Voice updated.",
+                    3000,
+                    com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
+            );
+        }
     }
 
     private void onVoiceInput(String text) {
@@ -377,7 +315,7 @@ public class VaadinChatView extends VerticalLayout {
                     checkPendingYouTubePlayback();
 
                     // Refresh propositions after a delay
-                    backstagePanel.getPropositionsPanel().scheduleRefresh(ui, 2000);
+                    sessionPanel.getPropositionsPanel().scheduleRefresh(ui, 2000);
                 });
             } catch (Exception e) {
                 logger.error("Error getting chatbot response", e);
@@ -403,7 +341,7 @@ public class VaadinChatView extends VerticalLayout {
         eventPublisher.publishEvent(new ConversationAnalysisRequestEvent(this, currentUser, conversation));
 
         // Schedule a refresh of propositions after analysis
-        getUI().ifPresent(ui -> backstagePanel.getPropositionsPanel().scheduleRefresh(ui, 2000));
+        getUI().ifPresent(ui -> sessionPanel.getPropositionsPanel().scheduleRefresh(ui, 2000));
     }
 
     private void scrollToBottom() {
@@ -438,7 +376,7 @@ public class VaadinChatView extends VerticalLayout {
      * Check for pending YouTube playback requests from LLM tools.
      */
     private void checkPendingYouTubePlayback() {
-        var ytPanel = backstagePanel.getYouTubePlayerPanel();
+        var ytPanel = sessionPanel.getYouTubePlayerPanel();
         if (ytPanel == null) return;
 
         var video = youTubePendingPlayback.consumePendingVideo(currentUser.getId());

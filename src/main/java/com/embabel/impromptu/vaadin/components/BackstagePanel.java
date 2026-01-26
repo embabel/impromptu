@@ -1,18 +1,8 @@
 package com.embabel.impromptu.vaadin.components;
 
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
-import com.embabel.chat.AssetView;
-import com.embabel.dice.proposition.EntityMention;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.integrations.spotify.SpotifyService;
-import com.embabel.impromptu.integrations.youtube.YouTubeService;
-import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepository;
 import com.embabel.impromptu.rag.DocumentService;
-import com.embabel.impromptu.speech.PersonaService;
-import com.embabel.impromptu.user.ImpromptuUser;
-import com.embabel.impromptu.user.ImpromptuUserService;
-import com.embabel.web.vaadin.components.AssetsPanel;
-import com.embabel.web.vaadin.components.PropositionsPanel;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
@@ -27,11 +17,9 @@ import com.vaadin.flow.component.tabs.Tabs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 /**
- * Backstage panel component with tabs for Media, References, Assets, Memory, Sources, Settings, and About.
+ * Backstage panel showing app-level content: References, Sources, Settings, About.
+ * Session-level content (Media, Assets, Memory, Voice) is now in SessionPanel.
  */
 public class BackstagePanel extends Div {
 
@@ -42,25 +30,14 @@ public class BackstagePanel extends Div {
     private final Button toggleButton;
     private ShortcutRegistration escapeShortcut;
 
-    private final PropositionsPanel propositionsPanel;
-    private YouTubePlayerPanel youTubePlayerPanel;
-
     /**
      * Configuration for the backstage panel.
      */
     public record Config(
-            ImpromptuUser user,
-            SpotifyService spotifyService,
-            YouTubeService youTubeService,
             NamedEntityDataRepository entityRepository,
-            DrivinePropositionRepository propositionRepository,
             DocumentService documentService,
-            PersonaService personaService,
-            ImpromptuUserService userService,
-            Consumer<EntityMention> onMentionClick,
             ReferencesPanel.IndexStats indexStats,
-            ImpromptuProperties properties,
-            Supplier<AssetView> assetViewSupplier
+            ImpromptuProperties properties
     ) {
     }
 
@@ -73,7 +50,7 @@ public class BackstagePanel extends Div {
         // Toggle button on right edge
         toggleButton = new Button(VaadinIcon.ELLIPSIS_DOTS_V.create());
         toggleButton.addClassName("side-panel-toggle");
-        toggleButton.getElement().setAttribute("title", "Backstage");
+        toggleButton.getElement().setAttribute("title", "Impromptu");
         toggleButton.addClickListener(e -> open());
 
         // Side panel
@@ -87,7 +64,7 @@ public class BackstagePanel extends Div {
         header.addClassName("side-panel-header");
         header.setWidthFull();
 
-        var title = new Span("Backstage");
+        var title = new Span("Impromptu");
         title.addClassName("side-panel-title");
 
         var closeButton = new Button(new Icon(VaadinIcon.CLOSE));
@@ -110,52 +87,15 @@ public class BackstagePanel extends Div {
         definition.setText("impromptu (noun): a short piece of instrumental music, especially a solo, that is reminiscent of an improvisation.");
         sidePanel.add(definition);
 
-        // Session tabs (per-conversation/user)
-        var sessionLabel = new Span("Session");
-        sessionLabel.getStyle()
-                .set("font-size", "var(--lumo-font-size-xs)")
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("padding", "var(--lumo-space-xs) var(--lumo-space-m)")
-                .set("text-transform", "uppercase")
-                .set("letter-spacing", "0.05em");
-
-        var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
-        var assetsTab = new Tab(VaadinIcon.CUBE.create(), new Span("Assets"));
-        var memoryTab = new Tab(VaadinIcon.LIGHTBULB.create(), new Span("Memory"));
-
-        var sessionTabs = new Tabs(mediaTab, assetsTab, memoryTab);
-        sessionTabs.setWidthFull();
-
-        // Library tabs (global/application)
-        var libraryLabel = new Span("Library");
-        libraryLabel.getStyle()
-                .set("font-size", "var(--lumo-font-size-xs)")
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("padding", "var(--lumo-space-xs) var(--lumo-space-m)")
-                .set("text-transform", "uppercase")
-                .set("letter-spacing", "0.05em");
-
+        // App tabs
         var referencesTab = new Tab(VaadinIcon.RECORDS.create(), new Span("References"));
         var sourcesTab = new Tab(VaadinIcon.BOOK.create(), new Span("Sources"));
         var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
         var aboutTab = new Tab(VaadinIcon.INFO_CIRCLE.create(), new Span("About"));
 
-        var libraryTabs = new Tabs(referencesTab, sourcesTab, settingsTab, aboutTab);
-        libraryTabs.setWidthFull();
-
-        // Deselect other row when selecting a tab
-        sessionTabs.addSelectedChangeListener(e -> {
-            if (e.getSelectedTab() != null) {
-                libraryTabs.setSelectedTab(null);
-            }
-        });
-        libraryTabs.addSelectedChangeListener(e -> {
-            if (e.getSelectedTab() != null) {
-                sessionTabs.setSelectedTab(null);
-            }
-        });
-
-        sidePanel.add(sessionLabel, sessionTabs, libraryLabel, libraryTabs);
+        var tabs = new Tabs(referencesTab, sourcesTab, settingsTab, aboutTab);
+        tabs.setWidthFull();
+        sidePanel.add(tabs);
 
         // Content area
         var contentArea = new VerticalLayout();
@@ -163,92 +103,41 @@ public class BackstagePanel extends Div {
         contentArea.setPadding(false);
         contentArea.setSizeFull();
 
-        // Media content
-        var mediaContent = createMediaContent(config);
-
         // References content
         var referencesContent = new ReferencesPanel(config.entityRepository(), config.indexStats());
-
-        // Assets content
-        var assetsContent = new AssetsPanel(config.assetViewSupplier());
-        assetsContent.setVisible(false);
-
-        // Memory content (user propositions)
-        var memoryContent = new VerticalLayout();
-        memoryContent.setPadding(false);
-        memoryContent.setVisible(false);
-
-        var userContextId = config.user().currentContext();
-        propositionsPanel = new PropositionsPanel(config.propositionRepository());
-        propositionsPanel.setContextId(userContextId);
-        propositionsPanel.setOnMentionClick(config.onMentionClick());
-        propositionsPanel.setOnClear(() -> config.propositionRepository().clearByContext(userContextId));
-        memoryContent.add(propositionsPanel);
 
         // Sources content (documents)
         var sourcesContent = new SourcesPanel(config.documentService());
         sourcesContent.setVisible(false);
 
+        // Settings content
+        var settingsContent = new SettingsPanel(config.properties());
+        settingsContent.setVisible(false);
+
         // About content
         var aboutContent = new AboutPanel();
 
-        // Settings content
-        var settingsContent = new SettingsPanel(config.properties());
-
-        contentArea.add(mediaContent, referencesContent, assetsContent, memoryContent, sourcesContent, settingsContent, aboutContent);
+        contentArea.add(referencesContent, sourcesContent, settingsContent, aboutContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
-        // Tab switching - helper to update content visibility
-        Runnable updateVisibility = () -> {
-            var sessionSelected = sessionTabs.getSelectedTab();
-            var librarySelected = libraryTabs.getSelectedTab();
+        // Tab switching
+        tabs.addSelectedChangeListener(event -> {
+            var selected = event.getSelectedTab();
+            referencesContent.setVisible(selected == referencesTab);
+            sourcesContent.setVisible(selected == sourcesTab);
+            settingsContent.setVisible(selected == settingsTab);
+            aboutContent.setVisible(selected == aboutTab);
 
-            mediaContent.setVisible(sessionSelected == mediaTab);
-            assetsContent.setVisible(sessionSelected == assetsTab);
-            memoryContent.setVisible(sessionSelected == memoryTab);
-
-            referencesContent.setVisible(librarySelected == referencesTab);
-            sourcesContent.setVisible(librarySelected == sourcesTab);
-            settingsContent.setVisible(librarySelected == settingsTab);
-            aboutContent.setVisible(librarySelected == aboutTab);
-
-            if (sessionSelected == assetsTab) {
-                assetsContent.refresh();
-            }
-            if (sessionSelected == memoryTab) {
-                propositionsPanel.refresh();
-            }
-            if (librarySelected == sourcesTab) {
+            if (selected == sourcesTab) {
                 sourcesContent.refresh();
             }
-        };
-
-        sessionTabs.addSelectedChangeListener(e -> updateVisibility.run());
-        libraryTabs.addSelectedChangeListener(e -> updateVisibility.run());
+        });
 
         // Add elements
         getElement().appendChild(backdrop.getElement());
         getElement().appendChild(toggleButton.getElement());
         getElement().appendChild(sidePanel.getElement());
-    }
-
-    private VerticalLayout createMediaContent(Config config) {
-        var mediaContent = new VerticalLayout();
-        mediaContent.setPadding(false);
-        mediaContent.setSpacing(true);
-
-        if (config.spotifyService().isLinked(config.user())) {
-            mediaContent.add(new SpotifyPlayerPanel(config.spotifyService(), config.user()));
-        }
-        if (config.youTubeService().isConfigured()) {
-            youTubePlayerPanel = new YouTubePlayerPanel(config.youTubeService());
-            mediaContent.add(youTubePlayerPanel);
-        }
-        if (mediaContent.getComponentCount() == 0) {
-            mediaContent.add(new Span("No media services configured"));
-        }
-        return mediaContent;
     }
 
     public void open() {
@@ -270,11 +159,7 @@ public class BackstagePanel extends Div {
         }
     }
 
-    public PropositionsPanel getPropositionsPanel() {
-        return propositionsPanel;
-    }
-
-    public YouTubePlayerPanel getYouTubePlayerPanel() {
-        return youTubePlayerPanel;
+    public boolean isOpen() {
+        return sidePanel.hasClassName("open");
     }
 }

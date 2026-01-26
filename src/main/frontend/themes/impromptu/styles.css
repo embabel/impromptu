@@ -682,6 +682,16 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
 }
 
 /* --- Right Side Panel --- */
+.session-panel-container {
+  /* Container for session panel - no visual footprint when closed */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  z-index: 185;
+}
+
 .side-panel {
   position: fixed;
   top: 0;
@@ -1050,6 +1060,12 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   margin: var(--lumo-space-xs) 0;
   font-family: monospace;
   animation: pulse 1.5s ease-in-out infinite;
+}
+
+.tool-call-indicator.minimal-indicator {
+  border-left-width: 2px;
+  padding: var(--lumo-space-xxs) var(--lumo-space-s);
+  font-size: var(--lumo-font-size-xs);
 }
 
 @keyframes pulse {
