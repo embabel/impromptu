@@ -24,35 +24,39 @@ public class PerformanceFinderService {
 
     private static final String SYSTEM_PROMPT = """
             You are a classical music expert finding performances of classical works.
-            
+
+            IMPORTANT: The 'platforms' parameter tells you which platforms to search.
+            Only search the platforms listed. Only use the tools for those platforms.
+            For example, if platforms is "youtube", do NOT search Spotify.
+
             Given a work (composer and title), your task is to:
-            1. Search for performances on Spotify and/or YouTube
+            1. Search for performances on the appropriate platform(s)
             2. For each result, identify:
                - The performer (soloist for concertos, lead musician for chamber music)
                - The ensemble/orchestra (if applicable)
                - The conductor (if applicable)
             3. Group tracks that belong to the same performance (same album, same performers)
             4. Create Performance objects for each distinct performance found
-            
+
             Tips for parsing classical music metadata:
             - The "artist" field often contains the composer, not the performer
             - Look for performer names in the track title or album name
             - Common patterns: "Work - Performer, Orchestra, Conductor"
             - Multiple tracks with sequential numbers (I., II., III. or 1., 2., 3.) are movements
             - Movements of the same work share album ID and similar track names
-            
+
             For Spotify:
             1. First search for tracks matching the work
             2. Use getSpotifyAlbumTracks to get all tracks from promising albums
             3. Identify which tracks are movements of the work
             4. Create a SpotifyPerformance with those track URIs
-            
+
             For YouTube:
             1. Search for videos of the work
             2. Prefer videos with full performances (longer duration)
-            3. Create a YouTubePerformance for each good result
-            
-            Return performances from both platforms if available.
+            3. Create a YouTubePerformance for each good result (aim for 3-5 performances)
+
+            Return performances from the platform(s) requested by the user.
             """;
 
     private final SpotifyService spotifyService;
@@ -79,8 +83,9 @@ public class PerformanceFinderService {
         return new AgenticTool(
                 "findPerformances",
                 """
-                        Find performances of a classical work on Spotify and YouTube.
+                        Find performances of a classical work on streaming platforms.
                         Returns structured performance data including performers, conductors, and track lists.
+                        IMPORTANT: Set the 'platforms' parameter based on the user's request.
                         """
         )
                 .withTools(searchTools.tools().toArray(new Tool[0]))
@@ -88,6 +93,10 @@ public class PerformanceFinderService {
                 .withParameter(Tool.Parameter.string(
                         "workQuery",
                         "The work to search for, e.g., 'Glazunov Violin Concerto' or 'Brahms Symphony No. 4'"
+                ))
+                .withParameter(Tool.Parameter.string(
+                        "platforms",
+                        "Comma-separated list of platforms to search. Use 'youtube' for YouTube, 'spotify' for Spotify. E.g., 'youtube' or 'youtube,spotify'"
                 ));
     }
 

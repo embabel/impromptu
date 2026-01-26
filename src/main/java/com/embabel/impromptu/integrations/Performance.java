@@ -24,6 +24,14 @@ public interface Performance<T extends Playable> extends Playable, NamedEntity {
      */
     String workId();
 
+    /**
+     * Name/title of the work being performed.
+     * Override to provide the actual work name for display.
+     */
+    default String workName() {
+        return null;
+    }
+
     @Override
     default @NonNull String getName() {
         return title();

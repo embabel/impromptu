@@ -1,7 +1,9 @@
 package com.embabel.impromptu.integrations.youtube;
 
+import com.embabel.agent.api.common.LlmReference;
 import com.embabel.agent.rag.model.Relationship;
 import com.embabel.impromptu.integrations.Performance;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -43,31 +45,64 @@ public interface YouTubePerformance extends Performance<YouTubeVideo> {
     }
 
     /**
-     * Build a title from performer, ensemble, and conductor.
-     * Falls back to video title if none are available.
+     * Build a display title including work name and performers.
      */
     @Override
     default String title() {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
+
+        // Include work name if available
+        String work = workName();
+        if (work != null && !work.isBlank()) {
+            sb.append(work);
+        }
+
+        // Build performer string
+        StringBuilder performers = new StringBuilder();
         String p = performer();
         String e = ensemble();
         String c = conductor();
         if (p != null && !p.isBlank()) {
-            sb.append(p);
+            performers.append(p);
         }
         if (e != null && !e.isBlank()) {
-            if (!sb.isEmpty()) sb.append(" / ");
-            sb.append(e);
+            if (!performers.isEmpty()) performers.append(" / ");
+            performers.append(e);
         }
         if (c != null && !c.isBlank()) {
-            if (!sb.isEmpty()) sb.append(" / ");
-            sb.append(c);
+            if (!performers.isEmpty()) performers.append(" / ");
+            performers.append(c);
         }
+
+        // Combine work and performers
+        if (!performers.isEmpty()) {
+            if (!sb.isEmpty()) sb.append(" - ");
+            sb.append(performers);
+        }
+
+        // Fall back to video title if nothing else
         if (sb.isEmpty()) {
             var videos = tracks();
             return videos.isEmpty() ? "" : videos.getFirst().getTitle();
         }
         return sb.toString();
+    }
+
+    /**
+     * Custom reference for better display in assets panel.
+     */
+    @Override
+    @NonNull
+    default LlmReference reference() {
+        String duration = durationFormatted();
+        String durationPart = duration != null ? " [" + duration + "]" : "";
+
+        return LlmReference.of(
+                shortId(),
+                title() + durationPart,
+                List.of(playTool()),
+                "YouTube performance. Use the play tool to start playback. URL: " + url()
+        );
     }
 
     @Override

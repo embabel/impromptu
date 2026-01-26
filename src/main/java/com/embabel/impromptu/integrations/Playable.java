@@ -91,9 +91,11 @@ public interface Playable extends Asset {
     @Override
     @NonNull
     default LlmReference reference() {
+        String duration = durationFormatted();
+        String durationPart = duration != null ? " (" + duration + ")" : "";
         return LlmReference.of(
                 shortId(),
-                "Playable media: " + title() + " (" + durationFormatted() + ")",
+                "Playable media: " + title() + durationPart,
                 List.of(playTool()),
                 "Use the play tool to start playback. Title: " + title() + ". URL: " + url()
         );

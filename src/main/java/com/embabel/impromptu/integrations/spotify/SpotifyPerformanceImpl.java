@@ -11,6 +11,7 @@ import java.util.List;
 public record SpotifyPerformanceImpl(
         String id,
         String workId,
+        String workName,
         String albumId,
         String albumName,
         String performer,
@@ -25,6 +26,7 @@ public record SpotifyPerformanceImpl(
      */
     public static SpotifyPerformanceImpl create(
             String workId,
+            String workName,
             String albumId,
             String albumName,
             String performer,
@@ -34,7 +36,22 @@ public record SpotifyPerformanceImpl(
     ) {
         String id = albumId + ":" + (tracks.isEmpty() ? "unknown" : tracks.getFirst().getId());
         Instant timestamp = tracks.isEmpty() ? Instant.now() : tracks.getFirst().getTimestamp();
-        return new SpotifyPerformanceImpl(id, workId, albumId, albumName, performer, ensemble, conductor, tracks, timestamp);
+        return new SpotifyPerformanceImpl(id, workId, workName, albumId, albumName, performer, ensemble, conductor, tracks, timestamp);
+    }
+
+    /**
+     * Create without work name (legacy compatibility).
+     */
+    public static SpotifyPerformanceImpl create(
+            String workId,
+            String albumId,
+            String albumName,
+            String performer,
+            String ensemble,
+            String conductor,
+            List<SpotifyTrack> tracks
+    ) {
+        return create(workId, null, albumId, albumName, performer, ensemble, conductor, tracks);
     }
 
     @Override
@@ -80,20 +97,8 @@ public record SpotifyPerformanceImpl(
     }
 
     @Override
-    public String title() {
-        StringBuilder sb = new StringBuilder();
-        if (performer != null && !performer.isBlank()) {
-            sb.append(performer);
-        }
-        if (ensemble != null && !ensemble.isBlank()) {
-            if (!sb.isEmpty()) sb.append(" / ");
-            sb.append(ensemble);
-        }
-        if (conductor != null && !conductor.isBlank()) {
-            if (!sb.isEmpty()) sb.append(" / ");
-            sb.append(conductor);
-        }
-        return sb.isEmpty() ? albumName : sb.toString();
+    public String workName() {
+        return workName;
     }
 
     @Override
