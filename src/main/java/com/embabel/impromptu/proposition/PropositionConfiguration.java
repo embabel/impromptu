@@ -2,6 +2,7 @@ package com.embabel.impromptu.proposition;
 
 import com.embabel.agent.api.common.AiBuilder;
 import com.embabel.agent.core.DataDictionary;
+import com.embabel.agent.rag.neo.drivine.CypherQueryTools;
 import com.embabel.agent.rag.neo.drivine.DrivineNamedEntityDataRepository;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.ai.model.EmbeddingService;
@@ -72,6 +73,17 @@ class PropositionConfiguration {
         );
         logger.info("Created music domain schema with {} types", schema.getDomainTypes().size());
         return schema;
+    }
+
+    @Bean
+    CypherQueryTools cypherQueryTools(DataDictionary musicSchema,
+                                      PersistenceManager persistenceManager,
+                                      ImpromptuProperties properties) {
+        return new CypherQueryTools(
+                musicSchema,
+                persistenceManager,
+                properties.cypherGenerationLlm()
+        );
     }
 
     /**

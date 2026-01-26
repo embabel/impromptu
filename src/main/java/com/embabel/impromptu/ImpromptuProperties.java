@@ -32,6 +32,7 @@ import org.springframework.lang.Nullable;
 public record ImpromptuProperties(
         @NestedConfigurationProperty LlmOptions chatLlm,
         @NestedConfigurationProperty LlmOptions pdfGenerationLlm,
+        @NestedConfigurationProperty LlmOptions cypherGenerationLlm,
         String embeddingService,
         String objective,
         String behaviour,

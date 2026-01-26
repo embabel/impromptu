@@ -5,6 +5,7 @@ import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.LlmReference;
 import com.embabel.agent.api.common.OperationContext;
+import com.embabel.agent.rag.neo.drivine.CypherQueryTools;
 import com.embabel.agent.tools.mcp.McpToolFactory;
 import com.embabel.chat.AssetTracker;
 import com.embabel.chat.Conversation;
@@ -52,7 +53,8 @@ public record ChatActions(
         ResourceDelivery pdfDelivery,
         PerformanceFinderService performanceFinderService,
         ImpromptuProperties properties,
-        McpToolFactory mcpToolFactory
+        McpToolFactory mcpToolFactory,
+        CypherQueryTools cypherQueryTools
 ) {
     private static final Logger logger = LoggerFactory.getLogger(ChatActions.class);
 
@@ -143,7 +145,12 @@ public record ChatActions(
                         Set.of("search_wikipedia", "get_article", "get_related_topics", "get_summary", "get_wikipedia_summary")),
                 MetMuseumTools.DEFAULT,
                 ImslpTools.DEFAULT,
-                new ResourceTools(pdfGenerationService, pdfDelivery)
+                new ResourceTools(pdfGenerationService, pdfDelivery),
+                cypherQueryTools.tool("""
+                        Use this tool to query existing entities such as composers and works.
+                        If you are asked questions like "Who composed the most violin concertos?" or
+                        "List saxophone concertos" use this tool
+                        """)
         );
     }
 }

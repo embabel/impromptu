@@ -67,6 +67,10 @@ impromptu:
     model: gpt-4.1-mini
     temperature: 0.0
 
+  cypher-generation-llm:
+    model: gpt-4.1-mini
+    temperature: 0.0
+
   default-voice:
     persona: impromptu
     max-words: 70
