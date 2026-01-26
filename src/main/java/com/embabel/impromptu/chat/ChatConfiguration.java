@@ -29,6 +29,11 @@ import java.util.List;
 @Configuration
 class ChatConfiguration {
 
+    /**
+     * Allows us to use MCP tools in the chatbot
+     * as matryoshka tools.
+     * Tools must be configured in application.yml
+     */
     @Bean
     McpToolFactory mcpToolFactory(
             List<McpSyncClient> clients) {

@@ -22,10 +22,7 @@ import com.embabel.dice.proposition.extraction.LlmPropositionExtractor;
 import com.embabel.dice.proposition.revision.LlmPropositionReviser;
 import com.embabel.dice.proposition.revision.PropositionReviser;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.domain.Composer;
-import com.embabel.impromptu.domain.MusicPlace;
-import com.embabel.impromptu.domain.Performer;
-import com.embabel.impromptu.domain.Work;
+import com.embabel.impromptu.domain.*;
 import com.embabel.impromptu.integrations.spotify.SpotifyPerformance;
 import com.embabel.impromptu.integrations.spotify.SpotifyTrack;
 import com.embabel.impromptu.integrations.youtube.YouTubePerformance;
@@ -62,9 +59,9 @@ class PropositionConfiguration {
                 Composer.class,
                 Work.class,
                 Performer.class,
-//                MusicDomainTypes.Instrument.class,
+                Instrument.class,
                 MusicPlace.class,
-//                MusicDomainTypes.MusicalConcept.class,
+                MusicalConcept.class,
                 ImpromptuUser.class,
                 SpotifyPerformance.class,
                 SpotifyTrack.class,
@@ -73,17 +70,6 @@ class PropositionConfiguration {
         );
         logger.info("Created music domain schema with {} types", schema.getDomainTypes().size());
         return schema;
-    }
-
-    @Bean
-    CypherQueryTools cypherQueryTools(DataDictionary musicSchema,
-                                      PersistenceManager persistenceManager,
-                                      ImpromptuProperties properties) {
-        return new CypherQueryTools(
-                musicSchema,
-                persistenceManager,
-                properties.cypherGenerationLlm()
-        );
     }
 
     /**
@@ -105,6 +91,20 @@ class PropositionConfiguration {
                         ImpromptuUser.class, KnowledgeType.SEMANTIC,
                         "loves", "likes", "dislikes", "knows", "is_interested_in"
                 );
+    }
+
+    @Bean
+    CypherQueryTools cypherQueryTools(
+            DataDictionary musicSchema,
+            PersistenceManager persistenceManager,
+            ImpromptuProperties properties) {
+        return new CypherQueryTools(
+                // Don't let it query about users
+                // Cypher queries are only intended to help with reference data
+                musicSchema.excluding(ImpromptuUser.class),
+                persistenceManager,
+                properties.cypherGenerationLlm()
+        );
     }
 
     /**

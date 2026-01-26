@@ -128,6 +128,9 @@ public class ConversationPropositionExtraction {
                             "user", event.user
                     ));
 
+            logger.info("Context relations count: {}, injected relations count: {}",
+                    context.getRelations().size(), relations.size());
+
             // Wrap conversation as incremental source and analyze
             var source = new ConversationSource(event.conversation);
             var result = analyzer.analyze(source, context);

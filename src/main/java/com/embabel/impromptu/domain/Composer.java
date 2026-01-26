@@ -28,6 +28,7 @@ import java.util.List;
  */
 @CreationPermitted(false)
 public interface Composer extends NamedEntity {
+
     String getCompleteName();
 
     @Nullable Long getBirthYear();
@@ -37,6 +38,7 @@ public interface Composer extends NamedEntity {
     @Relationship(name = "COMPOSED")
     List<Work> getWorks();
 
+    @Nullable
     default Long lifespan() {
         var birthYear = getBirthYear();
         var deathYear = getDeathYear();
