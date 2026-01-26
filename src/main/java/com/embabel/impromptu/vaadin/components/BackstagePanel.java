@@ -98,6 +98,18 @@ public class BackstagePanel extends Div {
         header.setFlexGrow(1, title);
         sidePanel.add(header);
 
+        // Definition (always visible)
+        var definition = new Div();
+        definition.getStyle()
+                .set("font-style", "italic")
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("padding", "var(--lumo-space-m)")
+                .set("font-size", "1.1rem")
+                .set("line-height", "1.5")
+                .set("border-bottom", "1px solid var(--lumo-contrast-10pct)");
+        definition.setText("impromptu (noun): a short piece of instrumental music, especially a solo, that is reminiscent of an improvisation.");
+        sidePanel.add(definition);
+
         // Session tabs (per-conversation/user)
         var sessionLabel = new Span("Session");
         sessionLabel.getStyle()

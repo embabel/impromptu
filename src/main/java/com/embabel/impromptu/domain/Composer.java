@@ -38,8 +38,8 @@ public interface Composer extends NamedEntity {
     List<Work> getWorks();
 
     default Long lifespan() {
-        Long birthYear = getBirthYear();
-        Long deathYear = getDeathYear();
+        var birthYear = getBirthYear();
+        var deathYear = getDeathYear();
         if (birthYear != null && deathYear != null) {
             return deathYear - birthYear;
         }
