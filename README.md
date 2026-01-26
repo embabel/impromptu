@@ -4,8 +4,14 @@
 ![Spring](https://img.shields.io/badge/spring-%236DB33F.svg?style=for-the-badge&logo=spring&logoColor=white)
 ![Vaadin](https://img.shields.io/badge/Vaadin-00B4F0?style=for-the-badge&logo=vaadin&logoColor=white)
 ![Apache Maven](https://img.shields.io/badge/Apache%20Maven-C71A36?style=for-the-badge&logo=Apache%20Maven&logoColor=white)
-![ChatGPT](https://img.shields.io/badge/chatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white)
 ![Neo4j](https://img.shields.io/badge/Neo4j-008CC1?style=for-the-badge&logo=neo4j&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
+![Jinja](https://img.shields.io/badge/jinja-white.svg?style=for-the-badge&logo=jinja&logoColor=black)
+![ChatGPT](https://img.shields.io/badge/chatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white)
+![Claude](https://img.shields.io/badge/Claude-D97757?style=for-the-badge&logo=claude&logoColor=white)
+![Spotify](https://img.shields.io/badge/Spotify-1DB954?style=for-the-badge&logo=spotify&logoColor=white)
+![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)
 ![IntelliJ IDEA](https://img.shields.io/badge/IntelliJIDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
 
 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -19,28 +25,543 @@ Chatbot intended to help users discover classical music.
 Embabel features:
 
 - Agent-based chatbot with RAG (Neo4j vector storage)
-- Proposition extraction pipeline for memories about users
+- DICE proposition extraction pipeline for memories about users
 - Spotify integration for playlist management
+
+[Getting Started](#getting-started)
+
+## Overview
+
+Impromptu is a conversational AI assistant for classical music discovery, powered by the [Embabel Agent Framework](https://github.com/embabel/embabel-agent). It combines RAG-based knowledge retrieval, multi-platform music integration, and semantic memory extraction to create a personalized music exploration experience.
+
+| Login | Chat Interface |
+|-------|----------------|
+| ![Login Screen](images/login.jpg) | ![Chat Interface](images/welcome.jpg) |
+
+**Key Capabilities:**
+- Natural language conversations about classical music with RAG-enhanced responses
+- Integration with Spotify (playlists, playback) and YouTube (video search, playback)
+- Access to IMSLP (600,000+ public domain scores) and Met Museum art collections
+- Automatic extraction and recall of user preferences and interests via [DICE](https://github.com/embabel/dice) memory
+- Dynamic concert program and listening guide generation
+
+## Architecture
+
+Impromptu is built on the [Embabel Agent Framework](https://github.com/embabel/embabel-agent) ([documentation](https://docs.embabel.com/embabel-agent/guide/0.3.3-SNAPSHOT/)) using three architectural pillars: **[Utility AI](https://docs.embabel.com/embabel-agent/guide/0.3.3-SNAPSHOT/#reference.planners__utility)** for flexible tool orchestration, **[Matryoshka Tools](https://docs.embabel.com/embabel-agent/guide/0.3.3-SNAPSHOT/#reference.tools__matryoshka)** for progressive disclosure of capabilities, and **[DICE](https://github.com/embabel/dice) Memory** for semantic knowledge extraction.
+
+```mermaid
+graph TB
+    subgraph User Layer
+        UI[Vaadin Chat UI]
+    end
+
+    subgraph Chat Layer
+        CA[ChatActions]
+        CB[Utility Chatbot]
+    end
+
+    subgraph Tool Layer
+        MT[Matryoshka Tools]
+        AT[Agentic Tools]
+        RAG[RAG Search]
+    end
+
+    subgraph Memory Layer
+        DICE[DICE Extraction]
+        PR[Proposition Repository]
+    end
+
+    subgraph Persistence
+        NEO[(Neo4j Graph + Vector)]
+    end
+
+    UI --> CA
+    CA --> CB
+    CB --> MT
+    CB --> AT
+    CB --> RAG
+    CA --> DICE
+    DICE --> PR
+    PR --> NEO
+    RAG --> NEO
+```
+
+---
+
+### Utility AI Chatbot
+
+The chatbot uses the **[Utility AI](https://docs.embabel.com/embabel-agent/guide/0.3.3-SNAPSHOT/#reference.planners__utility)** pattern from the [Embabel Agent Framework](https://github.com/embabel/embabel-agent), where the LLM autonomously selects which tools to invoke based on user intent. Unlike scripted chatbots, the LLM reasons about the best approach for each query.
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant C as ChatActions
+    participant L as LLM
+    participant T as Tools
+    participant M as Memory
+
+    U->>C: "Find me a good recording of Brahms Symphony 4"
+    C->>M: Load recent propositions (top 10)
+    C->>L: Send message + tools + memory context
+
+    Note over L: LLM reasons about approach
+
+    L->>T: Call spotify.searchTracks("Brahms Symphony 4")
+    T-->>L: Track results with performers
+    L->>T: Call performanceFinder("Brahms Symphony 4")
+    T-->>L: Structured Performance objects
+
+    L-->>C: Response with recommendations
+    C-->>U: Display response
+    C->>M: Async: Extract propositions
+```
+
+**Implementation:** The `AgentProcessChatbot.utilityFromPlatform()` creates a chatbot that discovers all `@Action` methods and makes them available as tools. The LLM decides when to use RAG search, query the database, or call external APIs.
+
+```java
+@Bean
+Chatbot chatbot(AgentPlatform agentPlatform) {
+    return AgentProcessChatbot.utilityFromPlatform(agentPlatform);
+}
+```
+
+---
+
+### Matryoshka Tools
+
+**[Matryoshka Tools](https://docs.embabel.com/embabel-agent/guide/0.3.3-SNAPSHOT/#reference.tools__matryoshka)** implement progressive disclosure: the LLM initially sees only high-level "facade" tools. When invoked, these reveal specific sub-tools. This reduces cognitive load while maintaining full capability.
+
+```mermaid
+graph LR
+    subgraph "Initial View (4 tools)"
+        S[spotify]
+        I[imslp]
+        M[metmuseum]
+        Y[youtube]
+    end
+
+    subgraph "After spotify invoked"
+        S1[searchTracks]
+        S2[getPlaylists]
+        S3[createPlaylist]
+        S4[addToPlaylist]
+        S5[getPlaybackState]
+    end
+
+    subgraph "After imslp invoked"
+        I1[findScores]
+        I2[searchWorks]
+        I3[browseByComposer]
+    end
+
+    S -.->|reveals| S1
+    S -.->|reveals| S2
+    S -.->|reveals| S3
+    S -.->|reveals| S4
+    S -.->|reveals| S5
+
+    I -.->|reveals| I1
+    I -.->|reveals| I2
+    I -.->|reveals| I3
+```
+
+**Available Tool Facades:**
+
+| Facade | Purpose | Sub-tools |
+|--------|---------|-----------|
+| `spotify` | Music playback & playlists | searchTracks, getPlaylists, createPlaylist, addToPlaylist, play, pause |
+| `imslp` | Public domain scores | findScores, searchWorks, browseByComposer |
+| `metmuseum` | Art collection | searchArtworks, getArtwork, browseByDepartment |
+| `youtube` | Video search & playback | searchVideos, playVideo |
+| `pdf` | Document generation | generateDocument (programs, guides, biographies) |
+
+**Implementation:** Tools use the `@MatryoshkaTools` annotation:
+
+```java
+@MatryoshkaTools(name = "spotify", description = "Access Spotify music features")
+public class SpotifyTools {
+    @Tool(description = "Search for tracks")
+    public List<TrackInfo> searchTracks(String query) { ... }
+
+    @Tool(description = "Get user's playlists")
+    public List<PlaylistInfo> getPlaylists() { ... }
+}
+```
+
+---
+
+### Agentic Cypher Query Generation
+
+The **[CypherQueryTools](https://github.com/embabel/embabel-agent-rag-neo-drivine)** component (from the `embabel-agent-rag-neo-drivine` module) is an **agentic tool** that uses an LLM to dynamically generate Cypher queries from natural language. Unlike simple API wrappers, this tool invokes an LLM internally to translate user questions into valid database queries. Critically, query generation is **constrained by the domain schema** (`DataDictionary`), ensuring queries are both safe and valid.
+
+```mermaid
+flowchart LR
+    subgraph "Domain Schema (DataDictionary)"
+        S[Schema Definition]
+        E1["Composer
+        - completeName
+        - birthYear, deathYear
+        - popular, recommended"]
+        E2["Work
+        - title, subtitle
+        - searchTerms
+        - popular, recommended"]
+        E3["Performer
+        - name, instrument"]
+        R["Relationships
+        COMPOSED, OF_GENRE
+        OF_EPOCH, PERFORMED"]
+    end
+
+    subgraph "CypherQueryTools"
+        LLM[LLM Query Generator]
+        V[Schema Validator]
+        PM[Persistence Manager]
+    end
+
+    subgraph "Safety Guarantees"
+        G1[Only known labels]
+        G2[Only defined properties]
+        G3[Read-only queries]
+        G4[Valid relationships]
+    end
+
+    S --> E1
+    S --> E2
+    S --> E3
+    S --> R
+
+    E1 --> LLM
+    E2 --> LLM
+    E3 --> LLM
+    R --> LLM
+
+    LLM --> V
+    V --> G1
+    V --> G2
+    V --> G3
+    V --> G4
+    V --> PM
+```
+
+**Why Schema Matters:**
+
+The schema serves as a **contract** between the domain model and the LLM. Without it, the LLM might generate queries that:
+- Reference non-existent node labels or properties
+- Attempt to create or modify data (injection attacks)
+- Use incorrect relationship types
+- Return unexpected data structures
+
+By providing the schema to the LLM, it can generate valid queries like:
+
+```cypher
+// "Who composed the most violin concertos?"
+MATCH (c:Composer)-[:COMPOSED]->(w:Work)
+WHERE w.title CONTAINS 'Violin Concerto'
+RETURN c.completeName, count(w) as concertos
+ORDER BY concertos DESC
+LIMIT 10
+```
+
+**Schema Definition:**
+
+```java
+@Bean
+DataDictionary musicSchema() {
+    return DataDictionary.fromClasses(
+        "art_music",
+        Composer.class,      // Node label with properties
+        Work.class,          // Linked via COMPOSED relationship
+        Performer.class,     // Artist/musician entities
+        MusicPlace.class,    // Venues, cities
+        ImpromptuUser.class  // User preferences
+    );
+}
+```
+
+Entity classes define the schema through annotations:
+
+```java
+@CreationPermitted(false)  // LLM cannot create new composers
+public interface Composer extends NamedEntity {
+    String getCompleteName();
+    Long getBirthYear();
+    Long getDeathYear();
+
+    @Relationship(name = "COMPOSED")
+    List<Work> getWorks();
+}
+```
+
+**Tool Usage:**
+
+```java
+cypherQueryTools.tool("""
+    Use this tool to query existing entities such as composers and works.
+    If you are asked questions like "Who composed the most violin concertos?" or
+    "List saxophone concertos" use this tool
+    """)
+```
+
+The schema-constrained approach enables powerful natural language queries while preventing the LLM from generating unsafe or invalid database operations.
+
+---
+
+### Agentic Tools for Performance Discovery
+
+**[Agentic Tools](https://docs.embabel.com/embabel-agent/guide/0.3.3-SNAPSHOT/#reference.tools__agentic-tools)** go beyond simple API calls - they orchestrate multi-step LLM-driven workflows. The Performance Finder demonstrates this: it searches across platforms, parses metadata, and structures results into coherent `Performance` objects.
+
+```mermaid
+flowchart TB
+    subgraph "Agentic Tool: Performance Finder"
+        direction TB
+        Q[User Query: Find Brahms 4 recording]
+
+        subgraph "LLM Orchestration"
+            A[Analyze query intent]
+            B[Search Spotify tracks]
+            C[Search YouTube videos]
+            D[Parse performer metadata]
+            E[Group into performances]
+            F[Return structured results]
+        end
+
+        Q --> A
+        A --> B
+        A --> C
+        B --> D
+        C --> D
+        D --> E
+        E --> F
+    end
+
+    subgraph "Output: Performance Objects"
+        P1["Performance 1
+        Performer: Kleiber
+        Ensemble: Vienna Phil
+        Source: spotify
+        Tracks: [Mov I, II, III, IV]"]
+
+        P2["Performance 2
+        Performer: Bernstein
+        Ensemble: NY Phil
+        Source: youtube
+        Video: Full concert"]
+    end
+
+    F --> P1
+    F --> P2
+```
+
+**Performance Model:**
+```java
+interface Performance<T extends Playable> extends Playable, NamedEntity {
+    String workId();      // Links to domain Work entity
+    String performer();   // Soloist or lead musician
+    String ensemble();    // Orchestra/quartet (nullable)
+    String conductor();   // Nullable
+    String albumName();
+    String source();      // "spotify" or "youtube"
+    List<T> tracks();     // Individual movements or videos
+}
+```
+
+The LLM is guided by a system prompt to parse performer/conductor/ensemble from track metadata, distinguish individual movements (I, II, III, IV), and return properly structured objects.
+
+---
+
+### DICE Proposition Memory
+
+**[DICE (Domain-Integrated Context Engineering)](https://github.com/embabel/dice)** extracts semantic propositions from conversations, building a persistent knowledge graph about users, their preferences, and musical entities.
+
+```mermaid
+flowchart LR
+    subgraph "Conversation"
+        M1["User: I love Brahms, especially
+        his chamber music"]
+        M2["Assistant: Brahms wrote some
+        of the finest chamber works..."]
+    end
+
+    subgraph "Extraction Pipeline"
+        E[LLM Extractor]
+        R[Reviser]
+        ER[Entity Resolver]
+    end
+
+    subgraph "Propositions"
+        P1["User loves Brahms
+        confidence: 0.95"]
+        P2["User interested in chamber music
+        confidence: 0.90"]
+    end
+
+    subgraph "Graph Projection"
+        G["(User)-[:LOVES]->(Brahms)
+        (User)-[:INTERESTED_IN]->(Chamber Music)"]
+    end
+
+    M1 --> E
+    M2 --> E
+    E --> R
+    R --> ER
+    ER --> P1
+    ER --> P2
+    P1 --> G
+    P2 --> G
+```
+
+**Extraction Flow:**
+
+1. **Event-Driven:** After each chat response, `ConversationAnalysisRequestEvent` triggers async extraction
+2. **Incremental Analysis:** Windowed processing with deduplication prevents redundant extraction
+3. **Entity Resolution:** Hierarchical resolver minimizes LLM calls:
+   - EXACT_MATCH → HEURISTIC_MATCH → EMBEDDING_MATCH → LLM_VERIFICATION → LLM_BAKEOFF
+4. **Graph Projection:** Propositions become semantic relationships in Neo4j
+
+**Domain Schema:**
+```java
+// Entity types
+@Entity class Composer extends NamedEntity { ... }
+@Entity class Work extends NamedEntity { ... }
+@Entity class Performer extends NamedEntity { ... }
+@Entity class ImpromptuUser extends NamedEntity { ... }
+
+// Relationship types
+enum RelationType { LOVES, LIKES, DISLIKES, KNOWS, INTERESTED_IN, COMPOSED, PERFORMED }
+```
+
+**Memory Recall:** During chat, the most relevant propositions are loaded as context:
+
+```java
+var memory = Memory.forContext(user.currentContext())
+    .withRepository(propositionRepository)
+    .withEagerQuery(q -> q.orderedByEffectiveConfidence().withLimit(10))
+    .withProjector(memoryProjector);
+```
+
+---
+
+### Neo4j Persistence Layer
+
+Neo4j serves as both the **vector store** for RAG and the **graph database** for propositions and domain entities, using the [embabel-agent-rag-neo-drivine](https://github.com/embabel/embabel-agent-rag-neo-drivine) module. This dual role enables semantic search and relationship-based queries.
+
+```mermaid
+graph TB
+    subgraph "Vector Store (RAG)"
+        D[Documents]
+        C[Chunks with Embeddings]
+        VS[Vector Similarity Search]
+    end
+
+    subgraph "Graph Store (Domain)"
+        CO[Composer Nodes]
+        W[Work Nodes]
+        P[Performer Nodes]
+        U[User Nodes]
+    end
+
+    subgraph "Proposition Store"
+        PR[Proposition Nodes]
+        EM[Entity Mentions]
+        REL[Semantic Relationships]
+    end
+
+    D --> C
+    C --> VS
+
+    CO -->|COMPOSED| W
+    P -->|PERFORMED| W
+    U -->|LOVES| CO
+    U -->|INTERESTED_IN| W
+
+    PR --> EM
+    EM --> CO
+    EM --> W
+    EM --> U
+    PR --> REL
+```
+
+**Key Repositories:**
+
+| Repository | Purpose |
+|------------|---------|
+| `PropositionRepository` | CRUD + vector search for propositions |
+| `NamedEntityDataRepository` | Domain entities (Composer, Work, etc.) |
+| `SearchOperations` | RAG chunk retrieval with similarity search |
+
+**Proposition Query Capabilities:**
+```java
+propositionRepository.query(PropositionQuery.builder()
+    .contextId(user.getContextId())
+    .status(PropositionStatus.ACTIVE)
+    .minConfidence(0.7)
+    .orderedByEffectiveConfidence()  // Includes time decay
+    .withLimit(10)
+    .build());
+```
+
+**Effective Confidence:** Propositions decay over time using exponential decay:
+```
+effectiveConfidence = confidence × exp(-k × daysSinceRevision / 365)
+```
+
+This ensures recent interactions are weighted more heavily while preserving long-term knowledge.
 
 ## Getting Started
 
 ### Prerequisites
 
-**API Key**: Set at least one LLM provider API key as an environment variable:
-
-```bash
-# For OpenAI (GPT models)
-export OPENAI_API_KEY=sk-...
-
-# For Anthropic (Claude models)
-export ANTHROPIC_API_KEY=sk-ant-...
-```
-
-The model configured in `application.yml` determines which key is required. The default configuration uses OpenAI.
-
 **Java**: Java 21+ is required.
 
-**Docker**: Required for running Neo4j.
+**Docker**: Required for running Neo4j and MCP tool containers.
+
+### Environment Variables
+
+The application uses environment variables for API keys and configuration. Create a `.env` file or export these variables before running.
+
+#### Required
+
+| Variable | Description | Source |
+|----------|-------------|--------|
+| `OPENAI_API_KEY` | OpenAI API key for LLM, TTS, and embeddings | [platform.openai.com](https://platform.openai.com/api-keys) |
+| `GOOGLE_CLIENT_ID` | Google OAuth2 client ID | [console.cloud.google.com](https://console.cloud.google.com/apis/credentials) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth2 client secret | Same as above |
+
+#### Optional Integrations
+
+| Variable | Description | Source |
+|----------|-------------|--------|
+| `SPOTIFY_CLIENT_ID` | Spotify app client ID for playlist management | [developer.spotify.com](https://developer.spotify.com/dashboard) |
+| `SPOTIFY_CLIENT_SECRET` | Spotify app client secret | Same as above |
+| `YOUTUBE_API_KEY` | YouTube Data API v3 key for video search | [console.cloud.google.com](https://console.cloud.google.com/apis/credentials) (enable YouTube Data API v3) |
+| `BRAVE_API_KEY` | Brave Search API key for web search MCP | [brave.com/search/api](https://brave.com/search/api/) |
+
+#### Neo4j (optional - defaults provided for local development)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NEO4J_HOST` | `localhost` | Neo4j server hostname |
+| `NEO4J_PORT` | `7888` | Neo4j Bolt port |
+| `NEO4J_USERNAME` | `neo4j` | Database username |
+| `NEO4J_PASSWORD` | `brahmsian` | Database password |
+| `NEO4J_DATABASE` | `neo4j` | Database name |
+| `NEO4J_HTTP_PORT` | `8889` | Neo4j Browser HTTP port |
+
+**Example `.env` file:**
+
+```bash
+# Required
+export OPENAI_API_KEY=sk-...
+export GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+export GOOGLE_CLIENT_SECRET=your-client-secret
+
+# Optional integrations
+export SPOTIFY_CLIENT_ID=your-spotify-client-id
+export SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
+export YOUTUBE_API_KEY=your-youtube-api-key
+export BRAVE_API_KEY=your-brave-api-key
+```
 
 ### Starting Neo4j
 
@@ -185,12 +706,52 @@ Once configured, a "Link Spotify" button appears in the header after Google logi
 
 ### Features
 
-- **Dark Concert Hall Theme**: Elegant dark theme with gold accents, inspired by classical concert venues
+- **Pluggable Theme System**: Multiple concert hall-inspired themes that users can switch between, with preferences persisted per user
 - **Knowledge Base Panel**: Collapsible panel showing extracted propositions from conversations
 - **Real-time Chat**: Streaming responses from the RAG-powered chatbot
 - **User Authentication**: Optional Google OAuth2 login
 - **Spotify Integration**: Link your Spotify account to create and manage playlists through the chatbot
 - **Neo4j Browser**: Direct link to explore the graph database
+
+### Themes
+
+The application features a pluggable theme system inspired by famous concert halls and opera houses around the world. Themes are defined as CSS files in `src/main/resources/themes/` and are automatically discovered at runtime.
+
+| Theme | Inspiration | Color Palette |
+|-------|-------------|---------------|
+| **Gold** (default) | Classic concert hall | Gold accents on dark background |
+| **London** | Royal Albert Hall | Deep blue with silver accents |
+| **Vienna** | Musikverein | Imperial burgundy with cream |
+| **Midnight** | Late-night recital | Deep purple with soft highlights |
+| **Bayreuth** | Bayreuth Festspielhaus | Rich burgundy and wine red |
+| **Bastille** | Opéra Bastille | Modern blue with clean lines |
+| **La Scala** | Teatro alla Scala | Warm gold with Italian elegance |
+| **Concertgebouw** | Royal Concertgebouw | Bold red with modern styling |
+
+**Creating a Custom Theme:**
+
+Add a new CSS file to `src/main/resources/themes/` with the theme metadata header:
+
+```css
+/*
+ * Theme: my-theme
+ * Display Name: My Custom Theme
+ * Description: A custom theme inspired by...
+ * Default: false
+ */
+
+:root {
+  --concert-black: #1a1a2e;
+  --piano-black: #16213e;
+  --accent-primary: #e94560;
+  --accent-soft: #ff6b6b;
+  --text-primary: #eaeaea;
+  --text-secondary: #b8b8b8;
+  /* ... additional CSS variables */
+}
+```
+
+Themes override Lumo (Vaadin's design system) CSS variables, allowing deep customization of colors, typography, and component styling. User theme preferences are persisted in Neo4j and restored on login.
 
 ## DICE REST API (Proposition Memory)
 
