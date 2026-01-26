@@ -37,8 +37,7 @@ public class LocationCapturingAuthenticationSuccessHandler implements Authentica
             HttpServletResponse response,
             Authentication authentication) throws IOException, ServletException {
 
-        // Get user's IP address
-        String ipAddress = getClientIpAddress(request);
+        var ipAddress = getClientIpAddress(request);
         logger.info("User logged in from IP: {}", ipAddress);
 
         // Get user now (security context won't be available in async thread)
@@ -73,7 +72,6 @@ public class LocationCapturingAuthenticationSuccessHandler implements Authentica
             }).start();
         }
 
-        // Redirect to chat
         response.sendRedirect("/chat");
     }
 
@@ -112,7 +110,7 @@ public class LocationCapturingAuthenticationSuccessHandler implements Authentica
         };
 
         for (String header : headers) {
-            String ip = request.getHeader(header);
+            var ip = request.getHeader(header);
             if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
                 // X-Forwarded-For can contain multiple IPs, take the first one
                 if (ip.contains(",")) {

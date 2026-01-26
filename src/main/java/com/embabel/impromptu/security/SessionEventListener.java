@@ -16,15 +16,14 @@ public class SessionEventListener implements HttpSessionListener {
 
     @Override
     public void sessionCreated(HttpSessionEvent event) {
-        logger.info("SESSION CREATED: id={}, maxInactiveInterval={}s",
+        logger.info("HttpSession created: id={}, maxInactiveInterval={}s",
                 event.getSession().getId(),
                 event.getSession().getMaxInactiveInterval());
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent event) {
-        logger.warn("SESSION DESTROYED: id={}", event.getSession().getId());
-        // Log stack trace to see what's destroying the session
+        logger.warn("HttpSession destroyed: id={}", event.getSession().getId());
         if (logger.isDebugEnabled()) {
             logger.debug("Session destruction stack trace:", new Exception("Stack trace"));
         }
