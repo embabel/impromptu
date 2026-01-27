@@ -53,7 +53,7 @@ public class ChatHeader extends VerticalLayout {
         logo.addClassName("header-logo");
         logoContainer.add(logo);
 
-        var subtitleText = new Span("Classical Music Explorer");
+        var subtitleText = new Span("classical music explorer");
         subtitleText.addClassName("header-title-subtitle");
 
         titleContainer.add(logoContainer, subtitleText);

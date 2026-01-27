@@ -41,7 +41,7 @@ public class LoginView extends VerticalLayout {
         title.addClassName("login-title");
 
         // Subtitle
-        var subtitle = new Paragraph("Classical Music Explorer");
+        var subtitle = new Paragraph("classical music explorer");
         subtitle.addClassName("login-subtitle");
 
         // Google login button - use setRouterIgnore to bypass Vaadin routing
