@@ -181,7 +181,8 @@ public class VaadinChatView extends VerticalLayout {
                 this::showEntityDetail,
                 this::getAssetView,
                 this::onPersonaChange,
-                this::onThemeChange
+                this::onThemeChange,
+                this::analyzeConversation
         );
         sessionPanel = new SessionPanel(sessionConfig);
         getElement().appendChild(sessionPanel.getElement());
@@ -190,7 +191,7 @@ public class VaadinChatView extends VerticalLayout {
         var neo4jConfig = new ChatFooter.Neo4jConfig(
                 neo4jHost, neo4jPort, neo4jUsername, neo4jPassword, neo4jHttpPort
         );
-        add(new ChatFooter(neo4jConfig, this::analyzeConversation));
+        add(new ChatFooter(neo4jConfig));
     }
 
     /**

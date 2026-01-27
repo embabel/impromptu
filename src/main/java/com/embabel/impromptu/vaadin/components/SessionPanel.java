@@ -72,7 +72,8 @@ public class SessionPanel extends Div {
             Consumer<EntityMention> onMentionClick,
             Supplier<AssetView> assetViewSupplier,
             Consumer<String> onPersonaChange,
-            Consumer<String> onThemeChange
+            Consumer<String> onThemeChange,
+            Runnable onAnalyze
     ) {
     }
 
@@ -157,6 +158,12 @@ public class SessionPanel extends Div {
         var memoryContent = new VerticalLayout();
         memoryContent.setPadding(false);
         memoryContent.setVisible(false);
+
+        // Analyze button at the top
+        var analyzeButton = new Button("Analyze Conversation", VaadinIcon.LIGHTBULB.create(), e -> config.onAnalyze().run());
+        analyzeButton.addClassName("memory-analyze-button");
+        analyzeButton.getElement().setAttribute("title", "Extract propositions from conversation");
+        memoryContent.add(analyzeButton);
 
         var userContextId = config.user().currentContext();
         propositionsPanel = new PropositionsPanel(config.propositionRepository());

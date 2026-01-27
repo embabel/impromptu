@@ -1,7 +1,5 @@
 package com.embabel.impromptu.vaadin.components;
 
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -31,7 +29,7 @@ public class ChatFooter extends HorizontalLayout {
         }
     }
 
-    public ChatFooter(Neo4jConfig neo4jConfig, Runnable onAnalyze) {
+    public ChatFooter(Neo4jConfig neo4jConfig) {
         setWidthFull();
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
@@ -65,20 +63,10 @@ public class ChatFooter extends HorizontalLayout {
         var separator2 = new Span("|");
         separator2.addClassName("footer-separator");
 
-        // Analyze conversation button
-        var analyzeButton = new Button("Analyze", e -> onAnalyze.run());
-        analyzeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        analyzeButton.addClassName("footer-analyze-button");
-        analyzeButton.getElement().setAttribute("title", "Extract propositions from conversation");
-
-        // Separator
-        var separator3 = new Span("|");
-        separator3.addClassName("footer-separator");
-
         // Copyright
         var copyright = new Span("© 2025 Embabel Software, Inc.");
         copyright.addClassName("footer-copyright");
 
-        add(logo, poweredBy, embabelLink, separator, neo4jLink, separator2, analyzeButton, separator3, copyright);
+        add(logo, poweredBy, embabelLink, separator, neo4jLink, separator2, copyright);
     }
 }

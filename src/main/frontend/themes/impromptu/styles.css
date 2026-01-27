@@ -569,9 +569,12 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   text-decoration: underline;
 }
 
-.footer-analyze-button {
-  font-size: var(--lumo-font-size-s);
-  color: var(--lumo-primary-text-color);
+.memory-analyze-button {
+  margin-bottom: var(--lumo-space-m);
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-soft) 100%);
+  color: var(--concert-black);
+  border: none;
+  border-radius: var(--lumo-border-radius-m);
 }
 
 .footer-stats {
