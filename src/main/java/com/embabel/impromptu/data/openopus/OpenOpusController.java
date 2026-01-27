@@ -15,9 +15,6 @@
  */
 package com.embabel.impromptu.data.openopus;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.drivine.manager.PersistenceManager;
-import org.drivine.query.QuerySpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -27,14 +24,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.text.Normalizer;
-import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * REST endpoint for loading Open Opus data into Neo4j.
@@ -53,15 +45,11 @@ import java.util.regex.Pattern;
 public class OpenOpusController {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenOpusController.class);
-    private static final String OPEN_OPUS_API = "https://api.openopus.org/work/dump.json";
-    private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^a-z0-9-]");
 
-    private final PersistenceManager persistenceManager;
-    private final ObjectMapper objectMapper;
+    private final OpenOpusService openOpusService;
 
-    public OpenOpusController(PersistenceManager persistenceManager, ObjectMapper objectMapper) {
-        this.persistenceManager = persistenceManager;
-        this.objectMapper = objectMapper;
+    public OpenOpusController(OpenOpusService openOpusService) {
+        this.openOpusService = openOpusService;
     }
 
     /**
@@ -79,13 +67,7 @@ public class OpenOpusController {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
 
             try {
-                log(writer, "Fetching data from Open Opus API...");
-
-                try (InputStream is = URI.create(OPEN_OPUS_API).toURL().openStream()) {
-                    OpenOpusDump dump = objectMapper.readValue(is, OpenOpusDump.class);
-                    loadData(dump, writer);
-                }
-
+                openOpusService.load(msg -> log(writer, msg));
                 log(writer, "Done!");
             } catch (Exception e) {
                 log(writer, "Error: " + e.getMessage());
@@ -99,284 +81,12 @@ public class OpenOpusController {
         return outputStream -> {
             PrintWriter writer = new PrintWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8), true);
 
-            log(writer, "Deleting Open Opus data (primarySource='openopus')...");
-
-            persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (c:Composer {primarySource: 'openopus'})-[r:COMPOSED]->(w:Work) DELETE r"));
-            log(writer, "  Deleted COMPOSED relationships");
-
-            persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (w:Work {primarySource: 'openopus'})-[r:OF_GENRE]->(g:Genre) DELETE r"));
-            log(writer, "  Deleted OF_GENRE relationships");
-
-            persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (c:Composer {primarySource: 'openopus'})-[r:OF_EPOCH]->(e:Epoch) DELETE r"));
-            log(writer, "  Deleted OF_EPOCH relationships");
-
-            persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (w:Work {primarySource: 'openopus'}) DELETE w"));
-            log(writer, "  Deleted Work nodes");
-
-            persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (c:Composer {primarySource: 'openopus'}) DELETE c"));
-            log(writer, "  Deleted Composer nodes");
-
-            persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (g:Genre {primarySource: 'openopus'}) DELETE g"));
-            log(writer, "  Deleted Genre nodes");
-
-            persistenceManager.execute(QuerySpecification.withStatement(
-                    "MATCH (e:Epoch {primarySource: 'openopus'}) DELETE e"));
-            log(writer, "  Deleted Epoch nodes");
-
-            log(writer, "Done!");
+            try {
+                openOpusService.delete(msg -> log(writer, msg));
+            } catch (Exception e) {
+                log(writer, "Error: " + e.getMessage());
+                logger.error("OpenOpus delete failed", e);
+            }
         };
-    }
-
-    private void loadData(OpenOpusDump dump, PrintWriter writer) {
-        List<OpenOpusComposer> composers = dump.composers();
-        if (composers == null || composers.isEmpty()) {
-            log(writer, "No composers found in dump");
-            return;
-        }
-
-        log(writer, "Found " + composers.size() + " composers");
-
-        // Collect unique epochs and genres
-        Set<String> epochs = new HashSet<>();
-        Set<String> genres = new HashSet<>();
-        int workCount = 0;
-
-        for (OpenOpusComposer composer : composers) {
-            if (composer.epoch() != null && !composer.epoch().isBlank()) {
-                epochs.add(composer.epoch());
-            }
-            if (composer.works() != null) {
-                for (OpenOpusWork work : composer.works()) {
-                    workCount++;
-                    if (work.genre() != null && !work.genre().isBlank()) {
-                        genres.add(work.genre());
-                    }
-                }
-            }
-        }
-
-        log(writer, "Found " + workCount + " works, " + epochs.size() + " epochs, " + genres.size() + " genres");
-
-        // Create epochs
-        createEpochs(epochs);
-        log(writer, "Created " + epochs.size() + " epochs");
-
-        // Create genres
-        createGenres(genres);
-        log(writer, "Created " + genres.size() + " genres");
-
-        // Create composers
-        createComposers(composers);
-        log(writer, "Created " + composers.size() + " composers");
-
-        // Create works in batches
-        int worksCreated = createWorks(composers, writer);
-        log(writer, "Created " + worksCreated + " works total");
-    }
-
-    private void createEpochs(Set<String> epochs) {
-        if (epochs.isEmpty()) return;
-
-        List<Map<String, Object>> epochData = epochs.stream()
-                .map(name -> Map.<String, Object>of("id", toId(name), "name", name))
-                .toList();
-
-        persistenceManager.execute(
-                QuerySpecification.withStatement("""
-                                UNWIND $epochs AS epoch
-                                MERGE (e:__Entity__:Epoch:Reference {id: epoch.id})
-                                SET e.name = epoch.name,
-                                    e.primarySource = "openopus"
-                                """)
-                        .bind(Map.of("epochs", epochData))
-        );
-    }
-
-    private void createGenres(Set<String> genres) {
-        if (genres.isEmpty()) return;
-
-        List<Map<String, Object>> genreData = genres.stream()
-                .map(name -> Map.<String, Object>of("id", toId(name), "name", name))
-                .toList();
-
-        persistenceManager.execute(
-                QuerySpecification.withStatement("""
-                                UNWIND $genres AS genre
-                                MERGE (g:__Entity__:Genre:Reference {id: genre.id})
-                                SET g.name = genre.name,
-                                    g.primarySource = "openopus"
-                                """)
-                        .bind(Map.of("genres", genreData))
-        );
-    }
-
-    private void createComposers(List<OpenOpusComposer> composers) {
-        List<Map<String, Object>> composerData = new ArrayList<>();
-
-        for (OpenOpusComposer composer : composers) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("id", toComposerId(composer));
-            data.put("name", composer.name());
-            data.put("completeName", composer.completeName());
-            data.put("birthYear", parseYear(composer.birth()));
-            data.put("deathYear", parseYear(composer.death()));
-            data.put("popular", composer.isPopular());
-            data.put("recommended", composer.isRecommended());
-            data.put("epochId", composer.epoch() != null ? toId(composer.epoch()) : null);
-            composerData.add(data);
-        }
-
-        persistenceManager.execute(
-                QuerySpecification.withStatement("""
-                                UNWIND $composers AS c
-                                MERGE (composer:__Entity__:Composer:Reference {id: c.id})
-                                SET composer.name = c.name,
-                                    composer.completeName = c.completeName,
-                                    composer.birthYear = c.birthYear,
-                                    composer.deathYear = c.deathYear,
-                                    composer.popular = c.popular,
-                                    composer.recommended = c.recommended,
-                                    composer.primarySource = "openopus"
-                                """)
-                        .bind(Map.of("composers", composerData))
-        );
-
-        List<Map<String, Object>> composersWithEpoch = composerData.stream()
-                .filter(c -> c.get("epochId") != null)
-                .toList();
-
-        if (!composersWithEpoch.isEmpty()) {
-            persistenceManager.execute(
-                    QuerySpecification.withStatement("""
-                                    UNWIND $composers AS c
-                                    MATCH (composer:Composer {id: c.id})
-                                    MATCH (epoch:Epoch {id: c.epochId})
-                                    MERGE (composer)-[:OF_EPOCH]->(epoch)
-                                    """)
-                            .bind(Map.of("composers", composersWithEpoch))
-            );
-        }
-    }
-
-    private int createWorks(List<OpenOpusComposer> composers, PrintWriter writer) {
-        List<Map<String, Object>> workData = new ArrayList<>();
-
-        for (OpenOpusComposer composer : composers) {
-            if (composer.works() == null) continue;
-
-            String composerId = toComposerId(composer);
-            String composerName = composer.name();
-            int workIndex = 0;
-
-            for (OpenOpusWork work : composer.works()) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("id", toWorkId(composer, work, workIndex++));
-                data.put("title", work.title());
-                data.put("subtitle", work.subtitle());
-                data.put("description", buildWorkDescription(composerName, work));
-                data.put("searchTerms", work.searchTerms());
-                data.put("popular", work.isPopular());
-                data.put("recommended", work.isRecommended());
-                data.put("composerId", composerId);
-                data.put("genreId", work.genre() != null && !work.genre().isBlank()
-                        ? toId(work.genre()) : null);
-                workData.add(data);
-            }
-        }
-
-        if (workData.isEmpty()) return 0;
-
-        int batchSize = 200;
-        for (int i = 0; i < workData.size(); i += batchSize) {
-            List<Map<String, Object>> batch = workData.subList(i, Math.min(i + batchSize, workData.size()));
-
-            persistenceManager.execute(
-                    QuerySpecification.withStatement("""
-                                    UNWIND $works AS w
-                                    MATCH (composer:__Entity__:Composer:Reference {id: w.composerId})
-                                    MERGE (work:__Entity__:Work:Reference {id: w.id})
-                                    SET work.name = w.title,
-                                        work.title = w.title,
-                                        work.subtitle = w.subtitle,
-                                        work.description = w.description,
-                                        work.searchTerms = w.searchTerms,
-                                        work.popular = w.popular,
-                                        work.recommended = w.recommended,
-                                        work.primarySource = "openopus"
-                                    MERGE (composer)-[:COMPOSED]->(work)
-                                    """)
-                            .bind(Map.of("works", batch))
-            );
-
-            List<Map<String, Object>> worksWithGenre = batch.stream()
-                    .filter(w -> w.get("genreId") != null)
-                    .toList();
-
-            if (!worksWithGenre.isEmpty()) {
-                persistenceManager.execute(
-                        QuerySpecification.withStatement("""
-                                        UNWIND $works AS w
-                                        MATCH (work:Work {id: w.id})
-                                        MATCH (genre:Genre {id: w.genreId})
-                                        MERGE (work)-[:OF_GENRE]->(genre)
-                                        """)
-                                .bind(Map.of("works", worksWithGenre))
-                );
-            }
-
-            log(writer, "  Created works " + i + "-" + Math.min(i + batchSize, workData.size()));
-        }
-
-        return workData.size();
-    }
-
-    private String toId(String name) {
-        String normalized = Normalizer.normalize(name.toLowerCase(), Normalizer.Form.NFD)
-                .replaceAll("\\p{M}", "");
-        return NON_ALPHANUMERIC.matcher(normalized.replace(" ", "-")).replaceAll("");
-    }
-
-    private String toComposerId(OpenOpusComposer composer) {
-        String base = toId(composer.completeName());
-        if (composer.birth() != null && composer.birth().length() >= 4) {
-            base += "-" + composer.birth().substring(0, 4);
-        }
-        return base;
-    }
-
-    private String toWorkId(OpenOpusComposer composer, OpenOpusWork work, int index) {
-        return toComposerId(composer) + "-" + toId(work.title()) + "-" + index;
-    }
-
-    private String buildWorkDescription(String composerName, OpenOpusWork work) {
-        // Format for better full-text search: "Rachmaninoff - Piano Concerto No. 2, in G minor Op. 33"
-        var sb = new StringBuilder();
-        sb.append(composerName);
-        sb.append(" - ");
-        sb.append(work.title());
-        if (work.subtitle() != null && !work.subtitle().isBlank()) {
-            sb.append(", ").append(work.subtitle());
-        }
-        return sb.toString();
-    }
-
-    private Long parseYear(String yearStr) {
-        if (yearStr == null || yearStr.isBlank()) {
-            return null;
-        }
-        try {
-            // Extract first 4 digits (handles formats like "1770" or "1770-12-16")
-            String year = yearStr.length() >= 4 ? yearStr.substring(0, 4) : yearStr;
-            return Long.parseLong(year);
-        } catch (NumberFormatException e) {
-            logger.warn("Could not parse year: {}", yearStr);
-            return null;
-        }
     }
 }

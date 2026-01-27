@@ -46,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
                 "impromptu.objective=test",
                 "impromptu.behaviour=test",
                 "impromptu.embedding-service=text-embedding-3-small",
+                "impromptu.data-loading.open-opus=false",
         }
 )
 @EnableDrivine

@@ -8,6 +8,8 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.lang.Nullable;
 
+import java.util.List;
+
 /**
  * Properties for chatbot. See application.yml
  *
@@ -27,6 +29,7 @@ import org.springframework.lang.Nullable;
  *                                 for entity resolution during proposition extraction
  * @param showExtractionPrompts    whether to log the extraction prompts
  * @param showExtractionResponses  whether to log the extraction responses
+ * @param dataLoading              configuration for automatic data loading on startup
  */
 @ConfigurationProperties(prefix = "impromptu")
 public record ImpromptuProperties(
@@ -46,7 +49,8 @@ public record ImpromptuProperties(
         boolean showExtractionPrompts,
         boolean showExtractionResponses,
         boolean showChatPrompts,
-        @Nullable @NestedConfigurationProperty Speech speech
+        @Nullable @NestedConfigurationProperty Speech speech,
+        @Nullable @NestedConfigurationProperty DataLoading dataLoading
 ) {
 
     public record Voice(
@@ -85,6 +89,29 @@ public record ImpromptuProperties(
             if (windowSize <= 0) windowSize = 10;
             if (overlapSize < 0) overlapSize = 2;
             if (triggerInterval < 0) triggerInterval = 10;
+        }
+    }
+
+    /**
+     * Configuration for automatic data loading on startup.
+     * Data is loaded in the background after the application starts.
+     * Each source is only loaded if its data doesn't already exist.
+     *
+     * @param openOpus  whether to load Open Opus composer/work data
+     * @param documents list of document URLs or file paths to ingest into the RAG store
+     */
+    public record DataLoading(
+            @DefaultValue("false") boolean openOpus,
+            @Nullable List<String> documents
+    ) {
+        public DataLoading {
+            if (documents == null) {
+                documents = List.of();
+            }
+        }
+
+        public boolean hasDocuments() {
+            return documents != null && !documents.isEmpty();
         }
     }
 }

@@ -71,10 +71,10 @@ public class DocumentService {
      * Ingest content from a URL.
      */
     public void ingestUrl(String url) {
-        logger.info("Ingesting URL: {}", url);
+        logger.debug("Ingesting URL: {}", url);
         var document = contentReader.parseResource(url);
         store.writeAndChunkDocument(document);
-        logger.info("Ingested URL: {}", url);
+        logger.debug("Ingested URL: {}", url);
     }
 
     /**

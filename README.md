@@ -586,9 +586,34 @@ To wipe all data and start fresh, delete the volume in `docker compose down` as 
 docker compose down -v
 ```
 
-### Loading Open Opus Data
+### Automatic Data Loading on Startup
 
-The application can load composer and works data from [Open Opus](https://openopus.org/), a free, open-source classical music database.
+The application can automatically load data sources when it starts. This runs in the background so the app remains responsive during loading. Data is only loaded if it doesn't already exist.
+
+Configure in `application.yml`:
+
+```yaml
+impromptu:
+  data-loading:
+    open-opus: true                                    # Load Open Opus composer/work catalog
+    documents:                                         # Documents to ingest into RAG store
+      - ./data/schumann/musicandmusician001815mbp.md
+      - https://www.gutenberg.org/files/56208/56208-h/56208-h.htm
+```
+
+On first startup you'll see:
+```
+Starting background data loading...
+Open Opus: loaded 220 composers, 24975 works, 10 epochs, 5 genres
+Document: loaded musicandmusician001815mbp.md
+Data loading complete: 2 loaded, 0 skipped, 0 failed
+```
+
+On subsequent startups, data that already exists is silently skipped (logged at DEBUG level).
+
+### Loading Open Opus Data (Manual)
+
+The application can also load composer and works data from [Open Opus](https://openopus.org/) manually via REST API.
 
 **Load into Neo4j** (with the app running):
 ```bash
@@ -619,9 +644,9 @@ MATCH (w:Work)-[:OF_GENRE]->(g:Genre)
 RETURN g.name, count(w) as works ORDER BY works DESC
 ```
 
-### Ingesting Documents
+### Ingesting Documents (Manual)
 
-The application can ingest documents (PDF, HTML, Markdown, etc.) into the RAG store for retrieval-augmented generation.
+Documents can also be ingested manually via REST API (in addition to automatic loading on startup).
 
 **Ingest a URL** (e.g., Project Gutenberg):
 ```bash

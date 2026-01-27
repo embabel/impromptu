@@ -41,6 +41,12 @@ neo4j:
 
 impromptu:
 
+  # Automatic data loading on startup (runs in background, won't block app startup)
+  # Data is only loaded if it doesn't already exist
+  data-loading:
+    open-opus: true                                           # Load Open Opus composer/work catalog
+    documents:                                                # Documents to ingest into RAG store
+      - ./data/schumann/musicandmusician001815mbp.md
 
   neo-rag: {}
 
