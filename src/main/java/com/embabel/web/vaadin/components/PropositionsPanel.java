@@ -5,7 +5,6 @@ import com.embabel.dice.proposition.Proposition;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -24,7 +23,7 @@ public class PropositionsPanel extends VerticalLayout {
     private final VerticalLayout propositionsContent;
     private final Span propositionCountSpan;
     private Consumer<EntityMention> onMentionClick;
-    private Runnable onClear;
+    private Consumer<String> onDelete;
     private String contextId;
 
     public PropositionsPanel(PropositionRepository propositionRepository) {
@@ -40,37 +39,18 @@ public class PropositionsPanel extends VerticalLayout {
         headerLayout.setSpacing(true);
         headerLayout.setWidthFull();
 
-        var titleSpan = new Span("Knowledge Base");
+        var titleSpan = new Span("Memories");
         titleSpan.addClassName("panel-title");
 
-        propositionCountSpan = new Span("(0 propositions)");
+        propositionCountSpan = new Span("(0 memories)");
         propositionCountSpan.addClassName("panel-count");
 
         var refreshButton = new Button(VaadinIcon.REFRESH.create());
         refreshButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        refreshButton.getElement().setAttribute("title", "Refresh propositions");
+        refreshButton.getElement().setAttribute("title", "Refresh memories");
         refreshButton.addClickListener(e -> refresh());
 
-        var clearButton = new Button(VaadinIcon.TRASH.create());
-        clearButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ERROR);
-        clearButton.getElement().setAttribute("title", "Clear all propositions");
-        clearButton.addClickListener(e -> {
-            if (onClear != null) {
-                var dialog = new ConfirmDialog();
-                dialog.setHeader("Clear Knowledge Base");
-                dialog.setText("This will permanently delete ALL extracted propositions. This action cannot be undone.");
-                dialog.setCancelable(true);
-                dialog.setConfirmText("Delete All");
-                dialog.setConfirmButtonTheme("error primary");
-                dialog.addConfirmListener(event -> {
-                    onClear.run();
-                    refresh();
-                });
-                dialog.open();
-            }
-        });
-
-        headerLayout.add(titleSpan, propositionCountSpan, refreshButton, clearButton);
+        headerLayout.add(titleSpan, propositionCountSpan, refreshButton);
         headerLayout.setFlexGrow(1, titleSpan);
 
         // Content area for propositions
@@ -98,10 +78,10 @@ public class PropositionsPanel extends VerticalLayout {
         var propositions = contextId != null
                 ? propositionRepository.findByContextIdValue(contextId)
                 : propositionRepository.findAll();
-        propositionCountSpan.setText("(" + propositions.size() + " propositions)");
+        propositionCountSpan.setText("(" + propositions.size() + " memories)");
 
         if (propositions.isEmpty()) {
-            var emptyMessage = new Span("No propositions extracted yet. Start a conversation to build the knowledge base.");
+            var emptyMessage = new Span("No memories yet. Start a conversation and analyze it to build memories.");
             emptyMessage.addClassName("panel-empty-message");
             propositionsContent.add(emptyMessage);
             return;
@@ -115,6 +95,12 @@ public class PropositionsPanel extends VerticalLayout {
                     if (onMentionClick != null) {
                         card.setOnMentionClick(onMentionClick);
                     }
+                    if (onDelete != null) {
+                        card.setOnDelete(p -> {
+                            onDelete.accept(p.getId());
+                            refresh();
+                        });
+                    }
                     propositionsContent.add(card);
                 });
     }
@@ -127,10 +113,10 @@ public class PropositionsPanel extends VerticalLayout {
     }
 
     /**
-     * Set the handler for clearing all propositions.
+     * Set the handler for deleting a single proposition by ID.
      */
-    public void setOnClear(Runnable handler) {
-        this.onClear = handler;
+    public void setOnDelete(Consumer<String> handler) {
+        this.onDelete = handler;
     }
 
     /**

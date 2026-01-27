@@ -29,6 +29,8 @@ import com.embabel.web.vaadin.components.PropositionsPanel;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -159,17 +161,44 @@ public class SessionPanel extends Div {
         memoryContent.setPadding(false);
         memoryContent.setVisible(false);
 
-        // Analyze button at the top
-        var analyzeButton = new Button("Analyze Conversation", VaadinIcon.LIGHTBULB.create(), e -> config.onAnalyze().run());
-        analyzeButton.addClassName("memory-analyze-button");
-        analyzeButton.getElement().setAttribute("title", "Extract propositions from conversation");
-        memoryContent.add(analyzeButton);
-
         var userContextId = config.user().currentContext();
+
+        // Create propositions panel first (needed for button references)
         propositionsPanel = new PropositionsPanel(config.propositionRepository());
         propositionsPanel.setContextId(userContextId);
         propositionsPanel.setOnMentionClick(config.onMentionClick());
-        propositionsPanel.setOnClear(() -> config.propositionRepository().clearByContext(userContextId));
+        propositionsPanel.setOnDelete(id -> config.propositionRepository().delete(id));
+
+        // Button row with Analyze and Clear
+        var buttonRow = new HorizontalLayout();
+        buttonRow.setSpacing(true);
+        buttonRow.addClassName("memory-button-row");
+
+        var analyzeButton = new Button("Analyze Conversation", VaadinIcon.LIGHTBULB.create(), e -> config.onAnalyze().run());
+        analyzeButton.addClassName("memory-analyze-button");
+        analyzeButton.getElement().setAttribute("title", "Extract memories from conversation");
+
+        var clearButton = new Button("Clear All", VaadinIcon.TRASH.create());
+        clearButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
+        clearButton.addClassName("memory-clear-button");
+        clearButton.getElement().setAttribute("title", "Delete all memories");
+        clearButton.addClickListener(e -> {
+            var dialog = new ConfirmDialog();
+            dialog.setHeader("Clear Memories");
+            dialog.setText("This will permanently delete ALL memories. This action cannot be undone.");
+            dialog.setCancelable(true);
+            dialog.setCloseOnEsc(true);
+            dialog.setConfirmText("Delete All");
+            dialog.setConfirmButtonTheme("error primary");
+            dialog.addConfirmListener(event -> {
+                config.propositionRepository().clearByContext(userContextId);
+                propositionsPanel.refresh();
+            });
+            dialog.open();
+        });
+
+        buttonRow.add(analyzeButton, clearButton);
+        memoryContent.add(buttonRow);
         memoryContent.add(propositionsPanel);
 
         // Voice content (persona selection)

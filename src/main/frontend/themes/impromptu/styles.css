@@ -569,12 +569,29 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   text-decoration: underline;
 }
 
-.memory-analyze-button {
+.memory-button-row {
+  margin-top: var(--lumo-space-l);
   margin-bottom: var(--lumo-space-m);
+}
+
+.memory-analyze-button {
   background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-soft) 100%);
   color: var(--concert-black);
   border: none;
   border-radius: var(--lumo-border-radius-m);
+}
+
+.memory-clear-button {
+  background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #b91c1c 100%);
+  color: #fef2f2;
+  border: 1px solid #dc2626;
+  border-radius: var(--lumo-border-radius-m);
+  box-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+}
+
+.memory-clear-button:hover {
+  background: linear-gradient(135deg, #991b1b 0%, #b91c1c 50%, #dc2626 100%);
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
 }
 
 .footer-stats {

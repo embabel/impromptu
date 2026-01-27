@@ -2,8 +2,11 @@ package com.embabel.web.vaadin.components;
 
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.dice.proposition.Proposition;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 
 import java.time.ZoneId;
@@ -21,15 +24,36 @@ public class PropositionCard extends Div {
 
     private final Proposition proposition;
     private Consumer<EntityMention> onMentionClick;
+    private Consumer<Proposition> onDelete;
     private HorizontalLayout entitiesLayout;
 
     public PropositionCard(Proposition prop) {
         this.proposition = prop;
         addClassName("proposition-card");
 
+        // Header with text and delete button
+        var headerLayout = new HorizontalLayout();
+        headerLayout.setWidthFull();
+        headerLayout.setSpacing(true);
+        headerLayout.addClassName("proposition-header");
+
         // Proposition text
         var textSpan = new Span(prop.getText());
         textSpan.addClassName("proposition-text");
+
+        // Delete button
+        var deleteButton = new Button(VaadinIcon.TRASH.create());
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_ERROR);
+        deleteButton.addClassName("proposition-delete");
+        deleteButton.getElement().setAttribute("title", "Delete this memory");
+        deleteButton.addClickListener(e -> {
+            if (onDelete != null) {
+                onDelete.accept(proposition);
+            }
+        });
+
+        headerLayout.add(textSpan, deleteButton);
+        headerLayout.setFlexGrow(1, textSpan);
 
         // Metadata line
         var metaLayout = new HorizontalLayout();
@@ -59,9 +83,9 @@ public class PropositionCard extends Div {
             for (var mention : mentions) {
                 entitiesLayout.add(createMentionBadge(mention));
             }
-            add(textSpan, metaLayout, entitiesLayout);
+            add(headerLayout, metaLayout, entitiesLayout);
         } else {
-            add(textSpan, metaLayout);
+            add(headerLayout, metaLayout);
         }
     }
 
@@ -92,6 +116,13 @@ public class PropositionCard extends Div {
      */
     public void setOnMentionClick(Consumer<EntityMention> handler) {
         this.onMentionClick = handler;
+    }
+
+    /**
+     * Set the handler for deleting this proposition.
+     */
+    public void setOnDelete(Consumer<Proposition> handler) {
+        this.onDelete = handler;
     }
 
     /**
