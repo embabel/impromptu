@@ -69,6 +69,9 @@
 
   /* Deep blue gradient */
   --bg-gradient: linear-gradient(180deg, #0a0a14 0%, #141428 60%, #0a1428 100%);
+
+  /* Logo filter - shift gold to cool blue */
+  --logo-filter: sepia(1) hue-rotate(180deg) saturate(1.5) brightness(1.1);
 }
 
 /* Theme class for component-specific overrides */

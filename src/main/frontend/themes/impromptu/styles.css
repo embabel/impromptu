@@ -442,6 +442,7 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   max-width: 100%;
   object-fit: contain;
   display: block;
+  filter: var(--logo-filter, none);
 }
 
 .header-title-impromptu {

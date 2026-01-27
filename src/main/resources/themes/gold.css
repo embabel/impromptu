@@ -67,6 +67,9 @@
 
   /* Background gradient */
   --bg-gradient: linear-gradient(135deg, #0a0a0f 0%, #1a1525 50%, #121218 100%);
+
+  /* Logo filter - gold is native, no filter needed */
+  --logo-filter: none;
 }
 
 /* Theme class for component-specific overrides */

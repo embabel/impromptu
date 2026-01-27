@@ -69,6 +69,9 @@
 
   /* Warm brown-gold gradient evoking velvet and gilding */
   --bg-gradient: linear-gradient(135deg, #0f0a08 0%, #261c18 50%, #1a1410 100%);
+
+  /* Logo filter - Scala has similar gold, just warmer/darker */
+  --logo-filter: sepia(0.3) brightness(0.95);
 }
 
 /* Theme class for component-specific overrides */

@@ -69,6 +69,9 @@
 
   /* Warm charcoal gradient */
   --bg-gradient: linear-gradient(180deg, #1a1518 0%, #3e2b2e 50%, #2d2528 100%);
+
+  /* Logo filter - shift gold to bold red */
+  --logo-filter: sepia(1) hue-rotate(330deg) saturate(2.5) brightness(0.9);
 }
 
 /* Theme class for component-specific overrides */

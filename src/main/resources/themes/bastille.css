@@ -69,6 +69,9 @@
 
   /* Deep blue-black gradient like granite */
   --bg-gradient: linear-gradient(180deg, #05080a 0%, #0f172a 50%, #05080a 100%);
+
+  /* Logo filter - shift gold to modern blue */
+  --logo-filter: sepia(1) hue-rotate(190deg) saturate(1.8) brightness(1.1);
 }
 
 /* Theme class for component-specific overrides */

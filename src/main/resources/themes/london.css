@@ -69,6 +69,9 @@
 
   /* Clean black background */
   --bg-gradient: linear-gradient(180deg, #000000 0%, #0a0a0a 100%);
+
+  /* Logo filter - shift gold to pink/magenta */
+  --logo-filter: sepia(1) hue-rotate(290deg) saturate(1.5) brightness(0.9);
 }
 
 /* Theme class for component-specific overrides */

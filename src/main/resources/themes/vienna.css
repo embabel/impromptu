@@ -69,6 +69,9 @@
 
   /* Rich burgundy gradient */
   --bg-gradient: linear-gradient(135deg, #1a0a0a 0%, #3d1a1a 50%, #2d1515 100%);
+
+  /* Logo filter - shift gold to burgundy/red */
+  --logo-filter: sepia(1) hue-rotate(320deg) saturate(2) brightness(0.7);
 }
 
 /* Theme class for component-specific overrides */
