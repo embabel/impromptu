@@ -39,9 +39,14 @@ public interface Composer extends NamedEntity {
     @Relationship(name = "COMPOSED")
     List<Work> getWorks();
 
-    /** Composers that this composer influenced (outgoing INFLUENCED relationship). */
+    /**
+     * Composers that this composer influenced (outgoing INFLUENCED relationship).
+     */
     @Relationship(name = "INFLUENCED")
     List<Composer> getInfluenced();
+
+    @Relationship(name = "IN_PERIOD")
+    Period getPeriod();
 
     @Nullable
     default Long lifespan() {

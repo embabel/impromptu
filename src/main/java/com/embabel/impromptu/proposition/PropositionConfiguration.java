@@ -56,6 +56,7 @@ class PropositionConfiguration {
     DataDictionary musicSchema() {
         var schema = DataDictionary.fromClasses(
                 "art_music",
+                Period.class,
                 Composer.class,
                 Work.class,
                 Performer.class,

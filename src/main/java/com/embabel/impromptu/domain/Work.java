@@ -17,7 +17,10 @@ package com.embabel.impromptu.domain;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.embabel.agent.rag.model.Relationship;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * Represents a musical work in the graph database.
@@ -34,4 +37,10 @@ public interface Work extends NamedEntity {
     boolean isPopular();
 
     boolean isRecommended();
+
+    @Relationship(name = "OF_GENRE")
+    Genre getGenre();
+
+    @Relationship(name = "SCORED_FOR")
+    List<Instrument> getInstruments();
 }
