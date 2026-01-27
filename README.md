@@ -1290,6 +1290,65 @@ class MyFeatureIT {
 
 This pattern allows developers to test against real infrastructure while keeping the database clean for subsequent test runs.
 
+## Composer Influence Relationships
+
+The application can generate and load INFLUENCED relationships between composers, representing historical musical influence (e.g., Beethoven influenced Brahms). This uses an LLM to generate candidate relationships, which are written to a CSV for human review before loading into Neo4j.
+
+### Workflow
+
+1. **Generate**: LLM analyzes each composer and generates influence relationships with confidence scores
+2. **Review**: A musicologist reviews the CSV, changing status from `pending` to `approved` for valid relationships
+3. **Load**: Approved relationships are loaded into Neo4j automatically on startup (if the CSV exists and no influences are in the database yet)
+
+### Musicologist Review Process
+
+The generated CSV file (`data/influences/composer-influences.csv`) is designed to be reviewed and curated by musicologists:
+
+1. **Initial Generation**: Run the generate endpoint to create candidate relationships using LLM general knowledge
+2. **Open in Spreadsheet**: Edit the CSV in Excel, Numbers, Google Sheets, or any spreadsheet application
+3. **Review Each Relationship**: For each row:
+   - Verify the influence relationship is historically accurate
+   - Adjust `strength`, `confidence`, and `divergence` values as needed
+   - Edit the `reason` text to be more precise if necessary
+   - Change `status` from `pending` to `approved` for valid relationships
+   - Delete rows that are incorrect or speculative
+4. **Save and Commit**: Save the CSV file and commit it to version control
+5. **Load on Next Startup**: Approved relationships are automatically loaded into Neo4j
+
+The CSV file is the source of truth and can be iteratively refined over time.
+
+### REST API
+
+With the app running:
+
+```bash
+# Generate influence relationships for all composers (writes to data/influences/composer-influences.csv)
+curl -X POST http://localhost:8888/api/influences/generate
+
+# Load approved relationships into Neo4j (also happens automatically on startup)
+curl -X POST http://localhost:8888/api/influences/load
+
+# Show statistics about existing influence relationships
+curl http://localhost:8888/api/influences/stats
+
+# List all composers in the database
+curl http://localhost:8888/api/influences/composers
+```
+
+### CSV Format
+
+The generated CSV file (`data/influences/composer-influences.csv`) has the following columns:
+
+| Column | Description |
+|--------|-------------|
+| `from` | Composer ID who did the influencing (e.g., `ludwig-van-beethoven-1770`) |
+| `to` | Composer ID who was influenced (e.g., `johannes-brahms-1833`) |
+| `reason` | Brief explanation of the influence relationship |
+| `strength` | 0.0-1.0 indicating how significant the influence was |
+| `confidence` | 0.0-1.0 indicating how certain the relationship is documented |
+| `divergence` | 0.0-1.0 indicating how much the influenced composer's style diverged from the influencer (e.g., Debussy was influenced by Wagner but diverged significantly = 0.8, while Mahler stayed closer = 0.3) |
+| `status` | `pending` (generated) or `approved` (ready to load) |
+
 ## Miscellaneous
 
 ### Killing a Stuck Server Process

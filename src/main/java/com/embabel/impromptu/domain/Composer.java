@@ -24,7 +24,8 @@ import java.util.List;
 
 /**
  * Represents a composer in the graph database.
- * Linked to Epoch via OF_EPOCH relationship and to Works via COMPOSED relationship.
+ * Linked to Epoch via OF_EPOCH relationship, to Works via COMPOSED relationship,
+ * and to other Composers via INFLUENCED relationship.
  */
 @CreationPermitted(false)
 public interface Composer extends NamedEntity {
@@ -37,6 +38,10 @@ public interface Composer extends NamedEntity {
 
     @Relationship(name = "COMPOSED")
     List<Work> getWorks();
+
+    /** Composers that this composer influenced (outgoing INFLUENCED relationship). */
+    @Relationship(name = "INFLUENCED")
+    List<Composer> getInfluenced();
 
     @Nullable
     default Long lifespan() {

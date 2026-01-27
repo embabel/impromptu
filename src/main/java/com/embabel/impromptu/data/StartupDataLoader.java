@@ -19,6 +19,7 @@ import com.embabel.agent.rag.ingestion.TikaHierarchicalContentReader;
 import com.embabel.agent.rag.ingestion.policy.NeverRefreshExistingDocumentContentPolicy;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
 import com.embabel.impromptu.data.openopus.OpenOpusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,16 +50,19 @@ public class StartupDataLoader {
 
     private final ImpromptuProperties properties;
     private final OpenOpusService openOpusService;
+    private final ComposerInfluenceLoader influenceLoader;
     private final DrivineStore store;
     private final TikaHierarchicalContentReader contentReader = new TikaHierarchicalContentReader();
 
     public StartupDataLoader(
             ImpromptuProperties properties,
             OpenOpusService openOpusService,
+            ComposerInfluenceLoader influenceLoader,
             DrivineStore store
     ) {
         this.properties = properties;
         this.openOpusService = openOpusService;
+        this.influenceLoader = influenceLoader;
         this.store = store;
     }
 
@@ -82,6 +86,20 @@ public class StartupDataLoader {
                 openOpusService.load(msg -> {});
                 logger.info("Loaded Open Opus ({} composers)", 220);
                 loaded++;
+            }
+
+            // Load influence relationships if CSV exists and no influences in DB yet
+            try {
+                var count = influenceLoader.countInfluenceRelationships();
+                if (count == 0) {
+                    var result = influenceLoader.loadApproved();
+                    if (result.loaded() > 0) {
+                        logger.info("Loaded {} composer influence relationships", result.loaded());
+                        loaded++;
+                    }
+                }
+            } catch (Exception e) {
+                logger.debug("No influence relationships to load: {}", e.getMessage());
             }
         }
 

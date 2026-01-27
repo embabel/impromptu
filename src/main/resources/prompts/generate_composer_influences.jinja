@@ -1,0 +1,17 @@
+You are a musicologist. For the composer {{ composerId }} ({{ composerName }}, {{ birthYear }}-{{ deathYear }}), identify composers who INFLUENCED them.
+
+These composers lived before or during {{ composerShortName }}'s lifetime and could have influenced them:
+{{ composerList }}
+
+Return an object with an "influences" array containing objects with:
+- from: composer ID who did the influencing (must be from the list above)
+- to: "{{ composerId }}"
+- reason: brief explanation (1-2 sentences)
+- strength: 0.0-1.0 how significant the influence was
+- confidence: 0.0-1.0 how certain this relationship is documented
+- divergence: 0.0-1.0 how much {{ composerShortName }}'s style diverged from the influencer (e.g., Debussy diverged significantly from Wagner = 0.8, while Mahler stayed closer to his influences = 0.3)
+
+Rules:
+- Focus on documented, significant influences (not speculative)
+- Only include composers from the provided list
+- Return empty influences array if no clear influences exist

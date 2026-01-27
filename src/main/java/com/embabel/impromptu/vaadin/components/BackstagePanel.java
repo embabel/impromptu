@@ -2,6 +2,7 @@ package com.embabel.impromptu.vaadin.components;
 
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
 import com.embabel.impromptu.rag.DocumentService;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
@@ -37,7 +38,8 @@ public class BackstagePanel extends Div {
             NamedEntityDataRepository entityRepository,
             DocumentService documentService,
             ReferencesPanel.IndexStats indexStats,
-            ImpromptuProperties properties
+            ImpromptuProperties properties,
+            ComposerInfluenceLoader influenceLoader
     ) {
     }
 
@@ -90,10 +92,11 @@ public class BackstagePanel extends Div {
         // App tabs
         var referencesTab = new Tab(VaadinIcon.RECORDS.create(), new Span("References"));
         var sourcesTab = new Tab(VaadinIcon.BOOK.create(), new Span("Sources"));
+        var influencesTab = new Tab(VaadinIcon.CONNECT.create(), new Span("Influences"));
         var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
         var aboutTab = new Tab(VaadinIcon.INFO_CIRCLE.create(), new Span("About"));
 
-        var tabs = new Tabs(referencesTab, sourcesTab, settingsTab, aboutTab);
+        var tabs = new Tabs(referencesTab, sourcesTab, influencesTab, settingsTab, aboutTab);
         tabs.setWidthFull();
         sidePanel.add(tabs);
 
@@ -110,6 +113,10 @@ public class BackstagePanel extends Div {
         var sourcesContent = new SourcesPanel(config.documentService());
         sourcesContent.setVisible(false);
 
+        // Influences content
+        var influencesContent = new InfluencesPanel(config.influenceLoader());
+        influencesContent.setVisible(false);
+
         // Settings content
         var settingsContent = new SettingsPanel(config.properties());
         settingsContent.setVisible(false);
@@ -117,7 +124,7 @@ public class BackstagePanel extends Div {
         // About content
         var aboutContent = new AboutPanel();
 
-        contentArea.add(referencesContent, sourcesContent, settingsContent, aboutContent);
+        contentArea.add(referencesContent, sourcesContent, influencesContent, settingsContent, aboutContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
@@ -126,11 +133,14 @@ public class BackstagePanel extends Div {
             var selected = event.getSelectedTab();
             referencesContent.setVisible(selected == referencesTab);
             sourcesContent.setVisible(selected == sourcesTab);
+            influencesContent.setVisible(selected == influencesTab);
             settingsContent.setVisible(selected == settingsTab);
             aboutContent.setVisible(selected == aboutTab);
 
             if (selected == sourcesTab) {
                 sourcesContent.refresh();
+            } else if (selected == influencesTab) {
+                influencesContent.refresh();
             }
         });
 
