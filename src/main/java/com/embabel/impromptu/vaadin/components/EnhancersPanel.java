@@ -374,7 +374,7 @@ public class EnhancersPanel extends VerticalLayout {
                     ui.access(() -> {
                         Notification.show(
                                 String.format("Exported %d nodes, %d relationships to %s",
-                                        result.nodes(), result.relationships(), result.file()),
+                                        result.nodes(), result.relationships(), result.directory()),
                                 5000, Notification.Position.BOTTOM_CENTER
                         ).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                     });

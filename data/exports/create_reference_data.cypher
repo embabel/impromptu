@@ -220,5 +220,4 @@ SET nat.name        = n.name,
 nat.country     = n.country,
 nat.countryCode = n.code;
 
-// Composers and works don't have this
 MATCH (n:Reference) SET n:__Entity__;

@@ -602,16 +602,19 @@ docker run --rm -v impromptu_neo4j_data:/data -v $(pwd):/backup alpine sh -c "cd
 docker start impromptu-neo4j
 ```
 
-**Export to Cypher**: Use the "Export Cypher" button in the Impromptu panel's Influences tab to export all Reference nodes (Composers, Works, Epochs, Genres) and relationships to `data/exports/references.cypher`.
+**Export to CSV**: Use the "Export Cypher" button in the Impromptu panel's Influences tab to export all Reference nodes (Composers, Works, Epochs, Genres) and relationships to CSV files in `data/exports/`. This also generates `import_references.cypher` for fast bulk loading.
 
-**Load from Cypher export** (e.g., to populate a fresh database):
+**Load reference data** (e.g., to populate a fresh database):
 ```bash
-# Clear existing data first (optional)
-docker exec impromptu-neo4j cypher-shell -u neo4j -p brahmsian "MATCH (n) DETACH DELETE n"
-
-# Load the Cypher export
-docker exec -i impromptu-neo4j cypher-shell -u neo4j -p brahmsian < data/exports/references.cypher
+# Use the load script (copies CSVs to Neo4j, uses LOAD CSV for fast import)
+./scripts/load_data.sh
 ```
+
+The script:
+- Skips if data already exists
+- Copies CSV files to Neo4j's import directory
+- Uses `LOAD CSV` for fast bulk import (10-50x faster than individual statements)
+- Also loads `create_reference_data.cypher` for instruments/techniques
 
 ### Automatic Data Loading on Startup
 

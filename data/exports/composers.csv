@@ -1,0 +1,221 @@
+id,name,completeName,birthYear,deathYear,description,popular,recommended,primarySource
+"john-adams-1947","Adams","John Adams",1947,,,false,true,openopus
+"thomas-ades-1971","Adès","Thomas Adès",1971,,,false,false,openopus
+"isaac-albeniz-1860","Albéniz","Isaac Albéniz",1860,1909,,false,false,openopus
+"tomaso-albinoni-1671","Albinoni","Tomaso Albinoni",1671,1751,,false,false,openopus
+"george-antheil-1900","Antheil","George Antheil",1900,1959,,false,false,openopus
+"malcolm-arnold-1921","Arnold","Malcolm Arnold",1921,2006,,false,false,openopus
+"milton-babbitt-1916","Babbitt","Milton Babbitt",1916,2011,,false,false,openopus
+"johann-sebastian-bach-1685","Bach","Johann Sebastian Bach",1685,1750,,true,true,openopus
+"carl-philipp-emanuel-bach-1714","Bach, C.P.E.","Carl Philipp Emanuel Bach",1714,1788,,false,false,openopus
+"johann-christian-bach-1735","Bach, J.C.","Johann Christian Bach",1735,1782,,false,false,openopus
+"mily-balakirev-1837","Balakirev","Mily Balakirev",1837,1910,,false,false,openopus
+"samuel-barber-1910","Barber","Samuel Barber",1910,1981,,false,false,openopus
+"bela-bartok-1881","Bartók","Béla Bartók",1881,1945,,false,true,openopus
+"arnold-bax-1883","Bax","Arnold Bax",1883,1953,,false,false,openopus
+"ludwig-van-beethoven-1770","Beethoven","Ludwig van Beethoven",1770,1827,,true,true,openopus
+"vincenzo-bellini-1801","Bellini","Vincenzo Bellini",1801,1835,,false,false,openopus
+"alban-berg-1885","Berg","Alban Berg",1885,1935,,false,true,openopus
+"luciano-berio-1925","Berio","Luciano Berio",1925,2003,,false,false,openopus
+"hector-berlioz-1803","Berlioz","Hector Berlioz",1803,1869,,false,true,openopus
+"leonard-bernstein-1918","Bernstein","Leonard Bernstein",1918,1990,,false,false,openopus
+"franz-berwald-1796","Berwald","Franz Berwald",1796,1868,,false,false,openopus
+"heinrich-franz-von-biber-1644","Biber","Heinrich Franz von Biber",1644,1704,,false,false,openopus
+"harrison-birtwistle-1934","Birtwistle","Harrison Birtwistle",1934,,,false,false,openopus
+"georges-bizet-1838","Bizet","Georges Bizet",1838,1875,,false,false,openopus
+"ernest-bloch-1880","Bloch","Ernest Bloch",1880,1959,,false,false,openopus
+"luigi-boccherini-1743","Boccherini","Luigi Boccherini",1743,1805,,false,false,openopus
+"alexander-borodin-1833","Borodin","Alexander Borodin",1833,1887,,false,true,openopus
+"pierre-boulez-1925","Boulez","Pierre Boulez",1925,2016,,false,true,openopus
+"joly-braga-santos-1924","Braga Santos","Joly Braga Santos",1924,1988,,false,false,openopus
+"johannes-brahms-1833","Brahms","Johannes Brahms",1833,1897,,true,true,openopus
+"benjamin-britten-1913","Britten","Benjamin Britten",1913,1976,,false,true,openopus
+"max-bruch-1838","Bruch","Max Bruch",1838,1920,,false,false,openopus
+"anton-bruckner-1824","Bruckner","Anton Bruckner",1824,1896,,false,true,openopus
+"ferruccio-busoni-1866","Busoni","Ferruccio Busoni",1866,1924,,false,false,openopus
+"dietrich-buxtehude-1637","Buxtehude","Dietrich Buxtehude",1637,1707,,false,false,openopus
+"william-byrd-1540","Byrd","William Byrd",1540,1623,,false,false,openopus
+"john-cage-1912","Cage","John Cage",1912,1992,,false,false,openopus
+"camargo-guarnieri-1907","Camargo Guarnieri","Camargo Guarnieri",1907,1993,,false,false,openopus
+"elliott-carter-1908","Carter","Elliott Carter",1908,2012,,false,false,openopus
+"emmanuel-chabrier-1841","Chabrier","Emmanuel Chabrier",1841,1894,,false,false,openopus
+"marc-antoine-charpentier-1636","Charpentier","Marc-Antoine Charpentier",1636,1704,,false,false,openopus
+"ernest-chausson-1855","Chausson","Ernest Chausson",1855,1899,,false,false,openopus
+"carlos-chavez-1899","Chávez","Carlos Chávez",1899,1978,,false,false,openopus
+"luigi-cherubini-1760","Cherubini","Luigi Cherubini",1760,1842,,false,false,openopus
+"frederic-chopin-1810","Chopin","Frédéric Chopin",1810,1849,,true,true,openopus
+"aaron-copland-1900","Copland","Aaron Copland",1900,1990,,false,true,openopus
+"arcangelo-corelli-1653","Corelli","Arcangelo Corelli",1653,1713,,false,false,openopus
+"john-corigliano-1938","Corigliano","John Corigliano",1938,,,false,false,openopus
+"francois-couperin-1668","Couperin","François Couperin",1668,1733,,false,true,openopus
+"george-crumb-1929","Crumb","George Crumb",1929,2022,,false,false,openopus
+"cesar-cui-1835","Cui","César Cui",1835,1918,,false,false,openopus
+"vincent-dindy-1851","d'Indy","Vincent d'Indy",1851,1931,,false,false,openopus
+"michael-daugherty-1954","Daugherty","Michael Daugherty",1954,,,false,false,openopus
+"claude-debussy-1862","Debussy","Claude Debussy",1862,1918,,true,true,openopus
+"leo-delibes-1836","Delibes","Léo Delibes",1836,1891,,false,false,openopus
+"frederick-delius-1862","Delius","Frederick Delius",1862,1934,,false,false,openopus
+"josquin-des-prez-1450","Des Prez","Josquin Des Prez",1450,1521,,false,true,openopus
+"karl-ditters-von-dittersdorf-1739","Dittersdorf","Karl Ditters von Dittersdorf",1739,1799,,false,false,openopus
+"ernst-von-dohnanyi-1877","Dohnányi","Ernst von Dohnányi",1877,1960,,false,false,openopus
+"gaetano-donizetti-1797","Donizetti","Gaetano Donizetti",1797,1848,,false,false,openopus
+"john-dowland-1563","Dowland","John Dowland",1563,1626,,false,false,openopus
+"guillaume-dufay-1400","Dufay","Guillaume Dufay",1400,1474,,false,true,openopus
+"paul-dukas-1865","Dukas","Paul Dukas",1865,1935,,false,false,openopus
+"maurice-durufle-1902","Duruflé","Maurice Duruflé",1902,1986,,false,false,openopus
+"henri-dutilleux-1916","Dutilleux","Henri Dutilleux",1916,2013,,false,false,openopus
+"antonin-dvorak-1841","Dvořák","Antonín Dvořák",1841,1904,,true,true,openopus
+"edward-elgar-1857","Elgar","Edward Elgar",1857,1934,,false,true,openopus
+"george-enescu-1881","Enescu","George Enescu",1881,1955,,false,false,openopus
+"manuel-de-falla-1876","Falla","Manuel de Falla",1876,1946,,false,true,openopus
+"gabriel-faure-1845","Fauré","Gabriel Fauré",1845,1924,,false,false,openopus
+"john-field-1782","Field","John Field",1782,1837,,false,false,openopus
+"cesar-franck-1822","Franck","César Franck",1822,1890,,false,true,openopus
+"girolamo-frescobaldi-1583","Frescobaldi","Girolamo Frescobaldi",1583,1643,,false,false,openopus
+"george-gershwin-1898","Gershwin","George Gershwin",1898,1937,,true,true,openopus
+"carlo-gesualdo-1561","Gesualdo","Carlo Gesualdo",1561,1613,,false,true,openopus
+"orlando-gibbons-1583","Gibbons","Orlando Gibbons",1583,1625,,false,false,openopus
+"alberto-ginastera-1916","Ginastera","Alberto Ginastera",1916,1983,,false,true,openopus
+"philip-glass-1937","Glass","Philip Glass",1937,,,false,true,openopus
+"alexander-glazunov-1865","Glazunov","Alexander Glazunov",1865,1936,,false,false,openopus
+"reinhold-gliere-1875","Glière","Reinhold Glière",1875,1956,,false,false,openopus
+"mikhail-ivanovich-glinka-1804","Glinka","Mikhail Ivanovich Glinka",1804,1857,,false,false,openopus
+"christoph-willibald-von-gluck-1714","Gluck","Christoph Willibald von Gluck",1714,1787,,false,true,openopus
+"karl-goldmark-1830","Goldmark","Karl Goldmark",1830,1915,,false,false,openopus
+"antonio-carlos-gomes-1836","Gomes","Antonio Carlos Gomes",1836,1896,,false,false,openopus
+"henryk-gorecki-1933","Górecki","Henryk Górecki",1933,2010,,false,false,openopus
+"morton-gould-1913","Gould","Morton Gould",1913,1996,,false,false,openopus
+"charles-gounod-1818","Gounod","Charles Gounod",1818,1893,,false,false,openopus
+"percy-grainger-1882","Grainger","Percy Grainger",1882,1961,,false,false,openopus
+"enrique-granados-1867","Granados","Enrique Granados",1867,1916,,false,false,openopus
+"edvard-grieg-1843","Grieg","Edvard Grieg",1843,1907,,false,true,openopus
+"sofia-gubaidulina-1931","Gubaidulina","Sofia Gubaidulina",1931,,,false,false,openopus
+"george-frideric-handel-1685","Handel","George Frideric Handel",1685,1759,,true,true,openopus
+"howard-hanson-1896","Hanson","Howard Hanson",1896,1981,,false,false,openopus
+"roy-harris-1898","Harris","Roy Harris",1898,1979,,false,false,openopus
+"franz-joseph-haydn-1732","Haydn","Franz Joseph Haydn",1732,1809,,true,true,openopus
+"hans-werner-henze-1926","Henze","Hans Werner Henze",1926,2012,,false,false,openopus
+"victor-herbert-1859","Herbert","Victor Herbert",1859,1924,,false,false,openopus
+"paul-hindemith-1895","Hindemith","Paul Hindemith",1895,1963,,false,false,openopus
+"vagn-holmboe-1909","Holmboe","Vagn Holmboe",1909,1996,,false,false,openopus
+"gustav-holst-1874","Holst","Gustav Holst",1874,1934,,false,false,openopus
+"arthur-honegger-1892","Honegger","Arthur Honegger",1892,1955,,false,false,openopus
+"johann-nepomuk-hummel-1778","Hummel","Johann Nepomuk Hummel",1778,1837,,false,false,openopus
+"engelbert-humperdinck-1854","Humperdinck","Engelbert Humperdinck",1854,1921,,false,false,openopus
+"jacques-ibert-1890","Ibert","Jacques Ibert",1890,1962,,false,false,openopus
+"charles-ives-1874","Ives","Charles Ives",1874,1954,,false,true,openopus
+"leos-janacek-1854","Janacek","Leoš Janáček",1854,1928,,false,true,openopus
+"clement-janequin-1485","Janequin","Clément Janequin",1485,1558,,false,true,openopus
+"scott-joplin-1868","Joplin","Scott Joplin",1868,1917,,false,false,openopus
+"dmitry-kabalevsky-1904","Kabalevsky","Dmitry Kabalevsky",1904,1987,,false,false,openopus
+"aram-khachaturian-1903","Khachaturian","Aram Khachaturian",1903,1978,,false,false,openopus
+"zoltan-kodaly-1882","Kodály","Zoltán Kodály",1882,1967,,false,false,openopus
+"erich-wolfgang-korngold-1897","Korngold","Erich Wolfgang Korngold",1897,1957,,false,false,openopus
+"edouard-lalo-1823","Lalo","Edouard Lalo",1823,1892,,false,false,openopus
+"orlande-de-lassus-1532","Lassus","Orlande de Lassus",1532,1594,,false,true,openopus
+"ruggero-leoncavallo-1857","Leoncavallo","Ruggero Leoncavallo",1857,1919,,false,false,openopus
+"leonin-1135","Léonin","Léonin",1135,1201,,false,true,openopus
+"gyorgy-ligeti-1923","Ligeti","György Ligeti",1923,2006,,false,true,openopus
+"franz-liszt-1811","Liszt","Franz Liszt",1811,1886,,true,true,openopus
+"fernando-lopes-graca-1906","Lopes-Graça","Fernando Lopes-Graça",1906,1994,,false,false,openopus
+"jean-baptiste-lully-1632","Lully","Jean-Baptiste Lully",1632,1687,,false,true,openopus
+"witold-lutoslawski-1913","Lutoslawski","Witold Lutoslawski",1913,1994,,false,true,openopus
+"edward-macdowell-1860","MacDowell","Edward MacDowell",1860,1908,,false,false,openopus
+"guillaume-de-machaut-1300","Machaut","Guillaume de Machaut",1300,1377,,false,false,openopus
+"gustav-mahler-1860","Mahler","Gustav Mahler",1860,1911,,true,true,openopus
+"marin-marais-1656","Marais","Marin Marais",1656,1728,,false,false,openopus
+"benedetto-marcello-1686","Marcello","Benedetto Marcello",1686,1739,,false,false,openopus
+"alessandro-marcello-1684","Marcello, A.","Alessandro Marcello",1684,1750,,false,false,openopus
+"bohuslav-martinu-1890","Martinů","Bohuslav Martinů",1890,1959,,false,true,openopus
+"pietro-mascagni-1863","Mascagni","Pietro Mascagni",1863,1945,,false,false,openopus
+"jules-massenet-1842","Massenet","Jules Massenet",1842,1912,,false,false,openopus
+"felix-mendelssohn-1809","Mendelssohn","Felix Mendelssohn",1809,1847,,true,true,openopus
+"olivier-messiaen-1908","Messiaen","Olivier Messiaen",1908,1992,,false,true,openopus
+"francisco-mignone-1897","Mignone","Francisco Mignone",1897,1986,,false,false,openopus
+"darius-milhaud-1892","Milhaud","Darius Milhaud",1892,1974,,false,true,openopus
+"ernest-moeran-1894","Moeran","Ernest Moeran",1894,1950,,false,false,openopus
+"claudio-monteverdi-1567","Monteverdi","Claudio Monteverdi",1567,1643,,false,true,openopus
+"wolfgang-amadeus-mozart-1756","Mozart","Wolfgang Amadeus Mozart",1756,1791,,true,true,openopus
+"modest-mussorgsky-1839","Mussorgsky","Modest Mussorgsky",1839,1881,,false,true,openopus
+"carl-nielsen-1865","Nielsen","Carl Nielsen",1865,1931,,false,true,openopus
+"luigi-nono-1924","Nono","Luigi Nono",1924,1990,,false,false,openopus
+"jacob-obrecht-1450","Obrecht","Jacob Obrecht",1450,1505,,false,false,openopus
+"johannes-ockeghem-1420","Ockeghem","Johannes Ockeghem",1420,1496,,false,false,openopus
+"jacques-offenbach-1819","Offenbach","Jacques Offenbach",1819,1880,,false,false,openopus
+"carl-orff-1895","Orff","Carl Orff",1895,1982,,false,false,openopus
+"johann-pachelbel-1653","Pachelbel","Johann Pachelbel",1653,1706,,false,false,openopus
+"niccolo-paganini-1782","Paganini","Niccolò Paganini",1782,1840,,false,false,openopus
+"giovanni-pierluigi-da-palestrina-1525","Palestrina","Giovanni Pierluigi da Palestrina",1525,1594,,false,true,openopus
+"arvo-part-1935","Pärt","Arvo Pärt",1935,,,false,true,openopus
+"krzysztof-penderecki-1933","Penderecki","Krzysztof Penderecki",1933,2020,,false,false,openopus
+"giovanni-battista-pergolesi-1710","Pergolesi","Giovanni Battista Pergolesi",1710,1736,,false,false,openopus
+"perotin-1160","Pérotin","Pérotin",1160,1236,,false,true,openopus
+"astor-piazzolla-1921","Piazzolla","Astor Piazzolla",1921,1992,,false,false,openopus
+"francis-poulenc-1899","Poulenc","Francis Poulenc",1899,1963,,false,true,openopus
+"michael-praetorius-1571","Praetorius","Michael Praetorius",1571,1621,,false,false,openopus
+"sergei-prokofiev-1891","Prokofiev","Sergei Prokofiev",1891,1953,,false,true,openopus
+"giacomo-puccini-1858","Puccini","Giacomo Puccini",1858,1924,,true,true,openopus
+"henry-purcell-1659","Purcell","Henry Purcell",1659,1695,,false,true,openopus
+"sergei-rachmaninoff-1873","Rachmaninoff","Sergei Rachmaninoff",1873,1943,,false,true,openopus
+"jean-philippe-rameau-1683","Rameau","Jean-Philippe Rameau",1683,1764,,false,true,openopus
+"einojuhani-rautavaara-1928","Rautavaara","Einojuhani Rautavaara",1928,2016,,false,false,openopus
+"maurice-ravel-1875","Ravel","Maurice Ravel",1875,1937,,true,true,openopus
+"max-reger-1873","Reger","Max Reger",1873,1916,,false,false,openopus
+"steve-reich-1936","Reich","Steve Reich",1936,,,false,true,openopus
+"ottorino-respighi-1879","Respighi","Ottorino Respighi",1879,1936,,false,false,openopus
+"wolfgang-rihm-1952","Rihm","Wolfgang Rihm",1952,,,false,false,openopus
+"nikolai-rimsky-korsakov-1844","Rimsky-Korsakov","Nikolai Rimsky-Korsakov",1844,1908,,false,true,openopus
+"joaquin-rodrigo-1901","Rodrigo","Joaquín Rodrigo",1901,1999,,false,false,openopus
+"ned-rorem-1923","Rorem","Ned Rorem",1923,,,false,false,openopus
+"gioachino-rossini-1792","Rossini","Gioachino Rossini",1792,1868,,false,true,openopus
+"albert-roussel-1869","Roussel","Albert Roussel",1869,1937,,false,false,openopus
+"camille-saint-saens-1835","Saint-Saëns","Camille Saint-Saëns",1835,1921,,false,true,openopus
+"antonio-salieri-1750","Salieri","Antonio Salieri",1750,1825,,false,false,openopus
+"erik-satie-1866","Satie","Erik Satie",1866,1925,,false,false,openopus
+"domenico-scarlatti-1685","Scarlatti","Domenico Scarlatti",1685,1757,,false,true,openopus
+"alessandro-scarlatti-1660","Scarlatti, A.","Alessandro Scarlatti",1660,1725,,false,false,openopus
+"franz-schmidt-1874","Schmidt","Franz Schmidt",1874,1939,,false,false,openopus
+"alfred-schnittke-1934","Schnittke","Alfred Schnittke",1934,1998,,false,true,openopus
+"arnold-schoenberg-1874","Schoenberg","Arnold Schoenberg",1874,1951,,false,true,openopus
+"franz-schubert-1797","Schubert","Franz Schubert",1797,1828,,true,true,openopus
+"william-schuman-1910","Schuman","William Schuman",1910,1992,,false,false,openopus
+"robert-schumann-1810","Schumann","Robert Schumann",1810,1856,,true,true,openopus
+"heinrich-schutz-1585","Schütz","Heinrich Schütz",1585,1672,,false,true,openopus
+"alexander-scriabin-1872","Scriabin","Alexander Scriabin",1872,1915,,false,false,openopus
+"dmitri-shostakovich-1906","Shostakovich","Dmitri Shostakovich",1906,1975,,false,true,openopus
+"jean-sibelius-1865","Sibelius","Jean Sibelius",1865,1957,,false,true,openopus
+"bedrich-smetana-1824","Smetana","Bedrich Smetana",1824,1884,,false,true,openopus
+"fernando-sor-1778","Sor","Fernando Sor",1778,1839,,false,false,openopus
+"louis-spohr-1784","Spohr","Louis Spohr",1784,1859,,false,false,openopus
+"carl-stamitz-1745","Stamitz","Carl Stamitz",1745,1801,,false,false,openopus
+"wilhelm-stenhammar-1871","Stenhammar","Wilhelm Stenhammar",1871,1927,,false,false,openopus
+"karlheinz-stockhausen-1928","Stockhausen","Karlheinz Stockhausen",1928,2007,,false,false,openopus
+"richard-strauss-1864","Strauss","Richard Strauss",1864,1949,,false,false,openopus
+"johann-strauss-jr-1825","Strauss Jr","Johann Strauss Jr",1825,1899,,true,false,openopus
+"igor-stravinsky-1882","Stravinsky","Igor Stravinsky",1882,1971,,true,true,openopus
+"josef-suk-1874","Suk","Josef Suk",1874,1935,,false,false,openopus
+"jan-pieterszoon-sweelinck-1562","Sweelinck","Jan Pieterszoon Sweelinck",1562,1621,,false,false,openopus
+"karol-szymanowski-1882","Szymanowski","Karol Szymanowski",1882,1937,,false,false,openopus
+"toru-takemitsu-1930","Takemitsu","Toru Takemitsu",1930,1996,,false,false,openopus
+"thomas-tallis-1505","Tallis","Thomas Tallis",1505,1585,,false,false,openopus
+"giuseppe-tartini-1692","Tartini","Giuseppe Tartini",1692,1770,,false,false,openopus
+"john-taverner-1490","Taverner","John Taverner",1490,1545,,false,false,openopus
+"pyotr-ilyich-tchaikovsky-1840","Tchaikovsky","Pyotr Ilyich Tchaikovsky",1840,1893,,true,true,openopus
+"georg-philipp-telemann-1681","Telemann","Georg Philipp Telemann",1681,1767,,false,false,openopus
+"michael-tippett-1905","Tippett","Michael Tippett",1905,1998,,false,false,openopus
+"edgard-varese-1883","Varèse","Edgard Varèse",1883,1965,,false,false,openopus
+"ralph-vaughan-williams-1872","Vaughan Williams","Ralph Vaughan Williams",1872,1958,,false,false,openopus
+"giuseppe-verdi-1813","Verdi","Giuseppe Verdi",1813,1901,,true,true,openopus
+"tomas-luis-de-victoria-1549","Victoria","Tomás Luis de Victoria",1549,1611,,false,false,openopus
+"heitor-villa-lobos-1887","Villa-Lobos","Heitor Villa-Lobos",1887,1959,,false,true,openopus
+"antonio-vivaldi-1678","Vivaldi","Antonio Vivaldi",1678,1741,,true,true,openopus
+"richard-wagner-1813","Wagner","Richard Wagner",1813,1883,,true,true,openopus
+"william-walton-1902","Walton","William Walton",1902,1983,,false,false,openopus
+"carl-maria-von-weber-1786","Weber","Carl Maria von Weber",1786,1826,,false,false,openopus
+"anton-webern-1883","Webern","Anton Webern",1883,1945,,false,true,openopus
+"kurt-weill-1900","Weill","Kurt Weill",1900,1950,,false,false,openopus
+"charles-marie-widor-1844","Widor","Charles-Marie Widor",1844,1937,,false,false,openopus
+"hugo-wolf-1860","Wolf","Hugo Wolf",1860,1903,,false,false,openopus
+"iannis-xenakis-1922","Xenakis","Iannis Xenakis",1922,2001,,false,false,openopus
+"eugene-ysaye-1858","Ysaÿe","Eugene Ysaÿe",1858,1931,,false,false,openopus
+"alexander-von-zemlinsky-1871","Zemlinsky","Alexander von Zemlinsky",1871,1942,,false,false,openopus
