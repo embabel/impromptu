@@ -305,6 +305,33 @@ cypherQueryTools.tool("""
 
 The schema-constrained approach enables powerful natural language queries while preventing the LLM from generating unsafe or invalid database operations.
 
+#### Graph Exploration and Visualization
+
+The agentic Cypher tool can discover complex relationships across the knowledge graph. For example, finding string quartets composed by those who influenced a particular composer:
+
+```cypher
+// String quartets by Messiaen's influencers
+MATCH (influencer:Composer)-[i:INFLUENCED]->(messiaen:Composer {id: 'olivier-messiaen-1908'})
+MATCH (influencer)-[c:COMPOSED]->(w:Work)-[sf:SCORED_FOR]->(sq:Ensemble {id: 'string-quartet'})
+RETURN influencer, c, w, sf, sq
+```
+
+This query returns graph elements that can be visualized directly in Neo4j Browser or web-based graph libraries:
+
+![String quartets by composers who influenced Messiaen](images/messiaen_influencer_quartets.jpg)
+
+*The graph shows composers who influenced [Olivier Messiaen](https://en.wikipedia.org/wiki/Olivier_Messiaen), connected to their string quartet compositions. Each node represents an entity (composer, work, or ensemble) and edges show the relationships between them.*
+
+> **Note:** [Olivier Messiaen](https://en.wikipedia.org/wiki/Olivier_Messiaen) (1908–1992) is widely regarded as one of the most important composers who lived wholly in the 20th century. His unique musical language combined complex rhythms, modes of limited transposition, birdsong transcriptions, and deeply spiritual Catholic mysticism.
+>
+> [![Messiaen: Turangalîla-Symphonie](https://img.youtube.com/vi/8PjyCpRKDrk/mqdefault.jpg)](https://youtu.be/8PjyCpRKDrk?si=QAuMw_3t5pmEt3xU&t=60)
+>
+> *Listen to his monumental Turangalîla-Symphonie*
+
+The influence relationships shown here are LLM-generated through the [Composer Enhancement Pipeline](#composer-enhancement-pipeline) and reviewed by musicologists before being committed to the knowledge graph. The SCORED_FOR relationships linking works to ensembles and instruments are inferred from work titles using pattern matching. Both datasets will continue to be refined and expanded over time.
+
+The agentic tool can answer natural language questions like "Which composers influenced Messiaen and wrote string quartets?" by composing the appropriate Cypher query, executing it, and returning structured results suitable for both textual responses and graph visualization.
+
 ---
 
 ### Agentic Tools for Performance Discovery
