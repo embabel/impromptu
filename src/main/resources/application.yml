@@ -78,7 +78,7 @@ impromptu:
     temperature: 0.0
 
   default-voice:
-    persona: impromptu
+    persona: adaptive
     max-words: 70
 
   speech:
