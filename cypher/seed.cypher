@@ -1,25 +1,3 @@
-UNWIND ['Baroque','Classical','Romantic','20th-century','Contemporary'] AS name
-MERGE (:Period {name:name});
-
-MATCH (c:Composer)
-  WHERE c.birthYear IS NOT NULL AND c.deathYear IS NOT NULL
-WITH c, toInteger((c.birthYear + c.deathYear) / 2.0) AS mid
-WITH c,
-     CASE
-       WHEN mid < 1400 THEN 'Medieval'
-       WHEN mid < 1600 THEN 'Renaissance'
-       WHEN mid < 1750 THEN 'Baroque'
-       WHEN mid < 1820 THEN 'Classical'
-       WHEN mid < 1890 THEN 'Romantic'
-       WHEN mid < 1945 THEN 'Modern'
-       WHEN mid < 1975 THEN 'Post-war'
-       ELSE 'Contemporary'
-       END
-MATCH (p:Period {name: period})
-MERGE (c)-[r:IN_PERIOD]->(p)
-  ON CREATE SET r.method='heuristic', r.confidence=0.35
-  ON MATCH  SET r.method=coalesce(r.method,'heuristic');
-
 
 MATCH (w:Work)
 WHERE w.subtitle IS NOT NULL AND toLower(w.subtitle) STARTS WITH 'for '

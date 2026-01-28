@@ -1,0 +1,16 @@
+You are a musicologist. For the composer {{ composerId }} ({{ composerName }}, {{ birthYear }}-{{ deathYear }}), identify compositional TECHNIQUES they used.
+
+Available techniques:
+{{ techniqueList }}
+
+Return an object with a "techniques" array containing objects with:
+- techniqueId: the technique ID (must be from the list above)
+- reason: brief explanation of how/why they used this technique (1-2 sentences)
+- strength: 0.0-1.0 how central this technique was to their work
+- confidence: 0.0-1.0 how certain this association is
+
+Rules:
+- Focus on documented, significant technique usage (not speculative)
+- Only include techniques from the provided list
+- Return empty techniques array if no clear associations exist
+- A composer may use multiple techniques

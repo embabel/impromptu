@@ -36,6 +36,9 @@ public interface Composer extends NamedEntity {
 
     @Nullable Long getDeathYear();
 
+    @Relationship(name = "HAS_NATIONALITY")
+    List<Nationality> getNationalities();
+
     @Relationship(name = "COMPOSED")
     List<Work> getWorks();
 
@@ -47,6 +50,9 @@ public interface Composer extends NamedEntity {
 
     @Relationship(name = "OF_EPOCH")
     Epoch getEpoch();
+
+    @Relationship(name = "USES")
+    List<Technique> getTechniques();
 
     @Nullable
     default Long lifespan() {

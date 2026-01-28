@@ -4,6 +4,9 @@ import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.data.GraphExportService;
 import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
+import com.embabel.impromptu.data.pipeline.ComposerEnhancementPipeline;
+import com.embabel.impromptu.data.pipeline.ComposerNationalityEnhancer;
+import com.embabel.impromptu.data.pipeline.ComposerTechniqueEnhancer;
 import com.embabel.impromptu.rag.DocumentService;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
@@ -40,7 +43,10 @@ public class BackstagePanel extends Div {
             DocumentService documentService,
             ReferencesPanel.IndexStats indexStats,
             ImpromptuProperties properties,
+            ComposerEnhancementPipeline pipeline,
             ComposerInfluenceLoader influenceLoader,
+            ComposerTechniqueEnhancer techniqueEnhancer,
+            ComposerNationalityEnhancer nationalityEnhancer,
             GraphExportService exportService
     ) {
     }
@@ -94,11 +100,11 @@ public class BackstagePanel extends Div {
         // App tabs
         var referencesTab = new Tab(VaadinIcon.RECORDS.create(), new Span("References"));
         var sourcesTab = new Tab(VaadinIcon.BOOK.create(), new Span("Sources"));
-        var influencesTab = new Tab(VaadinIcon.CONNECT.create(), new Span("Influences"));
+        var enhancersTab = new Tab(VaadinIcon.MAGIC.create(), new Span("Enhancers"));
         var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
         var aboutTab = new Tab(VaadinIcon.INFO_CIRCLE.create(), new Span("About"));
 
-        var tabs = new Tabs(referencesTab, sourcesTab, influencesTab, settingsTab, aboutTab);
+        var tabs = new Tabs(referencesTab, sourcesTab, enhancersTab, settingsTab, aboutTab);
         tabs.setWidthFull();
         sidePanel.add(tabs);
 
@@ -115,9 +121,9 @@ public class BackstagePanel extends Div {
         var sourcesContent = new SourcesPanel(config.documentService());
         sourcesContent.setVisible(false);
 
-        // Influences content
-        var influencesContent = new InfluencesPanel(config.influenceLoader(), config.exportService());
-        influencesContent.setVisible(false);
+        // Enhancers content
+        var enhancersContent = new EnhancersPanel(config.pipeline(), config.influenceLoader(), config.techniqueEnhancer(), config.nationalityEnhancer(), config.exportService());
+        enhancersContent.setVisible(false);
 
         // Settings content
         var settingsContent = new SettingsPanel(config.properties());
@@ -126,7 +132,7 @@ public class BackstagePanel extends Div {
         // About content
         var aboutContent = new AboutPanel();
 
-        contentArea.add(referencesContent, sourcesContent, influencesContent, settingsContent, aboutContent);
+        contentArea.add(referencesContent, sourcesContent, enhancersContent, settingsContent, aboutContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
@@ -135,14 +141,14 @@ public class BackstagePanel extends Div {
             var selected = event.getSelectedTab();
             referencesContent.setVisible(selected == referencesTab);
             sourcesContent.setVisible(selected == sourcesTab);
-            influencesContent.setVisible(selected == influencesTab);
+            enhancersContent.setVisible(selected == enhancersTab);
             settingsContent.setVisible(selected == settingsTab);
             aboutContent.setVisible(selected == aboutTab);
 
             if (selected == sourcesTab) {
                 sourcesContent.refresh();
-            } else if (selected == influencesTab) {
-                influencesContent.refresh();
+            } else if (selected == enhancersTab) {
+                enhancersContent.refresh();
             }
         });
 

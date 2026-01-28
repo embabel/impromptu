@@ -15,6 +15,7 @@
  */
 package com.embabel.impromptu.data.influence;
 
+import com.embabel.impromptu.data.pipeline.GeneralKnowledgeLlmInfluenceComposerEnhancer;
 import org.drivine.manager.PersistenceManager;
 import org.drivine.query.QuerySpecification;
 import org.slf4j.Logger;
@@ -48,9 +49,11 @@ public class ComposerInfluenceLoader {
             double confidence,
             double divergence,
             String status
-    ) {}
+    ) {
+    }
 
-    public record LoadResult(int loaded, int skipped, int notFound) {}
+    public record LoadResult(int loaded, int skipped, int notFound) {
+    }
 
     public ComposerInfluenceLoader(PersistenceManager persistenceManager) {
         this.persistenceManager = persistenceManager;
@@ -62,7 +65,7 @@ public class ComposerInfluenceLoader {
     public List<InfluenceRecord> readCsv() throws IOException {
         var records = new ArrayList<InfluenceRecord>();
 
-        try (var reader = new BufferedReader(new FileReader(ComposerInfluenceGenerator.INFLUENCES_CSV_PATH.toFile()))) {
+        try (var reader = new BufferedReader(new FileReader(GeneralKnowledgeLlmInfluenceComposerEnhancer.INFLUENCES_CSV_PATH.toFile()))) {
             String line;
             boolean header = true;
 
@@ -243,6 +246,7 @@ public class ComposerInfluenceLoader {
 
     /**
      * Delete all INFLUENCED relationships from the database.
+     *
      * @return the number of relationships deleted
      */
     @Transactional
@@ -266,6 +270,6 @@ public class ComposerInfluenceLoader {
      * Get the path to the influences CSV file.
      */
     public Path getCsvPath() {
-        return ComposerInfluenceGenerator.INFLUENCES_CSV_PATH;
+        return GeneralKnowledgeLlmInfluenceComposerEnhancer.INFLUENCES_CSV_PATH;
     }
 }

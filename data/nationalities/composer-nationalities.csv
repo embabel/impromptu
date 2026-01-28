@@ -1,0 +1,227 @@
+composer_id,nationality_id,reason,confidence,status
+leonin-1135,french,"Léonin was a composer associated with the Notre Dame school in Paris, indicating French cultural and geographic identity.",0.95,pending
+perotin-1160,french,"Pérotin was a composer associated with the Notre Dame school in Paris, indicating French cultural and geographic identity.",0.95,pending
+guillaume-de-machaut-1300,french,"Guillaume de Machaut was born and lived in the region that is now France, and is historically recognized as a French composer.",1.00,pending
+guillaume-dufay-1400,french,"Guillaume Dufay was born in the region of Cambrai, which is in present-day France, and is historically considered French.",0.95,pending
+johannes-ockeghem-1420,french,"Johannes Ockeghem was a composer of the Franco-Flemish school, primarily active in the region that is now France and Belgium, often associated with French cultural identity.",0.95,pending
+jacob-obrecht-1450,belgian,"Jacob Obrecht was born in Ghent, which is in present-day Belgium, and is historically associated with the Burgundian Netherlands region.",0.95,pending
+josquin-des-prez-1450,french,"Josquin Des Prez was born in the region of modern-day France or French-speaking areas of Belgium, traditionally considered French in cultural and historical context.",0.90,pending
+josquin-des-prez-1450,belgian,"Josquin is also often associated with the Low Countries, particularly the area now known as Belgium, reflecting the historical and cultural ties of his birthplace.",0.80,pending
+clement-janequin-1485,french,"Clément Janequin was born in France and is historically recognized as a French Renaissance composer.",1.00,pending
+john-taverner-1490,english,"John Taverner was born in England and is historically recognized as an English composer.",1.00,pending
+thomas-tallis-1505,english,"Thomas Tallis was born and lived in England, and is historically recognized as an English composer.",1.00,pending
+giovanni-pierluigi-da-palestrina-1525,italian,"Giovanni Pierluigi da Palestrina was born in Italy and is historically recognized as an Italian composer.",1.00,pending
+orlande-de-lassus-1532,french,"Orlande de Lassus was born in Mons, which was part of the County of Hainaut, historically linked to the French cultural sphere.",0.90,pending
+william-byrd-1540,english,"William Byrd was born and lived in England, and is historically recognized as an English composer.",1.00,pending
+tomas-luis-de-victoria-1549,spanish,"Tomás Luis de Victoria was born in Spain and is culturally identified as a Spanish composer.",1.00,pending
+carlo-gesualdo-1561,italian,"Carlo Gesualdo was born in Italy and is historically recognized as an Italian composer.",1.00,pending
+jan-pieterszoon-sweelinck-1562,dutch,"Jan Pieterszoon Sweelinck was born and lived in Amsterdam, which is in the Netherlands, making him Dutch by nationality and cultural identity.",1.00,pending
+john-dowland-1563,english,"John Dowland was born in England and is historically recognized as an English composer and lutenist.",1.00,pending
+claudio-monteverdi-1567,italian,"Claudio Monteverdi was born in Cremona, Italy, and is historically recognized as an Italian composer.",1.00,pending
+michael-praetorius-1571,german,"Michael Praetorius was born in Germany and is historically recognized as a German composer.",1.00,pending
+girolamo-frescobaldi-1583,italian,"Girolamo Frescobaldi was born in Italy and is historically recognized as an Italian composer.",1.00,pending
+orlando-gibbons-1583,english,"Orlando Gibbons was born in England and is historically recognized as an English composer.",1.00,pending
+heinrich-schutz-1585,german,"Heinrich Schütz was born in Köstritz, which is in present-day Germany, and is historically recognized as a German composer.",1.00,pending
+jean-baptiste-lully-1632,french,"Jean-Baptiste Lully was born in Italy but became a naturalized French citizen and is culturally identified as French due to his significant contributions to French Baroque music.",0.95,pending
+marc-antoine-charpentier-1636,french,"Marc-Antoine Charpentier was born in France and is culturally identified as a French composer.",1.00,pending
+dietrich-buxtehude-1637,german,"Dietrich Buxtehude was born in Helsingborg, which was part of Denmark at the time but culturally and linguistically German; he is historically considered a German composer.",0.95,pending
+dietrich-buxtehude-1637,danish,"Although not in the provided list, Buxtehude was born in a Danish territory; however, Danish is not an available nationality option here.",0.00,pending
+heinrich-franz-von-biber-1644,austrian,"Heinrich Franz von Biber was born in the region that is now Austria and is historically considered an Austrian composer.",0.95,pending
+johann-pachelbel-1653,german,"Johann Pachelbel was born in Nuremberg, which is in present-day Germany, and is historically recognized as a German composer.",1.00,pending
+arcangelo-corelli-1653,italian,"Arcangelo Corelli was born in Fusignano, Italy, and is historically recognized as an Italian composer.",1.00,pending
+marin-marais-1656,french,"Marin Marais was born in France and is historically recognized as a French composer.",1.00,pending
+henry-purcell-1659,english,"Henry Purcell was born and lived in England, and is widely recognized as an English composer.",1.00,pending
+alessandro-scarlatti-1660,italian,"Alessandro Scarlatti was born in Italy and is historically recognized as an Italian composer.",1.00,pending
+francois-couperin-1668,french,"François Couperin was born in Paris, France and is culturally identified as a French Baroque composer.",1.00,pending
+tomaso-albinoni-1671,italian,"Tomaso Albinoni was born in Venice, Italy, and is historically recognized as an Italian composer.",1.00,pending
+antonio-vivaldi-1678,italian,"Antonio Vivaldi was born in Venice, Italy, and is historically recognized as an Italian composer.",1.00,pending
+georg-philipp-telemann-1681,german,"Georg Philipp Telemann was born in Germany and is historically recognized as a German composer.",1.00,pending
+jean-philippe-rameau-1683,french,"Jean-Philippe Rameau was born in France and is historically recognized as a French composer.",1.00,pending
+alessandro-marcello-1684,italian,"Alessandro Marcello was born in Venice, Italy, and is historically recognized as an Italian composer.",1.00,pending
+domenico-scarlatti-1685,italian,"Domenico Scarlatti was born in Italy and is historically recognized as an Italian composer.",1.00,pending
+johann-sebastian-bach-1685,german,"Johann Sebastian Bach was born in Eisenach, which was part of the Holy Roman Empire in the region now known as Germany, and he is culturally identified as German.",1.00,pending
+george-frideric-handel-1685,german,"Born in Halle, Germany, and culturally identified as German during his early life.",1.00,pending
+george-frideric-handel-1685,british,"Later became a naturalized British citizen and spent much of his career in England.",0.95,pending
+benedetto-marcello-1686,italian,"Benedetto Marcello was born in Venice, Italy, and is culturally identified as an Italian composer.",1.00,pending
+giuseppe-tartini-1692,italian,"Giuseppe Tartini was born in Pirano, which was part of the Republic of Venice, corresponding to modern-day Italy, and is historically recognized as an Italian composer.",1.00,pending
+giovanni-battista-pergolesi-1710,italian,"Giovanni Battista Pergolesi was born in Italy and is culturally identified as an Italian composer.",1.00,pending
+carl-philipp-emanuel-bach-1714,german,"Carl Philipp Emanuel Bach was born in Weimar, which was part of the Holy Roman Empire in a German cultural region, and is historically recognized as a German composer.",1.00,pending
+christoph-willibald-von-gluck-1714,german,"Born in Erasbach, Bavaria, which was part of the Holy Roman Empire and culturally German-speaking region.",0.95,pending
+christoph-willibald-von-gluck-1714,austrian,"Spent significant part of his career in Vienna and was associated with the Habsburg court, culturally linked to Austria.",0.85,pending
+franz-joseph-haydn-1732,austrian,"Franz Joseph Haydn was born in Rohrau, which was part of the Habsburg Monarchy, corresponding to modern Austria, and is historically recognized as an Austrian composer.",1.00,pending
+johann-christian-bach-1735,german,"Johann Christian Bach was born in Leipzig, which was part of the German states, and is historically recognized as a German composer.",1.00,pending
+karl-ditters-von-dittersdorf-1739,austrian,"Karl Ditters von Dittersdorf was born in Vienna, which was part of the Habsburg Monarchy, corresponding to modern Austria.",0.95,pending
+luigi-boccherini-1743,italian,"Luigi Boccherini was born in Italy and is historically recognized as an Italian composer.",1.00,pending
+carl-stamitz-1745,german,"Carl Stamitz was born in Mannheim, which was part of the Holy Roman Empire in a German cultural region, and is historically considered a German composer.",0.95,pending
+antonio-salieri-1750,italian,"Antonio Salieri was born in Legnago, Italy, and is culturally identified as Italian.",0.95,pending
+antonio-salieri-1750,austrian,"Salieri spent most of his professional life in Vienna, Austria, and held citizenship there.",0.90,pending
+wolfgang-amadeus-mozart-1756,austrian,"Mozart was born in Salzburg, which was part of the Holy Roman Empire and is now in Austria, and is historically considered Austrian.",1.00,pending
+luigi-cherubini-1760,italian,"Luigi Cherubini was born in Florence, Italy, and is primarily identified as an Italian composer.",1.00,pending
+ludwig-van-beethoven-1770,german,"Ludwig van Beethoven was born in Bonn, which was part of the Electorate of Cologne in the Holy Roman Empire, a German-speaking region, and is historically considered German.",1.00,pending
+fernando-sor-1778,spanish,"Fernando Sor was born in Barcelona, Spain, and is widely recognized as a Spanish composer and guitarist.",1.00,pending
+johann-nepomuk-hummel-1778,austrian,"Johann Nepomuk Hummel was born in Pressburg, Kingdom of Hungary, part of the Habsburg Monarchy, culturally and historically associated with Austria.",0.95,pending
+niccolo-paganini-1782,italian,"Niccolò Paganini was born in Genoa, which is in Italy, and is culturally identified as Italian.",1.00,pending
+john-field-1782,irish,"John Field was born in Dublin, Ireland, and is culturally identified as Irish.",1.00,pending
+louis-spohr-1784,german,"Louis Spohr was born in Germany and is historically recognized as a German composer.",1.00,pending
+carl-maria-von-weber-1786,german,"Carl Maria von Weber was born in Eutin, which was part of the Holy Roman Empire and culturally German-speaking; he is historically recognized as a German composer.",1.00,pending
+gioachino-rossini-1792,italian,"Gioachino Rossini was born in Italy and is culturally identified as an Italian composer.",1.00,pending
+franz-berwald-1796,swedish,"Franz Berwald was born in Sweden and is recognized as a Swedish composer.",1.00,pending
+franz-schubert-1797,austrian,"Franz Schubert was born in Vienna, which was part of the Austrian Empire, and is culturally identified as Austrian.",1.00,pending
+gaetano-donizetti-1797,italian,"Gaetano Donizetti was born in Bergamo, Italy, and is culturally and historically recognized as an Italian composer.",1.00,pending
+vincenzo-bellini-1801,italian,"Vincenzo Bellini was born in Italy and is culturally identified as an Italian composer.",1.00,pending
+hector-berlioz-1803,french,"Hector Berlioz was born in France and is widely recognized as a French composer.",1.00,pending
+mikhail-ivanovich-glinka-1804,russian,"Mikhail Ivanovich Glinka was born in Russia and is widely recognized as a Russian composer, foundational to Russian classical music.",1.00,pending
+felix-mendelssohn-1809,german,"Felix Mendelssohn was born in Hamburg, which was part of the German Confederation, and is widely recognized as a German composer.",1.00,pending
+robert-schumann-1810,german,"Robert Schumann was born in Zwickau, which was part of Germany, and is culturally identified as a German composer.",1.00,pending
+frederic-chopin-1810,polish,"Frédéric Chopin was born in Żelazowa Wola, Poland, and is widely recognized as a Polish composer.",1.00,pending
+franz-liszt-1811,hungarian,"Franz Liszt was born in the Kingdom of Hungary and is culturally identified as Hungarian.",1.00,pending
+giuseppe-verdi-1813,italian,"Giuseppe Verdi was born in Italy and is culturally identified as an Italian composer.",1.00,pending
+richard-wagner-1813,german,"Richard Wagner was born in Leipzig, which was part of the Kingdom of Saxony in Germany, and is culturally identified as a German composer.",1.00,pending
+charles-gounod-1818,french,"Charles Gounod was born in Paris, France, and is culturally identified as a French composer.",1.00,pending
+jacques-offenbach-1819,french,"Jacques Offenbach was born in Germany but became a naturalized French citizen and is culturally identified as French.",0.95,pending
+cesar-franck-1822,french,"César Franck was born in Liège, which was part of the United Kingdom of the Netherlands at his birth, but he is primarily known as a French composer due to his long residence and career in France.",0.95,pending
+edouard-lalo-1823,french,"Édouard Lalo was born in France and is culturally identified as a French composer.",1.00,pending
+bedrich-smetana-1824,czech,"Bedrich Smetana was born in Bohemia, which is part of the modern Czech Republic, and is considered the father of Czech national music.",1.00,pending
+anton-bruckner-1824,austrian,"Anton Bruckner was born in Ansfelden, which was part of the Austrian Empire, and is culturally identified as Austrian.",1.00,pending
+johann-strauss-jr-1825,austrian,"Johann Strauss Jr. was born in Vienna, which was part of the Austrian Empire, and is culturally identified as Austrian.",1.00,pending
+karl-goldmark-1830,austrian,"Karl Goldmark was born in Keszthely, Kingdom of Hungary, then part of the Austrian Empire, and is historically recognized as an Austrian composer.",0.95,pending
+alexander-borodin-1833,russian,"Alexander Borodin was born in Russia and is culturally identified as a Russian composer.",1.00,pending
+johannes-brahms-1833,german,"Johannes Brahms was born in Hamburg, which was part of Germany, and is widely recognized as a German composer.",1.00,pending
+camille-saint-saens-1835,french,"Camille Saint-Saëns was born in France and is culturally identified as a French composer.",1.00,pending
+cesar-cui-1835,russian,"César Cui was born in the Russian Empire and is historically recognized as a Russian composer.",1.00,pending
+leo-delibes-1836,french,"Léo Delibes was born in France and is culturally identified as a French composer.",1.00,pending
+antonio-carlos-gomes-1836,brazilian,"Antonio Carlos Gomes was born in Brazil and is recognized as a Brazilian composer.",1.00,pending
+mily-balakirev-1837,russian,"Mily Balakirev was born in the Russian Empire and is culturally identified as a Russian composer.",1.00,pending
+georges-bizet-1838,french,"Georges Bizet was born in Paris, France and is culturally identified as French.",1.00,pending
+max-bruch-1838,german,"Max Bruch was born in Cologne, which was part of Germany, and is widely recognized as a German composer.",1.00,pending
+modest-mussorgsky-1839,russian,"Modest Mussorgsky was born in Russia and is culturally identified as a Russian composer.",1.00,pending
+pyotr-ilyich-tchaikovsky-1840,russian,"Pyotr Ilyich Tchaikovsky was born in the Russian Empire and is culturally identified as a Russian composer.",1.00,pending
+emmanuel-chabrier-1841,french,"Emmanuel Chabrier was born in France and is widely recognized as a French composer.",1.00,pending
+antonin-dvorak-1841,czech,"Antonín Dvořák was born in the Kingdom of Bohemia, part of the Austrian Empire, and is culturally identified as Czech.",1.00,pending
+jules-massenet-1842,french,"Jules Massenet was born in France and is widely recognized as a French composer.",1.00,pending
+edvard-grieg-1843,norwegian,"Edvard Grieg was born in Norway and is widely recognized as a Norwegian composer.",1.00,pending
+nikolai-rimsky-korsakov-1844,russian,"Nikolai Rimsky-Korsakov was born in Russia and is culturally identified as a Russian composer.",1.00,pending
+charles-marie-widor-1844,french,"Charles-Marie Widor was born in France and is culturally identified as a French composer.",1.00,pending
+gabriel-faure-1845,french,"Gabriel Fauré was born in France and is culturally identified as a French composer.",1.00,pending
+vincent-dindy-1851,french,"Vincent d'Indy was born in France and is culturally identified as a French composer.",1.00,pending
+engelbert-humperdinck-1854,german,"Engelbert Humperdinck was born in Germany and is culturally identified as German.",1.00,pending
+leos-janacek-1854,czech,"Leoš Janáček was born in the region of Moravia, which is part of the modern Czech Republic, and is culturally identified as Czech.",1.00,pending
+ernest-chausson-1855,french,"Ernest Chausson was born in France and is culturally identified as a French composer.",1.00,pending
+edward-elgar-1857,english,"Edward Elgar was born in England and is culturally identified as English.",1.00,pending
+ruggero-leoncavallo-1857,italian,"Ruggero Leoncavallo was born in Italy and is culturally identified as an Italian composer.",1.00,pending
+giacomo-puccini-1858,italian,"Giacomo Puccini was born in Italy and is widely recognized as an Italian composer.",1.00,pending
+eugene-ysaye-1858,belgian,"Eugene Ysaÿe was born in Liège, which is in Belgium, and is widely recognized as a Belgian composer.",1.00,pending
+victor-herbert-1859,american,"Victor Herbert was born in Ireland but became a prominent American composer and conductor, spending most of his career in the United States.",0.95,pending
+victor-herbert-1859,irish,"Victor Herbert was born in Dublin, Ireland, which establishes his Irish nationality by birth.",0.90,pending
+hugo-wolf-1860,austrian,"Hugo Wolf was born in what was then the Austrian Empire and is culturally identified as Austrian.",1.00,pending
+edward-macdowell-1860,american,"Edward MacDowell was born in the United States and is recognized as an American composer.",1.00,pending
+gustav-mahler-1860,austrian,"Gustav Mahler was born in the Austrian Empire and is primarily identified as Austrian due to his cultural and professional life centered in Austria.",1.00,pending
+isaac-albeniz-1860,spanish,"Isaac Albéniz was born in Spain and is culturally identified as a Spanish composer.",1.00,pending
+claude-debussy-1862,french,"Claude Debussy was born in France and is widely recognized as a French composer.",1.00,pending
+frederick-delius-1862,english,"Frederick Delius was born in England and is primarily identified as an English composer.",1.00,pending
+pietro-mascagni-1863,italian,"Pietro Mascagni was born in Italy and is culturally identified as an Italian composer.",1.00,pending
+richard-strauss-1864,german,"Richard Strauss was born in Munich, Germany, and is widely recognized as a German composer.",1.00,pending
+carl-nielsen-1865,danish,"Carl Nielsen was born in Denmark and is widely recognized as a Danish composer.",1.00,pending
+jean-sibelius-1865,finnish,"Jean Sibelius was born in Finland and is widely recognized as a Finnish composer, strongly associated with Finnish national identity and culture.",1.00,pending
+paul-dukas-1865,french,"Paul Dukas was born in Paris, France and is culturally identified as a French composer.",1.00,pending
+alexander-glazunov-1865,russian,"Alexander Glazunov was born in Saint Petersburg, Russia, and is culturally identified as a Russian composer.",1.00,pending
+erik-satie-1866,french,"Erik Satie was born in France and is culturally identified as a French composer.",1.00,pending
+ferruccio-busoni-1866,italian,"Ferruccio Busoni was born in Italy and is primarily identified as an Italian composer.",1.00,pending
+enrique-granados-1867,spanish,"Enrique Granados was born in Spain and is culturally identified as a Spanish composer.",1.00,pending
+scott-joplin-1868,american,"Scott Joplin was born in the United States and is widely recognized as an American composer.",1.00,pending
+albert-roussel-1869,french,"Albert Roussel was born in France and is widely recognized as a French composer.",1.00,pending
+wilhelm-stenhammar-1871,swedish,"Wilhelm Stenhammar was born in Sweden and is culturally identified as Swedish.",1.00,pending
+alexander-von-zemlinsky-1871,austrian,"Alexander von Zemlinsky was born in Vienna, which was part of Austria-Hungary, and is historically recognized as an Austrian composer.",1.00,pending
+alexander-scriabin-1872,russian,"Alexander Scriabin was born in Moscow, Russia and is culturally identified as Russian.",1.00,pending
+ralph-vaughan-williams-1872,english,"Ralph Vaughan Williams was born in England and is culturally identified as English.",1.00,pending
+sergei-rachmaninoff-1873,russian,"Sergei Rachmaninoff was born in the Russian Empire and is culturally identified as Russian.",1.00,pending
+max-reger-1873,german,"Max Reger was born in Germany and is widely recognized as a German composer.",1.00,pending
+franz-schmidt-1874,austrian,"Franz Schmidt was born in Hungary but was culturally and professionally associated with Austria, particularly Vienna, where he spent most of his career.",0.95,pending
+arnold-schoenberg-1874,austrian,"Arnold Schoenberg was born in Vienna, Austria, and is primarily identified as an Austrian composer.",1.00,pending
+josef-suk-1874,czech,"Josef Suk was born in the Kingdom of Bohemia, part of the Austro-Hungarian Empire, and is culturally identified as Czech.",0.95,pending
+gustav-holst-1874,english,"Gustav Holst was born in England and is widely recognized as an English composer.",1.00,pending
+charles-ives-1874,american,"Charles Ives was born in the United States and is widely recognized as an American composer.",1.00,pending
+maurice-ravel-1875,french,"Maurice Ravel was born in France and is widely recognized as a French composer.",1.00,pending
+reinhold-gliere-1875,russian,"Reinhold Glière was born in Kiev, which was part of the Russian Empire at the time, and he is primarily identified as a Russian composer.",0.95,pending
+manuel-de-falla-1876,spanish,"Manuel de Falla was born in Spain and is widely recognized as a Spanish composer.",1.00,pending
+ernst-von-dohnanyi-1877,hungarian,"Ernst von Dohnányi was born in Pozsony, Kingdom of Hungary (now Bratislava, Slovakia) and is historically recognized as a Hungarian composer.",1.00,pending
+ottorino-respighi-1879,italian,"Ottorino Respighi was born in Italy and is widely recognized as an Italian composer.",1.00,pending
+ernest-bloch-1880,swiss,"Ernest Bloch was born in Switzerland, establishing his Swiss nationality by birth.",1.00,pending
+bela-bartok-1881,hungarian,"Béla Bartók was born in Hungary and is widely recognized as a Hungarian composer.",1.00,pending
+george-enescu-1881,romanian,"George Enescu was born in Romania and is widely recognized as a Romanian composer and musician.",0.95,pending
+igor-stravinsky-1882,russian,"Igor Stravinsky was born in the Russian Empire and is primarily identified as Russian.",1.00,pending
+karol-szymanowski-1882,polish,"Karol Szymanowski was born in Poland and is widely recognized as a Polish composer, reflecting his cultural identity and citizenship.",1.00,pending
+percy-grainger-1882,australian,"Percy Grainger was born in Australia and is primarily identified as Australian.",1.00,pending
+zoltan-kodaly-1882,hungarian,"Zoltán Kodály was born in Hungary and is culturally identified as Hungarian.",1.00,pending
+edgard-varese-1883,french,"Edgard Varèse was born in France and is primarily identified as a French composer.",1.00,pending
+anton-webern-1883,austrian,"Anton Webern was born in Austria and is culturally identified as Austrian.",1.00,pending
+arnold-bax-1883,british,"Arnold Bax was born in England and is widely recognized as a British composer.",1.00,pending
+alban-berg-1885,austrian,"Alban Berg was born in Vienna, which was part of Austria-Hungary, and is culturally identified as Austrian.",1.00,pending
+heitor-villa-lobos-1887,brazilian,"Heitor Villa-Lobos was born in Brazil and is widely recognized as a Brazilian composer.",1.00,pending
+bohuslav-martinu-1890,czech,"Bohuslav Martinů was born in Czechoslovakia and is widely recognized as a Czech composer.",1.00,pending
+jacques-ibert-1890,french,"Jacques Ibert was born in Paris, France, and is widely recognized as a French composer.",1.00,pending
+sergei-prokofiev-1891,russian,"Sergei Prokofiev was born in the Russian Empire and is widely recognized as a Russian composer.",1.00,pending
+darius-milhaud-1892,french,"Darius Milhaud was born in France and is widely recognized as a French composer.",1.00,pending
+arthur-honegger-1892,swiss,"Arthur Honegger was born in Le Havre, France, but was of Swiss descent and held Swiss citizenship.",0.95,pending
+ernest-moeran-1894,english,"Ernest Moeran was born in England and is primarily identified as an English composer.",1.00,pending
+carl-orff-1895,german,"Carl Orff was born in Germany and is widely recognized as a German composer.",1.00,pending
+paul-hindemith-1895,german,"Paul Hindemith was born in Germany and is widely recognized as a German composer.",1.00,pending
+howard-hanson-1896,american,"Howard Hanson was born in the United States and is widely recognized as an American composer.",1.00,pending
+francisco-mignone-1897,brazilian,"Francisco Mignone was born in Brazil and is recognized as a Brazilian composer.",1.00,pending
+erich-wolfgang-korngold-1897,austrian,"Erich Wolfgang Korngold was born in Brünn, Austria-Hungary (now Brno, Czech Republic) and is primarily identified as Austrian.",0.95,pending
+george-gershwin-1898,american,"George Gershwin was born in the United States and is widely recognized as an American composer.",1.00,pending
+roy-harris-1898,american,"Roy Harris was born in the United States and is widely recognized as an American composer.",1.00,pending
+francis-poulenc-1899,french,"Francis Poulenc was born in France and is widely recognized as a French composer.",1.00,pending
+carlos-chavez-1899,mexican,"Carlos Chávez was born in Mexico and is widely recognized as a Mexican composer.",1.00,pending
+kurt-weill-1900,german,"Kurt Weill was born in Germany and is primarily identified as a German composer.",1.00,pending
+george-antheil-1900,american,"George Antheil was born in the United States and is primarily identified as an American composer.",1.00,pending
+aaron-copland-1900,american,"Aaron Copland was born in the United States and is widely recognized as an American composer.",1.00,pending
+joaquin-rodrigo-1901,spanish,"Joaquín Rodrigo was born in Spain and is widely recognized as a Spanish composer.",1.00,pending
+william-walton-1902,british,"William Walton was born in England and is widely recognized as a British composer.",1.00,pending
+maurice-durufle-1902,french,"Maurice Duruflé was born in France and is culturally identified as a French composer.",1.00,pending
+aram-khachaturian-1903,russian,"Aram Khachaturian was a Soviet composer born in the Russian Empire and is primarily identified with Russian nationality due to his citizenship and career.",0.95,pending
+dmitry-kabalevsky-1904,russian,"Dmitry Kabalevsky was born in Russia and is widely recognized as a Russian composer.",1.00,pending
+michael-tippett-1905,british,"Michael Tippett was born in England and is widely recognized as a British composer.",1.00,pending
+dmitri-shostakovich-1906,russian,"Dmitri Shostakovich was born in Russia and is widely recognized as a Russian composer, reflecting his cultural identity and citizenship.",1.00,pending
+fernando-lopes-graca-1906,portuguese,"Fernando Lopes-Graça was born in Portugal and is widely recognized as a Portuguese composer.",1.00,pending
+camargo-guarnieri-1907,brazilian,"Camargo Guarnieri was born in Brazil and is recognized as a Brazilian composer.",1.00,pending
+olivier-messiaen-1908,french,"Olivier Messiaen was born in France and is widely recognized as a French composer.",1.00,pending
+elliott-carter-1908,american,"Elliott Carter was born in the United States and is widely recognized as an American composer.",1.00,pending
+vagn-holmboe-1909,danish,"Vagn Holmboe was born in Denmark and is widely recognized as a Danish composer.",1.00,pending
+william-schuman-1910,american,"William Schuman was born in the United States and is recognized as an American composer.",1.00,pending
+samuel-barber-1910,american,"Samuel Barber was born in the United States and is widely recognized as an American composer.",1.00,pending
+john-cage-1912,american,"John Cage was born in the United States and is widely recognized as an American composer.",1.00,pending
+witold-lutoslawski-1913,polish,"Witold Lutoslawski was born in Poland and is widely recognized as a Polish composer.",1.00,pending
+benjamin-britten-1913,english,"Benjamin Britten was born in England and is widely recognized as an English composer.",1.00,pending
+morton-gould-1913,american,"Morton Gould was born in the United States and is widely recognized as an American composer.",1.00,pending
+milton-babbitt-1916,american,"Milton Babbitt was born in the United States and is widely recognized as an American composer.",1.00,pending
+henri-dutilleux-1916,french,"Henri Dutilleux was born in France and is widely recognized as a French composer.",1.00,pending
+alberto-ginastera-1916,argentine,"Alberto Ginastera was born in Argentina and is widely recognized as an Argentine composer.",1.00,pending
+leonard-bernstein-1918,american,"Leonard Bernstein was born in the United States and is widely recognized as an American composer and conductor.",1.00,pending
+astor-piazzolla-1921,argentine,"Astor Piazzolla was born in Argentina and is widely recognized as an Argentine composer.",1.00,pending
+malcolm-arnold-1921,english,"Malcolm Arnold was born in Northampton, England, and is widely recognized as an English composer.",1.00,pending
+iannis-xenakis-1922,french,"Iannis Xenakis was a Greek-born composer who later became a naturalized French citizen and spent much of his career in France.",0.90,pending
+ned-rorem-1923,american,"Ned Rorem was born in the United States and is widely recognized as an American composer.",1.00,pending
+gyorgy-ligeti-1923,hungarian,"György Ligeti was born in Transylvania, which was part of Hungary at the time, and he identified culturally as Hungarian.",1.00,pending
+luigi-nono-1924,italian,"Luigi Nono was born in Italy and is widely recognized as an Italian composer.",1.00,pending
+joly-braga-santos-1924,portuguese,"Joly Braga Santos was born in Portugal and is recognized as a Portuguese composer.",1.00,pending
+luciano-berio-1925,italian,"Luciano Berio was born in Italy and is widely recognized as an Italian composer.",1.00,pending
+pierre-boulez-1925,french,"Pierre Boulez was born in France and is widely recognized as a French composer and conductor.",1.00,pending
+hans-werner-henze-1926,german,"Hans Werner Henze was born in Germany and is widely recognized as a German composer.",1.00,pending
+einojuhani-rautavaara-1928,finnish,"Einojuhani Rautavaara was born in Finland and is widely recognized as a Finnish composer.",1.00,pending
+karlheinz-stockhausen-1928,german,"Karlheinz Stockhausen was born in Germany and is widely recognized as a German composer.",1.00,pending
+george-crumb-1929,american,"George Crumb was born in the United States and is widely recognized as an American composer.",1.00,pending
+toru-takemitsu-1930,japanese,"Toru Takemitsu was born in Japan and is widely recognized as a Japanese composer.",1.00,pending
+sofia-gubaidulina-1931,russian,"Sofia Gubaidulina was born in the Soviet Union and is primarily identified as a Russian composer.",0.95,pending
+krzysztof-penderecki-1933,polish,"Krzysztof Penderecki was born in Poland and is widely recognized as a Polish composer.",1.00,pending
+henryk-gorecki-1933,polish,"Henryk Górecki was born in Poland and is widely recognized as a Polish composer.",1.00,pending
+alfred-schnittke-1934,russian,"Alfred Schnittke was born in the Soviet Union and is primarily identified as a Russian composer.",0.95,pending
+harrison-birtwistle-1934,british,"Harrison Birtwistle was born in England and is widely recognized as a British composer.",1.00,pending
+arvo-part-1935,estonian,"Arvo Pärt was born in Estonia and is widely recognized as an Estonian composer.",1.00,pending
+steve-reich-1936,american,"Steve Reich was born in the United States and is widely recognized as an American composer.",1.00,pending
+philip-glass-1937,american,"Philip Glass was born in the United States and is widely recognized as an American composer.",1.00,pending
+john-corigliano-1938,american,"John Corigliano was born in the United States and is recognized as an American composer.",1.00,pending
+john-adams-1947,american,"John Adams was born in the United States and is widely recognized as an American composer.",1.00,pending
+wolfgang-rihm-1952,german,"Wolfgang Rihm was born in Germany and is widely recognized as a German composer.",1.00,pending
+michael-daugherty-1954,american,"Michael Daugherty was born in the United States and is recognized as an American composer.",1.00,pending
+thomas-ades-1971,british,"Thomas Adès was born in London, England, and is recognized as a British composer.",1.00,pending

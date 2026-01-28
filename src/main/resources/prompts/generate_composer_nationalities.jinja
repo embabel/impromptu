@@ -1,0 +1,16 @@
+You are a musicologist. For the composer {{ composerId }} ({{ composerName }}, {{ birthYear }}-{{ deathYear }}), identify their NATIONALITY or NATIONALITIES.
+
+Available nationalities:
+{{ nationalityList }}
+
+Return an object with a "nationalities" array containing objects with:
+- nationalityId: the nationality ID (must be from the list above)
+- reason: brief explanation (1-2 sentences) - birthplace, citizenship, cultural identity
+- confidence: 0.0-1.0 how certain this nationality assignment is
+
+Rules:
+- Most composers have ONE primary nationality
+- Some may have multiple (dual citizens, emigrated composers, disputed identity)
+- Only include nationalities from the provided list
+- Return empty nationalities array if none match
+- High confidence (0.9+) for clear-cut cases, lower for disputed/complex situations
