@@ -18,6 +18,7 @@ package com.embabel.impromptu.domain;
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
 import com.embabel.agent.rag.model.Relationship;
+import com.fasterxml.jackson.annotation.JsonClassDescription;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
  * Represents a musical work in the graph database.
  * Linked to Composer via COMPOSED relationship and to Genre via OF_GENRE relationship.
  */
+@JsonClassDescription("A musical work, such as a symphony, concerto, or sonata")
 @CreationPermitted(false)
 public interface Work extends NamedEntity {
     String getTitle();

@@ -1320,54 +1320,69 @@ class MyFeatureIT {
 
 This pattern allows developers to test against real infrastructure while keeping the database clean for subsequent test runs.
 
-## Composer Influence Relationships
+## Composer Enhancement Pipeline
 
-The application can generate and load INFLUENCED relationships between composers, representing historical musical influence (e.g., Beethoven influenced Brahms). This uses an LLM to generate candidate relationships, which are written to a CSV for human review before loading into Neo4j.
+The application includes a pipeline for enriching composer data using LLM-generated content. Each enhancer generates a CSV file that can be reviewed and curated by musicologists before loading into Neo4j.
+
+### Available Enhancers
+
+| Enhancer | CSV Location | Description |
+|----------|-------------|-------------|
+| **Influences** | `data/influences/composer-influences.csv` | INFLUENCED relationships between composers (e.g., Beethoven → Brahms) |
+| **Techniques** | `data/enhancements/composer-techniques.csv` | USES relationships linking composers to compositional techniques |
+| **Nationalities** | `data/enhancements/composer-nationalities.csv` | HAS_NATIONALITY relationships linking composers to countries |
 
 ### Workflow
 
-1. **Generate**: LLM analyzes each composer and generates influence relationships with confidence scores
-2. **Review**: A musicologist reviews the CSV, changing status from `pending` to `approved` for valid relationships
-3. **Load**: Approved relationships are loaded into Neo4j automatically on startup (if the CSV exists and no influences are in the database yet)
+All enhancers follow the same generate → review → apply workflow:
+
+1. **Generate**: LLM analyzes composers and generates candidate data with confidence scores
+2. **Review**: A musicologist reviews the CSV, changing `status` from `pending` to `approved` for valid entries
+3. **Apply**: Approved rows are loaded into Neo4j via the UI or REST API
 
 ### Musicologist Review Process
 
-The generated CSV file (`data/influences/composer-influences.csv`) is designed to be reviewed and curated by musicologists:
+All generated CSV files are designed to be reviewed and curated by musicologists:
 
-1. **Initial Generation**: Run the generate endpoint to create candidate relationships using LLM general knowledge
-2. **Open in Spreadsheet**: Edit the CSV in Excel, Numbers, Google Sheets, or any spreadsheet application
-3. **Review Each Relationship**: For each row:
-   - Verify the influence relationship is historically accurate
-   - Adjust `strength`, `confidence`, and `divergence` values as needed
-   - Edit the `reason` text to be more precise if necessary
-   - Change `status` from `pending` to `approved` for valid relationships
+1. **Generate CSVs**: Use the UI (Enhancers panel) or REST API to generate candidate data
+2. **Open in Spreadsheet**: Edit CSVs in Excel, Numbers, Google Sheets, or any spreadsheet application
+3. **Review Each Row**:
+   - Verify the data is historically/factually accurate
+   - Adjust confidence and other values as needed
+   - Change `status` from `pending` to `approved` for valid entries
    - Delete rows that are incorrect or speculative
-4. **Save and Commit**: Save the CSV file and commit it to version control
-5. **Load on Next Startup**: Approved relationships are automatically loaded into Neo4j
+4. **Save and Commit**: Save the CSV files and commit to version control
+5. **Apply**: Use the UI or REST API to load approved data into Neo4j
 
-The CSV file is the source of truth and can be iteratively refined over time.
+The CSV files are the source of truth and can be iteratively refined over time.
 
 ### REST API
 
-With the app running:
-
 ```bash
-# Generate influence relationships for all composers (writes to data/influences/composer-influences.csv)
-curl -X POST http://localhost:8888/api/influences/generate
+# List all enhancers
+curl http://localhost:8888/api/enhancers
 
-# Load approved relationships into Neo4j (also happens automatically on startup)
-curl -X POST http://localhost:8888/api/influences/load
+# Generate CSV for a specific enhancer
+curl -X POST http://localhost:8888/api/enhancers/influences/generate
+curl -X POST http://localhost:8888/api/enhancers/techniques/generate
+curl -X POST http://localhost:8888/api/enhancers/nationalities/generate
 
-# Show statistics about existing influence relationships
-curl http://localhost:8888/api/influences/stats
+# Generate all CSVs
+curl -X POST http://localhost:8888/api/enhancers/generate-all
 
-# List all composers in the database
-curl http://localhost:8888/api/influences/composers
+# Apply CSV for a specific enhancer
+curl -X POST http://localhost:8888/api/enhancers/influences/apply
+
+# Apply all CSVs (respects status field - only loads 'approved' rows)
+curl -X POST http://localhost:8888/api/enhancers/apply-all
+
+# Force apply all CSVs (ignores status field - loads all rows)
+curl -X POST http://localhost:8888/api/enhancers/apply-all?force=true
 ```
 
-### CSV Format
+### Influences CSV Format
 
-The generated CSV file (`data/influences/composer-influences.csv`) has the following columns:
+The influences CSV (`data/influences/composer-influences.csv`) has these columns:
 
 | Column | Description |
 |--------|-------------|
@@ -1376,8 +1391,19 @@ The generated CSV file (`data/influences/composer-influences.csv`) has the follo
 | `reason` | Brief explanation of the influence relationship |
 | `strength` | 0.0-1.0 indicating how significant the influence was |
 | `confidence` | 0.0-1.0 indicating how certain the relationship is documented |
-| `divergence` | 0.0-1.0 indicating how much the influenced composer's style diverged from the influencer (e.g., Debussy was influenced by Wagner but diverged significantly = 0.8, while Mahler stayed closer = 0.3) |
+| `divergence` | 0.0-1.0 indicating how much the influenced composer diverged stylistically |
 | `status` | `pending` (generated) or `approved` (ready to load) |
+
+### Legacy Influences API
+
+The original influences-specific endpoints are still available:
+
+```bash
+curl -X POST http://localhost:8888/api/influences/generate
+curl -X POST http://localhost:8888/api/influences/load
+curl http://localhost:8888/api/influences/stats
+curl http://localhost:8888/api/influences/composers
+```
 
 ## Miscellaneous
 

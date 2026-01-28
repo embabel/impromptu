@@ -5,4 +5,11 @@ import com.embabel.agent.rag.model.NamedEntity;
 
 @CreationPermitted(false)
 public interface Nationality extends NamedEntity {
+
+    String getCountryCode();
+
+    /**
+     * Country, like "Austria," where name is "Austrian"
+     */
+    String getCountry();
 }

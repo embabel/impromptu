@@ -64,6 +64,7 @@ class PropositionConfiguration {
                 Performer.class,
                 Ensemble.class,
                 Instrument.class,
+                Family.class,
                 MusicPlace.class,
                 MusicalConcept.class,
                 ImpromptuUser.class,

@@ -2,16 +2,13 @@ package com.embabel.impromptu.domain;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
-import com.embabel.agent.rag.model.Relationship;
 import com.fasterxml.jackson.annotation.JsonClassDescription;
 
 /**
  * A musical instrument.
  */
-@JsonClassDescription("A musical instrument, such as a violin")
+@JsonClassDescription("Family of musical instruments, such as strings or brass")
 @CreationPermitted(false)
-public interface Instrument extends NamedEntity {
+public interface Family extends NamedEntity {
 
-    @Relationship(name = "OF_FAMILY")
-    Family getFamily();
 }
