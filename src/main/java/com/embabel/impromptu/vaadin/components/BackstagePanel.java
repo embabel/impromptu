@@ -7,6 +7,7 @@ import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
 import com.embabel.impromptu.data.pipeline.ComposerEnhancementPipeline;
 import com.embabel.impromptu.data.pipeline.ComposerNationalityEnhancer;
 import com.embabel.impromptu.data.pipeline.ComposerTechniqueEnhancer;
+import com.embabel.impromptu.data.pipeline.WorkInstrumentationEnhancer;
 import com.embabel.impromptu.rag.DocumentService;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
@@ -47,6 +48,7 @@ public class BackstagePanel extends Div {
             ComposerInfluenceLoader influenceLoader,
             ComposerTechniqueEnhancer techniqueEnhancer,
             ComposerNationalityEnhancer nationalityEnhancer,
+            WorkInstrumentationEnhancer workInstrumentationEnhancer,
             GraphExportService exportService
     ) {
     }
@@ -122,7 +124,7 @@ public class BackstagePanel extends Div {
         sourcesContent.setVisible(false);
 
         // Enhancers content
-        var enhancersContent = new EnhancersPanel(config.pipeline(), config.influenceLoader(), config.techniqueEnhancer(), config.nationalityEnhancer(), config.exportService());
+        var enhancersContent = new EnhancersPanel(config.pipeline(), config.influenceLoader(), config.techniqueEnhancer(), config.nationalityEnhancer(), config.workInstrumentationEnhancer(), config.exportService());
         enhancersContent.setVisible(false);
 
         // Settings content

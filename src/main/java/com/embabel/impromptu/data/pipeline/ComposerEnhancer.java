@@ -28,37 +28,23 @@ import java.util.List;
  *   <li><b>Generate</b>: Process composers and output to CSV for human review</li>
  *   <li><b>Apply</b>: Read reviewed CSV and load approved entries to database</li>
  * </ol>
+ * <p>
+ * Composer enhancers are driven by the {@link ComposerEnhancementPipeline} which
+ * loads composers and calls the lifecycle methods. The {@link #generate()} method
+ * from {@link Enhancer} is not used directly - use the pipeline instead.
  */
-public interface ComposerEnhancer {
-
-    /**
-     * Unique identifier for the enhancer.
-     */
-    String getId();
-
-    /**
-     * Display name for the enhancer.
-     */
-    String getName();
-
-    /**
-     * Description of what this enhancer does.
-     */
-    String getDescription();
-
-    /**
-     * Output CSV path for this enhancer.
-     */
-    Path getOutputPath();
+public interface ComposerEnhancer extends Enhancer {
 
     // ========== GENERATE PHASE ==========
 
     /**
-     * Check if generation should run.
-     * @return true to generate, false to skip (e.g., CSV already exists)
+     * Not used for ComposerEnhancer - use the pipeline instead.
+     * This is implemented to satisfy the Enhancer interface.
      */
-    default boolean shouldGenerate() {
-        return true;
+    @Override
+    default void generate() throws IOException {
+        throw new UnsupportedOperationException(
+                "ComposerEnhancer.generate() should not be called directly. Use ComposerEnhancementPipeline instead.");
     }
 
     /**
@@ -86,32 +72,4 @@ public interface ComposerEnhancer {
 
     // ========== APPLY PHASE ==========
 
-    /**
-     * Check if apply should run.
-     * @return true to apply, false to skip (e.g., data already in database)
-     */
-    default boolean shouldApply() {
-        return true;
-    }
-
-    /**
-     * Apply the CSV data to the database (approved entries only).
-     * @return result of the apply operation
-     */
-    default ApplyResult apply() throws IOException {
-        return apply(false);
-    }
-
-    /**
-     * Apply the CSV data to the database.
-     * @param ignoreStatus if true, apply all entries regardless of status
-     * @return result of the apply operation
-     */
-    ApplyResult apply(boolean ignoreStatus) throws IOException;
-
-    /**
-     * Result of applying CSV to database.
-     */
-    record ApplyResult(int loaded, int skipped, int failed) {
-    }
 }

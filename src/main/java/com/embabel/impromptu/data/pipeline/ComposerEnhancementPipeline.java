@@ -45,8 +45,10 @@ public class ComposerEnhancementPipeline {
     private static final Logger logger = LoggerFactory.getLogger(ComposerEnhancementPipeline.class);
 
     private final NamedEntityDataRepository entityRepository;
-    private final Map<String, ComposerEnhancer> enhancersById;
-    private final List<ComposerEnhancer> enhancers;
+    private final Map<String, ComposerEnhancer> composerEnhancersById;
+    private final List<ComposerEnhancer> composerEnhancers;
+    private final Map<String, Enhancer> allEnhancersById;
+    private final List<Enhancer> allEnhancers;
 
     /** How often to log progress (every N composers). */
     private int progressInterval = 5;
@@ -56,23 +58,54 @@ public class ComposerEnhancementPipeline {
 
     public ComposerEnhancementPipeline(
             NamedEntityDataRepository entityRepository,
-            List<ComposerEnhancer> enhancers) {
+            List<ComposerEnhancer> composerEnhancers,
+            List<Enhancer> allEnhancers) {
         this.entityRepository = entityRepository;
-        this.enhancers = enhancers;
-        this.enhancersById = enhancers.stream()
+        this.composerEnhancers = composerEnhancers;
+        this.composerEnhancersById = composerEnhancers.stream()
                 .collect(Collectors.toMap(ComposerEnhancer::getId, Function.identity()));
 
+        // Combine all enhancers (composer enhancers + standalone enhancers)
+        // Filter out composer enhancers from allEnhancers to avoid duplicates
+        var standaloneEnhancers = allEnhancers.stream()
+                .filter(e -> !(e instanceof ComposerEnhancer))
+                .toList();
+
+        this.allEnhancers = new java.util.ArrayList<>();
+        this.allEnhancers.addAll(composerEnhancers);
+        this.allEnhancers.addAll(standaloneEnhancers);
+
+        this.allEnhancersById = this.allEnhancers.stream()
+                .collect(Collectors.toMap(Enhancer::getId, Function.identity()));
+
         logger.info("Discovered {} composer enhancers: {}",
-                enhancers.size(),
-                enhancers.stream().map(ComposerEnhancer::getId).toList());
+                composerEnhancers.size(),
+                composerEnhancers.stream().map(ComposerEnhancer::getId).toList());
+        logger.info("Discovered {} standalone enhancers: {}",
+                standaloneEnhancers.size(),
+                standaloneEnhancers.stream().map(Enhancer::getId).toList());
     }
 
+    /**
+     * Get all enhancers (both composer and standalone).
+     */
+    public List<Enhancer> getAllEnhancers() {
+        return allEnhancers;
+    }
+
+    /**
+     * Get composer enhancers only.
+     */
     public List<ComposerEnhancer> getEnhancers() {
-        return enhancers;
+        return composerEnhancers;
     }
 
-    public Optional<ComposerEnhancer> getEnhancer(String id) {
-        return Optional.ofNullable(enhancersById.get(id));
+    public Optional<Enhancer> getEnhancer(String id) {
+        return Optional.ofNullable(allEnhancersById.get(id));
+    }
+
+    public Optional<ComposerEnhancer> getComposerEnhancer(String id) {
+        return Optional.ofNullable(composerEnhancersById.get(id));
     }
 
     private List<Composer> loadComposers() {
@@ -94,11 +127,16 @@ public class ComposerEnhancementPipeline {
      * Generate CSV for a specific enhancer with progress callback.
      */
     public void generate(String enhancerId, Consumer<Progress> progressCallback) throws IOException {
-        var enhancer = enhancersById.get(enhancerId);
+        var enhancer = allEnhancersById.get(enhancerId);
         if (enhancer == null) {
             throw new IllegalArgumentException("Unknown enhancer: " + enhancerId);
         }
-        generateForEnhancer(enhancer, progressCallback);
+
+        if (enhancer instanceof ComposerEnhancer ce) {
+            generateForComposerEnhancer(ce, progressCallback);
+        } else {
+            generateForEnhancer(enhancer);
+        }
     }
 
     /**
@@ -112,12 +150,28 @@ public class ComposerEnhancementPipeline {
      * Generate CSVs for all enhancers with progress callback.
      */
     public void generateAll(Consumer<Progress> progressCallback) throws IOException {
-        for (var enhancer : enhancers) {
-            generateForEnhancer(enhancer, progressCallback);
+        for (var enhancer : allEnhancers) {
+            if (enhancer instanceof ComposerEnhancer ce) {
+                generateForComposerEnhancer(ce, progressCallback);
+            } else {
+                generateForEnhancer(enhancer);
+            }
         }
     }
 
-    private void generateForEnhancer(ComposerEnhancer enhancer, Consumer<Progress> progressCallback) throws IOException {
+    private void generateForEnhancer(Enhancer enhancer) throws IOException {
+        logger.info("Generating: {} ({})", enhancer.getName(), enhancer.getId());
+
+        if (!enhancer.shouldGenerate()) {
+            logger.info("[{}] Skipping generation - CSV already exists", enhancer.getId());
+            return;
+        }
+
+        enhancer.generate();
+        logger.info("[{}] Generation complete", enhancer.getId());
+    }
+
+    private void generateForComposerEnhancer(ComposerEnhancer enhancer, Consumer<Progress> progressCallback) throws IOException {
         logger.info("Generating: {} ({})", enhancer.getName(), enhancer.getId());
 
         if (!enhancer.shouldGenerate()) {
@@ -159,7 +213,7 @@ public class ComposerEnhancementPipeline {
     /**
      * Apply CSV for a specific enhancer (approved entries only).
      */
-    public ComposerEnhancer.ApplyResult apply(String enhancerId) throws IOException {
+    public Enhancer.ApplyResult apply(String enhancerId) throws IOException {
         return apply(enhancerId, false);
     }
 
@@ -167,8 +221,8 @@ public class ComposerEnhancementPipeline {
      * Apply CSV for a specific enhancer.
      * @param ignoreStatus if true, apply all entries regardless of status
      */
-    public ComposerEnhancer.ApplyResult apply(String enhancerId, boolean ignoreStatus) throws IOException {
-        var enhancer = enhancersById.get(enhancerId);
+    public Enhancer.ApplyResult apply(String enhancerId, boolean ignoreStatus) throws IOException {
+        var enhancer = allEnhancersById.get(enhancerId);
         if (enhancer == null) {
             throw new IllegalArgumentException("Unknown enhancer: " + enhancerId);
         }
@@ -187,25 +241,25 @@ public class ComposerEnhancementPipeline {
      * @param ignoreStatus if true, apply all entries regardless of status
      */
     public List<ApplyAllResult> applyAll(boolean ignoreStatus) throws IOException {
-        return enhancers.stream()
+        return allEnhancers.stream()
                 .map(e -> {
                     try {
                         return new ApplyAllResult(e.getId(), applyForEnhancer(e, ignoreStatus));
                     } catch (IOException ex) {
                         logger.error("Failed to apply {}: {}", e.getId(), ex.getMessage());
-                        return new ApplyAllResult(e.getId(), new ComposerEnhancer.ApplyResult(0, 0, -1));
+                        return new ApplyAllResult(e.getId(), new Enhancer.ApplyResult(0, 0, -1));
                     }
                 })
                 .toList();
     }
 
-    private ComposerEnhancer.ApplyResult applyForEnhancer(ComposerEnhancer enhancer, boolean ignoreStatus) throws IOException {
+    private Enhancer.ApplyResult applyForEnhancer(Enhancer enhancer, boolean ignoreStatus) throws IOException {
         logger.info("Applying: {} ({}){}",
                 enhancer.getName(), enhancer.getId(), ignoreStatus ? " [ignoring status]" : "");
 
         if (!ignoreStatus && !enhancer.shouldApply()) {
             logger.info("[{}] Skipping apply - data already in database", enhancer.getId());
-            return new ComposerEnhancer.ApplyResult(0, 0, 0);
+            return new Enhancer.ApplyResult(0, 0, 0);
         }
 
         var result = enhancer.apply(ignoreStatus);
@@ -262,7 +316,7 @@ public class ComposerEnhancementPipeline {
             String description,
             String outputPath
     ) {
-        public static EnhancerInfo from(ComposerEnhancer enhancer) {
+        public static EnhancerInfo from(Enhancer enhancer) {
             return new EnhancerInfo(
                     enhancer.getId(),
                     enhancer.getName(),
@@ -272,11 +326,11 @@ public class ComposerEnhancementPipeline {
         }
     }
 
-    public record ApplyAllResult(String enhancerId, ComposerEnhancer.ApplyResult result) {
+    public record ApplyAllResult(String enhancerId, Enhancer.ApplyResult result) {
     }
 
     public List<EnhancerInfo> getEnhancerInfos() {
-        return enhancers.stream()
+        return allEnhancers.stream()
                 .map(EnhancerInfo::from)
                 .toList();
     }

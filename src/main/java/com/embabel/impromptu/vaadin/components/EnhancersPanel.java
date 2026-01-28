@@ -18,9 +18,10 @@ package com.embabel.impromptu.vaadin.components;
 import com.embabel.impromptu.data.GraphExportService;
 import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
 import com.embabel.impromptu.data.pipeline.ComposerEnhancementPipeline;
-import com.embabel.impromptu.data.pipeline.ComposerEnhancer;
 import com.embabel.impromptu.data.pipeline.ComposerNationalityEnhancer;
 import com.embabel.impromptu.data.pipeline.ComposerTechniqueEnhancer;
+import com.embabel.impromptu.data.pipeline.Enhancer;
+import com.embabel.impromptu.data.pipeline.WorkInstrumentationEnhancer;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
@@ -48,6 +49,7 @@ public class EnhancersPanel extends VerticalLayout {
     private final ComposerInfluenceLoader influenceLoader;
     private final ComposerTechniqueEnhancer techniqueEnhancer;
     private final ComposerNationalityEnhancer nationalityEnhancer;
+    private final WorkInstrumentationEnhancer workInstrumentationEnhancer;
     private final GraphExportService exportService;
     private final Span relationshipCountSpan;
 
@@ -56,11 +58,13 @@ public class EnhancersPanel extends VerticalLayout {
             ComposerInfluenceLoader influenceLoader,
             ComposerTechniqueEnhancer techniqueEnhancer,
             ComposerNationalityEnhancer nationalityEnhancer,
+            WorkInstrumentationEnhancer workInstrumentationEnhancer,
             GraphExportService exportService) {
         this.pipeline = pipeline;
         this.influenceLoader = influenceLoader;
         this.techniqueEnhancer = techniqueEnhancer;
         this.nationalityEnhancer = nationalityEnhancer;
+        this.workInstrumentationEnhancer = workInstrumentationEnhancer;
         this.exportService = exportService;
 
         setPadding(false);
@@ -127,14 +131,14 @@ public class EnhancersPanel extends VerticalLayout {
         header.getStyle().set("margin", "0");
         section.add(header);
 
-        for (var enhancer : pipeline.getEnhancers()) {
+        for (var enhancer : pipeline.getAllEnhancers()) {
             section.add(createEnhancerRow(enhancer));
         }
 
         return section;
     }
 
-    private HorizontalLayout createEnhancerRow(ComposerEnhancer enhancer) {
+    private HorizontalLayout createEnhancerRow(Enhancer enhancer) {
         var row = new HorizontalLayout();
         row.setWidthFull();
         row.setAlignItems(Alignment.CENTER);
@@ -230,7 +234,7 @@ public class EnhancersPanel extends VerticalLayout {
         return section;
     }
 
-    private void generateEnhancer(ComposerEnhancer enhancer) {
+    private void generateEnhancer(Enhancer enhancer) {
         var ui = getUI().orElse(null);
         Notification.show("Generating " + enhancer.getName() + "...", 2000, Notification.Position.BOTTOM_CENTER);
 
@@ -255,7 +259,7 @@ public class EnhancersPanel extends VerticalLayout {
         }).start();
     }
 
-    private void applyEnhancer(ComposerEnhancer enhancer) {
+    private void applyEnhancer(Enhancer enhancer) {
         var ui = getUI().orElse(null);
         Notification.show("Applying " + enhancer.getName() + "...", 2000, Notification.Position.BOTTOM_CENTER);
 
@@ -344,7 +348,8 @@ public class EnhancersPanel extends VerticalLayout {
                 var influences = influenceLoader.deleteAllInfluences();
                 var techniques = techniqueEnhancer.deleteAllUsesRelationships();
                 var nationalities = nationalityEnhancer.deleteAllHasNationalityRelationships();
-                var total = influences + techniques + nationalities;
+                var instrumentation = workInstrumentationEnhancer.deleteAllRelationships();
+                var total = influences + techniques + nationalities + instrumentation;
                 if (ui != null) {
                     ui.access(() -> {
                         Notification.show("Deleted " + total + " relationships", 3000, Notification.Position.BOTTOM_CENTER)

@@ -91,7 +91,7 @@ public class ComposerEnhancementController {
      * Apply CSV for a specific enhancer to the database.
      */
     @PostMapping("/{id}/apply")
-    public ComposerEnhancer.ApplyResult apply(@PathVariable String id) throws IOException {
+    public Enhancer.ApplyResult apply(@PathVariable String id) throws IOException {
         pipeline.getEnhancer(id)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown enhancer: " + id));
 

@@ -199,10 +199,10 @@ public class ComposerTechniqueEnhancer implements ComposerEnhancer {
 
     @Override
     @Transactional
-    public ApplyResult apply(boolean ignoreStatus) throws IOException {
+    public Enhancer.ApplyResult apply(boolean ignoreStatus) throws IOException {
         if (!Files.exists(TECHNIQUES_CSV_PATH)) {
             logger.warn("CSV file not found: {}", TECHNIQUES_CSV_PATH);
-            return new ApplyResult(0, 0, 1);
+            return new Enhancer.ApplyResult(0, 0, 1);
         }
 
         var records = readCsv();
@@ -227,7 +227,7 @@ public class ComposerTechniqueEnhancer implements ComposerEnhancer {
         }
 
         logger.info("Applied {} USES relationships ({} skipped, {} failed)", loaded, skipped, failed);
-        return new ApplyResult(loaded, skipped, failed);
+        return new Enhancer.ApplyResult(loaded, skipped, failed);
     }
 
     // ========== HELPERS ==========

@@ -190,9 +190,9 @@ public class GeneralKnowledgeLlmInfluenceComposerEnhancer implements ComposerEnh
     }
 
     @Override
-    public ApplyResult apply(boolean ignoreStatus) throws IOException {
+    public Enhancer.ApplyResult apply(boolean ignoreStatus) throws IOException {
         var result = ignoreStatus ? influenceLoader.loadAll() : influenceLoader.loadApproved();
-        return new ApplyResult(result.loaded(), result.skipped(), result.notFound());
+        return new Enhancer.ApplyResult(result.loaded(), result.skipped(), result.notFound());
     }
 
     // ========== LLM GENERATION ==========

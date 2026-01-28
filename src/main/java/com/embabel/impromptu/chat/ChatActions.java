@@ -105,7 +105,7 @@ public record ChatActions(
                 .withReferences(sources, memory)
                 .withReferences(assets)
                 .withToolObjects(toolObjectsForUser(user, conversation.getAssetTracker()))
-                .withTemplate("impromptu_chat_response")
+                .rendering("impromptu_chat_response")
                 .respondWithSystemPrompt(
                         conversation.last(properties.conversationWindow()),
                         Map.of(

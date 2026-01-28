@@ -15,6 +15,7 @@ import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
 import com.embabel.impromptu.data.pipeline.ComposerEnhancementPipeline;
 import com.embabel.impromptu.data.pipeline.ComposerNationalityEnhancer;
 import com.embabel.impromptu.data.pipeline.ComposerTechniqueEnhancer;
+import com.embabel.impromptu.data.pipeline.WorkInstrumentationEnhancer;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.youtube.YouTubePendingPlayback;
@@ -81,6 +82,7 @@ public class VaadinChatView extends VerticalLayout {
     private final ComposerInfluenceLoader influenceLoader;
     private final ComposerTechniqueEnhancer techniqueEnhancer;
     private final ComposerNationalityEnhancer nationalityEnhancer;
+    private final WorkInstrumentationEnhancer workInstrumentationEnhancer;
     private final GraphExportService exportService;
     private final String defaultPersona;
     private final ImpromptuUser currentUser;
@@ -110,6 +112,7 @@ public class VaadinChatView extends VerticalLayout {
             ComposerInfluenceLoader influenceLoader,
             ComposerTechniqueEnhancer techniqueEnhancer,
             ComposerNationalityEnhancer nationalityEnhancer,
+            WorkInstrumentationEnhancer workInstrumentationEnhancer,
             GraphExportService exportService,
             ApplicationEventPublisher eventPublisher,
             @Value("${database.datasources.neo.host:localhost}") String neo4jHost,
@@ -121,6 +124,7 @@ public class VaadinChatView extends VerticalLayout {
         this.influenceLoader = influenceLoader;
         this.techniqueEnhancer = techniqueEnhancer;
         this.nationalityEnhancer = nationalityEnhancer;
+        this.workInstrumentationEnhancer = workInstrumentationEnhancer;
         this.exportService = exportService;
         this.chatbot = chatbot;
         this.userService = userService;
@@ -189,6 +193,7 @@ public class VaadinChatView extends VerticalLayout {
                 influenceLoader,
                 techniqueEnhancer,
                 nationalityEnhancer,
+                workInstrumentationEnhancer,
                 exportService
         );
         backstagePanel = new BackstagePanel(backstageConfig);
