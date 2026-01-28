@@ -151,8 +151,9 @@ public class SessionPanel extends Div {
         contentArea.setPadding(false);
         contentArea.setSizeFull();
 
-        // Media content
+        // Media content (default tab, so start visible)
         var mediaContent = createMediaContent(config);
+        mediaContent.setVisible(true);
 
         // Assets content
         var assetsContent = new AssetsPanel(config.assetViewSupplier());
@@ -239,19 +240,28 @@ public class SessionPanel extends Div {
 
     private VerticalLayout createMediaContent(Config config) {
         var mediaContent = new VerticalLayout();
-        mediaContent.setPadding(false);
+        mediaContent.setPadding(true);
         mediaContent.setSpacing(true);
 
-        if (config.spotifyService().isLinked(config.user())) {
-            mediaContent.add(new SpotifyPlayerPanel(config.spotifyService(), config.user()));
+        // Always show placeholder, replaced when services are linked
+        var placeholder = new Span("No media services configured");
+        placeholder.getStyle().set("color", "var(--lumo-secondary-text-color)");
+        mediaContent.add(placeholder);
+
+        try {
+            if (config.spotifyService() != null && config.spotifyService().isLinked(config.user())) {
+                mediaContent.remove(placeholder);
+                mediaContent.add(new SpotifyPlayerPanel(config.spotifyService(), config.user()));
+            }
+            if (config.youTubeService() != null && config.youTubeService().isConfigured()) {
+                mediaContent.remove(placeholder);
+                youTubePlayerPanel = new YouTubePlayerPanel(config.youTubeService());
+                mediaContent.add(youTubePlayerPanel);
+            }
+        } catch (Exception e) {
+            logger.warn("Error configuring media services: {}", e.getMessage());
         }
-        if (config.youTubeService().isConfigured()) {
-            youTubePlayerPanel = new YouTubePlayerPanel(config.youTubeService());
-            mediaContent.add(youTubePlayerPanel);
-        }
-        if (mediaContent.getComponentCount() == 0) {
-            mediaContent.add(new Span("No media services configured"));
-        }
+
         return mediaContent;
     }
 
