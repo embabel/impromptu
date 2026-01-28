@@ -18,7 +18,6 @@ package com.embabel.impromptu.vaadin.components;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
@@ -48,7 +47,31 @@ public class AboutPanel extends VerticalLayout {
                 .set("color", "var(--lumo-primary-color)")
                 .set("font-family", "var(--lumo-font-family)");
 
-        var authorSection = new VerticalLayout(authorLabel, authorName);
+        // Social links
+        var socialLinks = new HorizontalLayout();
+        socialLinks.setAlignItems(Alignment.CENTER);
+        socialLinks.setSpacing(true);
+        socialLinks.getStyle().set("gap", "var(--lumo-space-m)");
+
+        // Twitter/X link
+        var twitterLogo = new Image("https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/x.svg", "X (Twitter)");
+        twitterLogo.setHeight("20px");
+        twitterLogo.getStyle().set("filter", "invert(40%)");
+        var twitterLink = new Anchor("https://twitter.com/springrod", twitterLogo);
+        twitterLink.setTarget("_blank");
+        twitterLink.getElement().setAttribute("title", "@springrod");
+
+        // LinkedIn link
+        var linkedinLogo = new Image("https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/linkedin.svg", "LinkedIn");
+        linkedinLogo.setHeight("20px");
+        linkedinLogo.getStyle().set("filter", "invert(40%)");
+        var linkedinLink = new Anchor("https://www.linkedin.com/in/johnsonroda/", linkedinLogo);
+        linkedinLink.setTarget("_blank");
+        linkedinLink.getElement().setAttribute("title", "LinkedIn");
+
+        socialLinks.add(twitterLink, linkedinLink);
+
+        var authorSection = new VerticalLayout(authorLabel, authorName, socialLinks);
         authorSection.setPadding(false);
         authorSection.setSpacing(false);
         authorSection.getStyle().set("gap", "var(--lumo-space-xs)");
@@ -57,8 +80,10 @@ public class AboutPanel extends VerticalLayout {
         // Powered by section with logos
         var poweredBy = new Span("Powered by");
         poweredBy.getStyle()
-                .set("font-size", "1.1rem")
+                .set("font-size", "0.9rem")
                 .set("color", "var(--lumo-secondary-text-color)")
+                .set("text-transform", "uppercase")
+                .set("letter-spacing", "0.1em")
                 .set("margin-top", "var(--lumo-space-l)");
         add(poweredBy);
 
@@ -107,7 +132,7 @@ public class AboutPanel extends VerticalLayout {
         dataSource.setAlignItems(Alignment.CENTER);
         dataSource.setSpacing(true);
         dataSource.getStyle().set("margin-top", "var(--lumo-space-l)");
-        var dataLabel = new Span("Music data from ");
+        var dataLabel = new Span("Composers and works from");
         var openOpusLink = new Anchor("https://openopus.org/", "Open Opus");
         openOpusLink.setTarget("_blank");
         dataSource.add(dataLabel, openOpusLink);
@@ -117,7 +142,7 @@ public class AboutPanel extends VerticalLayout {
         var claudeInfo = new HorizontalLayout();
         claudeInfo.setAlignItems(Alignment.CENTER);
         claudeInfo.setSpacing(true);
-        var claudeLabel = new Span("Built using ");
+        var claudeLabel = new Span("Built using");
         var claudeLogo = new Image("https://cdn.worldvectorlogo.com/logos/anthropic-1.svg", "Claude");
         claudeLogo.setHeight("24px");
         claudeLogo.getStyle().set("vertical-align", "middle");
@@ -131,7 +156,7 @@ public class AboutPanel extends VerticalLayout {
         repoRow.setAlignItems(Alignment.CENTER);
         repoRow.setSpacing(true);
         repoRow.getStyle().set("margin-top", "var(--lumo-space-l)");
-        var repoLabel = new Span("Source: ");
+        var repoLabel = new Span("Source");
         var repoLink = new Anchor("https://github.com/embabel/impromptu", "github.com/embabel/impromptu");
         repoLink.setTarget("_blank");
         repoRow.add(repoLabel, repoLink);

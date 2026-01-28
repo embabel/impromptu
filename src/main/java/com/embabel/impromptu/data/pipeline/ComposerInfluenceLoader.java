@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.data.influence;
+package com.embabel.impromptu.data.pipeline;
 
-import com.embabel.impromptu.data.pipeline.GeneralKnowledgeLlmInfluenceComposerEnhancer;
 import org.drivine.manager.PersistenceManager;
 import org.drivine.query.QuerySpecification;
 import org.slf4j.Logger;

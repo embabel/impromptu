@@ -18,7 +18,7 @@ package com.embabel.impromptu.vaadin.components;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.data.GraphExportService;
-import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
+import com.embabel.impromptu.data.pipeline.ComposerInfluenceLoader;
 import com.embabel.impromptu.data.pipeline.ComposerEnhancementPipeline;
 import com.embabel.impromptu.data.pipeline.ComposerNationalityEnhancer;
 import com.embabel.impromptu.data.pipeline.ComposerTechniqueEnhancer;
@@ -57,7 +57,6 @@ public class BackstagePanel extends Div {
     public record Config(
             NamedEntityDataRepository entityRepository,
             DocumentService documentService,
-            ReferencesPanel.IndexStats indexStats,
             ImpromptuProperties properties,
             ComposerEnhancementPipeline pipeline,
             ComposerInfluenceLoader influenceLoader,
@@ -108,14 +107,14 @@ public class BackstagePanel extends Div {
                 .set("font-style", "italic")
                 .set("color", "var(--lumo-secondary-text-color)")
                 .set("padding", "var(--lumo-space-m)")
-                .set("font-size", "1.1rem")
+                .set("font-size", "1.3rem")
                 .set("line-height", "1.5")
                 .set("border-bottom", "1px solid var(--lumo-contrast-10pct)");
         definition.setText("impromptu (noun): a short piece of instrumental music, especially a solo, that is reminiscent of an improvisation.");
         sidePanel.add(definition);
 
         // App tabs
-        var referencesTab = new Tab(VaadinIcon.RECORDS.create(), new Span("References"));
+        var referencesTab = new Tab(VaadinIcon.RECORDS.create(), new Span("Composers"));
         var sourcesTab = new Tab(VaadinIcon.BOOK.create(), new Span("Sources"));
         var enhancersTab = new Tab(VaadinIcon.MAGIC.create(), new Span("Enhancers"));
         var settingsTab = new Tab(VaadinIcon.COG.create(), new Span("Settings"));
@@ -131,8 +130,9 @@ public class BackstagePanel extends Div {
         contentArea.setPadding(false);
         contentArea.setSizeFull();
 
-        // References content
-        var referencesContent = new ReferencesPanel(config.entityRepository(), config.indexStats());
+        // References content (default tab, so start visible)
+        var referencesContent = new ReferencesPanel(config.entityRepository());
+        referencesContent.setVisible(true);
 
         // Sources content (documents)
         var sourcesContent = new SourcesPanel(config.documentService());

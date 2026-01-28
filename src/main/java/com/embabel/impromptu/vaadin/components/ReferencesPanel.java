@@ -27,59 +27,49 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 /**
- * References panel showing indexed content statistics and domain entities.
+ * References panel showing domain entity statistics and composer list.
  */
 public class ReferencesPanel extends VerticalLayout {
 
-    /**
-     * Statistics about indexed content.
-     */
-    public record IndexStats(long chunkCount, long documentCount) {}
-
-    public ReferencesPanel(NamedEntityDataRepository entityRepository, IndexStats stats) {
+    public ReferencesPanel(NamedEntityDataRepository entityRepository) {
         setPadding(true);
         setSpacing(true);
         setVisible(false);
         setSizeFull();
 
-        // Index statistics header
-        var statsRow = new HorizontalLayout();
-        statsRow.setWidthFull();
-        statsRow.setJustifyContentMode(JustifyContentMode.START);
-        statsRow.setSpacing(true);
+        // Entity counts
+        var works = entityRepository.findByLabel("Work");
+        var techniques = entityRepository.findByLabel("Technique");
+        var nationalities = entityRepository.findByLabel("Nationality");
+        var epochs = entityRepository.findByLabel("Epoch");
+        var instruments = entityRepository.findByLabel("Instrument");
+        var composers = entityRepository.findByLabel("Composer");
 
-        var chunksLabel = new Span(String.format("%,d chunks", stats.chunkCount()));
-        chunksLabel.getStyle().set("font-size", "var(--lumo-font-size-l)");
+        // Entity statistics grid
+        var statsGrid = new HorizontalLayout();
+        statsGrid.setWidthFull();
+        statsGrid.setJustifyContentMode(JustifyContentMode.START);
+        statsGrid.setSpacing(true);
+        statsGrid.getStyle().set("flex-wrap", "wrap");
 
-        var separator = new Span("|");
-        separator.getStyle()
-                .set("color", "var(--lumo-secondary-text-color)")
-                .set("font-size", "var(--lumo-font-size-l)");
+        statsGrid.add(createStatBadge("Works", works.size()));
+        statsGrid.add(createStatBadge("Techniques", techniques.size()));
+        statsGrid.add(createStatBadge("Nationalities", nationalities.size()));
+        statsGrid.add(createStatBadge("Epochs", epochs.size()));
+        statsGrid.add(createStatBadge("Instruments", instruments.size()));
 
-        var docsLabel = new Span(String.format("%,d documents", stats.documentCount()));
-        docsLabel.getStyle().set("font-size", "var(--lumo-font-size-l)");
-
-        statsRow.add(chunksLabel, separator, docsLabel);
-        add(statsRow);
-
-        // Divider
+        add(statsGrid);
         add(new Hr());
 
-        var composers = entityRepository.findByLabel("Composer");
-        var works = entityRepository.findByLabel("Work");
-
-        // Composers/Works header
+        // Composers header
         var header = new HorizontalLayout();
         header.setWidthFull();
-        header.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        header.setJustifyContentMode(JustifyContentMode.START);
 
         var composersCount = new Span(composers.size() + " Composers");
         composersCount.getStyle().set("font-weight", "bold");
 
-        var worksCount = new Span(works.size() + " Works");
-        worksCount.getStyle().set("color", "var(--lumo-secondary-text-color)");
-
-        header.add(composersCount, worksCount);
+        header.add(composersCount);
         add(header);
 
         // Composer list
@@ -121,5 +111,13 @@ public class ReferencesPanel extends VerticalLayout {
 
         add(scroller);
         setFlexGrow(1, scroller);
+    }
+
+    private Span createStatBadge(String label, int count) {
+        var badge = new Span(String.format("%,d %s", count, label));
+        badge.getElement().getThemeList().add("badge");
+        badge.getStyle()
+                .set("font-size", "var(--lumo-font-size-s)");
+        return badge;
     }
 }

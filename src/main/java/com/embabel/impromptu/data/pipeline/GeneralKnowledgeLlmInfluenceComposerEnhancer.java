@@ -18,7 +18,6 @@ package com.embabel.impromptu.data.pipeline;
 import com.embabel.agent.api.common.Ai;
 import com.embabel.agent.api.common.AiBuilder;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
 import com.embabel.impromptu.domain.Composer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,7 @@ import java.util.*;
  * Apply phase: Loads approved entries from CSV into database.
  */
 @Service
-public class GeneralKnowledgeLlmInfluenceComposerEnhancer implements ComposerEnhancer {
+class GeneralKnowledgeLlmInfluenceComposerEnhancer implements ComposerEnhancer {
 
     private static final Logger logger = LoggerFactory.getLogger(GeneralKnowledgeLlmInfluenceComposerEnhancer.class);
 

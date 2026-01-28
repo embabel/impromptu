@@ -16,7 +16,7 @@
 package com.embabel.impromptu.vaadin.components;
 
 import com.embabel.impromptu.data.GraphExportService;
-import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
+import com.embabel.impromptu.data.pipeline.ComposerInfluenceLoader;
 import com.embabel.impromptu.data.pipeline.ComposerEnhancementPipeline;
 import com.embabel.impromptu.data.pipeline.ComposerNationalityEnhancer;
 import com.embabel.impromptu.data.pipeline.ComposerTechniqueEnhancer;
@@ -51,7 +51,6 @@ public class EnhancersPanel extends VerticalLayout {
     private final ComposerNationalityEnhancer nationalityEnhancer;
     private final WorkInstrumentationEnhancer workInstrumentationEnhancer;
     private final GraphExportService exportService;
-    private final Span relationshipCountSpan;
 
     public EnhancersPanel(
             ComposerEnhancementPipeline pipeline,
@@ -71,17 +70,6 @@ public class EnhancersPanel extends VerticalLayout {
         setSpacing(false);
         setSizeFull();
 
-        // Stats row
-        relationshipCountSpan = new Span("0");
-        relationshipCountSpan.getStyle().set("font-weight", "500");
-
-        var statsRow = new HorizontalLayout();
-        statsRow.setWidthFull();
-        statsRow.setPadding(true);
-        statsRow.setSpacing(true);
-        statsRow.setAlignItems(Alignment.CENTER);
-        statsRow.add(createStatBadge("Influence Relationships", relationshipCountSpan));
-
         // Description
         var description = new Div();
         description.getStyle()
@@ -99,26 +87,7 @@ public class EnhancersPanel extends VerticalLayout {
         // Export section
         var exportSection = createExportSection();
 
-        add(statsRow, new Hr(), description, new Hr(), enhancersSection, new Hr(), bulkSection, new Hr(), exportSection);
-
-        refresh();
-    }
-
-    private Div createStatBadge(String label, Span valueSpan) {
-        var badge = new Div();
-        badge.getStyle()
-                .set("display", "flex")
-                .set("align-items", "center")
-                .set("gap", "var(--lumo-space-xs)")
-                .set("padding", "var(--lumo-space-xs) var(--lumo-space-s)")
-                .set("background", "var(--lumo-contrast-5pct)")
-                .set("border-radius", "var(--lumo-border-radius-m)");
-
-        var labelSpan = new Span(label + ":");
-        labelSpan.getStyle().set("color", "var(--lumo-secondary-text-color)");
-
-        badge.add(labelSpan, valueSpan);
-        return badge;
+        add(description, new Hr(), enhancersSection, new Hr(), bulkSection, new Hr(), exportSection);
     }
 
     private VerticalLayout createEnhancersSection() {
@@ -397,13 +366,6 @@ public class EnhancersPanel extends VerticalLayout {
     }
 
     public void refresh() {
-        try {
-            var count = influenceLoader.countInfluenceRelationships();
-            var formatter = java.text.NumberFormat.getNumberInstance();
-            relationshipCountSpan.setText(formatter.format(count));
-        } catch (Exception e) {
-            logger.warn("Failed to get influence count: {}", e.getMessage());
-            relationshipCountSpan.setText("?");
-        }
+        // No stats to refresh currently
     }
 }

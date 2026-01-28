@@ -19,7 +19,7 @@ import com.embabel.agent.rag.ingestion.TikaHierarchicalContentReader;
 import com.embabel.agent.rag.ingestion.policy.NeverRefreshExistingDocumentContentPolicy;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
+import com.embabel.impromptu.data.pipeline.ComposerInfluenceLoader;
 import com.embabel.impromptu.data.openopus.OpenOpusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

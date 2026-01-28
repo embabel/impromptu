@@ -62,6 +62,12 @@ public class SettingsPanel extends VerticalLayout {
             add(new Hr());
         }
 
+        // Cypher Generation LLM
+        if (properties.cypherGenerationLlm() != null) {
+            add(new LlmOptionsPanel("Cypher Generation", properties.cypherGenerationLlm()));
+            add(new Hr());
+        }
+
         // Proposition Extraction LLM
         if (properties.propositionExtractionLlm() != null) {
             add(new LlmOptionsPanel("Proposition Extraction", properties.propositionExtractionLlm()));

@@ -33,7 +33,7 @@ import java.util.List;
  * loads composers and calls the lifecycle methods. The {@link #generate()} method
  * from {@link Enhancer} is not used directly - use the pipeline instead.
  */
-public interface ComposerEnhancer extends Enhancer {
+interface ComposerEnhancer extends Enhancer {
 
     // ========== GENERATE PHASE ==========
 

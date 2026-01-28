@@ -26,7 +26,7 @@ import com.embabel.common.util.StringTrimmingUtilsKt;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.data.GraphExportService;
-import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
+import com.embabel.impromptu.data.pipeline.ComposerInfluenceLoader;
 import com.embabel.impromptu.data.pipeline.ComposerEnhancementPipeline;
 import com.embabel.impromptu.data.pipeline.ComposerNationalityEnhancer;
 import com.embabel.impromptu.data.pipeline.ComposerTechniqueEnhancer;
@@ -197,12 +197,9 @@ public class VaadinChatView extends VerticalLayout {
         add(createInputSection());
 
         // Backstage panel (app-level content)
-        var indexStats = new com.embabel.impromptu.vaadin.components.ReferencesPanel.IndexStats(
-                stats.getChunkCount(), stats.getDocumentCount());
         var backstageConfig = new BackstagePanel.Config(
                 entityRepository,
                 documentService,
-                indexStats,
                 properties,
                 pipeline,
                 influenceLoader,
