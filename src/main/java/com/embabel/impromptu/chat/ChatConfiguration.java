@@ -66,8 +66,8 @@ class ChatConfiguration {
     }
 
     @Bean
-    ImpromptuUserService impromptuUserService(GraphObjectManager gom) {
-        return new DrivineImpromptuUserService(gom);
+    ImpromptuUserService impromptuUserService(GraphObjectManager gom, ImpromptuProperties properties) {
+        return new DrivineImpromptuUserService(gom, properties);
     }
 
     @Bean

@@ -33,7 +33,7 @@ import java.util.List;
  * @param embeddingService         the name of the embedding service to use
  *                                 for retrieval-augmented generation
  * @param objective                the goal of the chatbot's responses: For example, to answer legal questions
- * @param defaultVoice             the persona and output style of the chatbot while achieving its objective
+ * @param defaultPersonality       the persona and output style of the chatbot while achieving its objective
  * @param extraction               configuration for extraction of propositions from conversations
  * @param neoRag                   Neo RAG configuration
  * @param chunkerConfig            content chunker configuration
@@ -55,7 +55,7 @@ public record ImpromptuProperties(
         String objective,
         String behaviour,
         @DefaultValue("50") int conversationWindow,
-        @NestedConfigurationProperty Voice defaultVoice,
+        @NestedConfigurationProperty Personality defaultPersonality,
         @NestedConfigurationProperty Extraction extraction,
         @DefaultValue @NestedConfigurationProperty NeoRagServiceProperties neoRag,
         @NestedConfigurationProperty ContentChunker.Config chunkerConfig,
@@ -68,7 +68,7 @@ public record ImpromptuProperties(
         @Nullable @NestedConfigurationProperty DataLoading dataLoading
 ) {
 
-    public record Voice(
+    public record Personality(
             String persona,
             int maxWords
     ) {

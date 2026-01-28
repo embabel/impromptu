@@ -17,25 +17,28 @@ package com.embabel.impromptu.vaadin.components;
 
 import com.embabel.impromptu.speech.PersonaService;
 import com.embabel.impromptu.user.ImpromptuUser;
-import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.radiobutton.RadioGroupVariant;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 /**
- * Panel for selecting the assistant's voice/persona.
+ * Panel for selecting the assistant's personality.
  */
-public class VoiceSelectionPanel extends VerticalLayout {
+public class PersonalitySelectionPanel extends VerticalLayout {
 
-    public VoiceSelectionPanel(PersonaService personaService, ImpromptuUser user, Consumer<String> onPersonaChange) {
+    public PersonalitySelectionPanel(PersonaService personaService, ImpromptuUser user,
+                                     Consumer<String> onPersonaChange, IntConsumer onMaxWordsChange) {
         setPadding(true);
         setSpacing(true);
 
-        var header = new Span("Assistant Voice");
+        var header = new Span("Assistant Personality");
         header.getStyle()
                 .set("font-size", "var(--lumo-font-size-l)")
                 .set("font-weight", "600")
@@ -52,7 +55,7 @@ public class VoiceSelectionPanel extends VerticalLayout {
         var personas = personaService.getAvailablePersonas();
 
         if (personas.isEmpty()) {
-            var noPersonas = new Span("No voice options available");
+            var noPersonas = new Span("No personality options available");
             noPersonas.getStyle().set("color", "var(--lumo-secondary-text-color)");
             add(noPersonas);
             return;
@@ -82,10 +85,10 @@ public class VoiceSelectionPanel extends VerticalLayout {
         }));
 
         // Set current selection
-        var currentVoice = user.getVoice();
-        if (currentVoice != null) {
+        var currentPersonality = user.getPersonality();
+        if (currentPersonality != null) {
             personas.stream()
-                    .filter(p -> p.name().equals(currentVoice))
+                    .filter(p -> p.name().equals(currentPersonality))
                     .findFirst()
                     .ifPresent(radioGroup::setValue);
         } else {
@@ -103,5 +106,38 @@ public class VoiceSelectionPanel extends VerticalLayout {
         });
 
         add(radioGroup);
+
+        // Max words slider
+        add(new Hr());
+
+        var maxWordsHeader = new Span("Response Length");
+        maxWordsHeader.getStyle()
+                .set("font-size", "var(--lumo-font-size-l)")
+                .set("font-weight", "600")
+                .set("margin-top", "var(--lumo-space-m)");
+        add(maxWordsHeader);
+
+        var maxWordsDescription = new Span("Typical words per response");
+        maxWordsDescription.getStyle()
+                .set("color", "var(--lumo-secondary-text-color)")
+                .set("font-size", "var(--lumo-font-size-s)")
+                .set("margin-bottom", "var(--lumo-space-s)");
+        add(maxWordsDescription);
+
+        var maxWordsField = new IntegerField();
+        maxWordsField.setMin(20);
+        maxWordsField.setMax(200);
+        maxWordsField.setStep(10);
+        maxWordsField.setStepButtonsVisible(true);
+        maxWordsField.setValue(user.getMaxWords() > 0 ? user.getMaxWords() : 70);
+        maxWordsField.setWidthFull();
+
+        maxWordsField.addValueChangeListener(event -> {
+            if (event.getValue() != null && onMaxWordsChange != null) {
+                onMaxWordsChange.accept(event.getValue());
+            }
+        });
+
+        add(maxWordsField);
     }
 }

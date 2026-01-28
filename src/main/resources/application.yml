@@ -77,7 +77,7 @@ impromptu:
     model: gpt-4.1-mini
     temperature: 0.0
 
-  default-voice:
+  default-personality:
     persona: adaptive
     max-words: 70
 

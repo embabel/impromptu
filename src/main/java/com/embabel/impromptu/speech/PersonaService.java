@@ -53,7 +53,7 @@ public record PersonaService(ImpromptuProperties properties) {
                 if (filename != null && filename.endsWith(".jinja")) {
                     String name = filename.replace(".jinja", "");
                     String description = extractDescription(resource);
-                    boolean isDefault = name.equals(properties.defaultVoice().persona());
+                    boolean isDefault = name.equals(properties.defaultPersonality().persona());
                     personas.add(new PersonaInfo(name, description, isDefault));
                 }
             }

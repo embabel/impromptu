@@ -20,6 +20,7 @@ import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
 import com.embabel.agent.rag.model.NamedEntityData;
 import com.embabel.common.ai.prompt.PromptContributor;
+import com.embabel.impromptu.ImpromptuProperties;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -68,12 +69,8 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     // User preferences
     private boolean voiceEnabled = false;
 
-    /**
-     * Default voice/persona name.
-     */
-    public static final String DEFAULT_VOICE = "impromptu";
-
-    private String voice = DEFAULT_VOICE;
+    private String personality;
+    private int maxWords;
 
     @JsonCreator
     public ImpromptuUser(
@@ -287,21 +284,48 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     }
 
     /**
-     * Get the user's preferred voice/persona name.
+     * Get the user's preferred personality name.
      *
-     * @return the persona name (defaults to {@link #DEFAULT_VOICE})
+     * @return the persona name
      */
-    public String getVoice() {
-        return voice;
+    public String getPersonality() {
+        return personality;
     }
 
     /**
-     * Set the user's preferred voice/persona name.
+     * Set the user's preferred personality name.
      *
-     * @param voice the persona name (use {@link #DEFAULT_VOICE} for default)
+     * @param personality the persona name
      */
-    public void setVoice(String voice) {
-        this.voice = voice != null ? voice : DEFAULT_VOICE;
+    public void setPersonality(String personality) {
+        this.personality = personality;
+    }
+
+    /**
+     * Get the max words for this user's responses.
+     *
+     * @return max words limit
+     */
+    public int getMaxWords() {
+        return maxWords;
+    }
+
+    /**
+     * Set the max words for this user's responses.
+     *
+     * @param maxWords max words limit
+     */
+    public void setMaxWords(int maxWords) {
+        this.maxWords = maxWords;
+    }
+
+    /**
+     * Get the personality configuration as a record for use in prompts.
+     *
+     * @return the Personality record combining persona name and maxWords
+     */
+    public ImpromptuProperties.Personality personality() {
+        return new ImpromptuProperties.Personality(personality, maxWords);
     }
 
     /**

@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 
 /**
@@ -74,6 +75,7 @@ public class SessionPanel extends Div {
             Consumer<EntityMention> onMentionClick,
             Supplier<AssetView> assetViewSupplier,
             Consumer<String> onPersonaChange,
+            IntConsumer onMaxWordsChange,
             Consumer<String> onThemeChange,
             Runnable onAnalyze
     ) {
@@ -136,10 +138,10 @@ public class SessionPanel extends Div {
         var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
         var assetsTab = new Tab(VaadinIcon.CUBE.create(), new Span("Assets"));
         var memoryTab = new Tab(VaadinIcon.LIGHTBULB.create(), new Span("Memory"));
-        var voiceTab = new Tab(VaadinIcon.USER.create(), new Span("Voice"));
+        var personalityTab = new Tab(VaadinIcon.AUTOMATION.create(), new Span("Personality"));
         var themeTab = new Tab(VaadinIcon.PAINT_ROLL.create(), new Span("Theme"));
 
-        var tabs = new Tabs(mediaTab, assetsTab, memoryTab, voiceTab, themeTab);
+        var tabs = new Tabs(mediaTab, assetsTab, memoryTab, personalityTab, themeTab);
         tabs.setWidthFull();
         sidePanel.add(tabs);
 
@@ -201,15 +203,15 @@ public class SessionPanel extends Div {
         memoryContent.add(buttonRow);
         memoryContent.add(propositionsPanel);
 
-        // Voice content (persona selection)
-        var voiceContent = new VoiceSelectionPanel(config.personaService(), config.user(), config.onPersonaChange());
-        voiceContent.setVisible(false);
+        // Personality content (persona selection)
+        var personalityContent = new PersonalitySelectionPanel(config.personaService(), config.user(), config.onPersonaChange(), config.onMaxWordsChange());
+        personalityContent.setVisible(false);
 
         // Theme content
         var themeContent = new ThemeSelectionPanel(config.themeService(), config.user(), config.onThemeChange());
         themeContent.setVisible(false);
 
-        contentArea.add(mediaContent, assetsContent, memoryContent, voiceContent, themeContent);
+        contentArea.add(mediaContent, assetsContent, memoryContent, personalityContent, themeContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
@@ -219,7 +221,7 @@ public class SessionPanel extends Div {
             mediaContent.setVisible(selected == mediaTab);
             assetsContent.setVisible(selected == assetsTab);
             memoryContent.setVisible(selected == memoryTab);
-            voiceContent.setVisible(selected == voiceTab);
+            personalityContent.setVisible(selected == personalityTab);
             themeContent.setVisible(selected == themeTab);
 
             if (selected == assetsTab) {

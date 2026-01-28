@@ -26,11 +26,7 @@ import com.embabel.common.util.StringTrimmingUtilsKt;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.data.GraphExportService;
-import com.embabel.impromptu.data.pipeline.ComposerInfluenceLoader;
-import com.embabel.impromptu.data.pipeline.ComposerEnhancementPipeline;
-import com.embabel.impromptu.data.pipeline.ComposerNationalityEnhancer;
-import com.embabel.impromptu.data.pipeline.ComposerTechniqueEnhancer;
-import com.embabel.impromptu.data.pipeline.WorkInstrumentationEnhancer;
+import com.embabel.impromptu.data.pipeline.*;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.youtube.YouTubePendingPlayback;
@@ -155,7 +151,7 @@ public class VaadinChatView extends VerticalLayout {
 
         this.currentUser = userService.getAuthenticatedUser();
         // Default persona from properties, used as fallback if user hasn't set a voice
-        this.defaultPersona = properties.defaultVoice() != null ? properties.defaultVoice().persona() : "impromptu";
+        this.defaultPersona = properties.defaultPersonality() != null ? properties.defaultPersonality().persona() : "impromptu";
 
         // Apply initial theme after attach (ensures DOM is ready)
         addAttachListener(event -> {
@@ -223,6 +219,7 @@ public class VaadinChatView extends VerticalLayout {
                 this::showEntityDetail,
                 this::getAssetView,
                 this::onPersonaChange,
+                this::onMaxWordsChange,
                 this::onThemeChange,
                 this::analyzeConversation
         );
@@ -239,7 +236,8 @@ public class VaadinChatView extends VerticalLayout {
     /**
      * Lazily creates the chat session on first message send.
      */
-    private record SessionData(ChatSession chatSession, BlockingQueue<Message> responseQueue, VaadinOutputChannel outputChannel) {
+    private record SessionData(ChatSession chatSession, BlockingQueue<Message> responseQueue,
+                               VaadinOutputChannel outputChannel) {
     }
 
     private SessionData getOrCreateSession(UI ui) {
@@ -291,18 +289,29 @@ public class VaadinChatView extends VerticalLayout {
     }
 
     /**
-     * Handle persona/voice change from the SessionPanel.
+     * Handle personality change from the SessionPanel.
      */
     private void onPersonaChange(String personaName) {
-        if (personaName != null && !personaName.equals(currentUser.getVoice())) {
-            currentUser.setVoice(personaName);
+        if (personaName != null && !personaName.equals(currentUser.getPersonality())) {
+            currentUser.setPersonality(personaName);
             userService.save(currentUser);
-            logger.info("Updated user voice to: {}", personaName);
+            logger.info("Updated user personality to: {}", personaName);
             com.vaadin.flow.component.notification.Notification.show(
-                    "Voice updated.",
+                    "Personality updated.",
                     3000,
                     com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
             );
+        }
+    }
+
+    /**
+     * Handle max words change from the SessionPanel.
+     */
+    private void onMaxWordsChange(int maxWords) {
+        if (maxWords != currentUser.getMaxWords()) {
+            currentUser.setMaxWords(maxWords);
+            userService.save(currentUser);
+            logger.info("Updated user maxWords to: {}", maxWords);
         }
     }
 
@@ -372,7 +381,7 @@ public class VaadinChatView extends VerticalLayout {
      * Uses the user's preference, falling back to the default.
      */
     private String getPersona() {
-        var userVoice = currentUser.getVoice();
+        var userVoice = currentUser.getPersonality();
         return userVoice != null ? userVoice : defaultPersona;
     }
 

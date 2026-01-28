@@ -15,6 +15,7 @@
  */
 package com.embabel.impromptu.user;
 
+import com.embabel.impromptu.ImpromptuProperties;
 import org.drivine.manager.CascadeType;
 import org.drivine.manager.GraphObjectManager;
 import org.jspecify.annotations.NonNull;
@@ -27,9 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class DrivineImpromptuUserService extends ImpromptuUserService {
 
     private final GraphObjectManager graphObjectManager;
+    private final ImpromptuProperties properties;
 
-    public DrivineImpromptuUserService(GraphObjectManager graphObjectManager) {
+    public DrivineImpromptuUserService(GraphObjectManager graphObjectManager, ImpromptuProperties properties) {
         this.graphObjectManager = graphObjectManager;
+        this.properties = properties;
     }
 
     @Override
@@ -60,8 +63,13 @@ public class DrivineImpromptuUserService extends ImpromptuUserService {
             return existing;
         }
 
-        // Create and save new user
+        // Create and save new user with defaults from properties
         var newUser = new ImpromptuUser(id, displayName, username, email);
+        var defaultPersonality = properties.defaultPersonality();
+        if (defaultPersonality != null) {
+            newUser.setPersonality(defaultPersonality.persona());
+            newUser.setMaxWords(defaultPersonality.maxWords());
+        }
         save(newUser);
         logger.info("Provisioned new user: {}", newUser);
         return newUser;
