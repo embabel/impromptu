@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 Embabel Software, Inc.
+ * Copyright 2024-2025 Embabel Pty Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -449,10 +449,10 @@ class RjIngestionIT {
         assertFalse(result1.persistedPropositions().isEmpty(), "First ingestion should persist propositions");
 
         // Count after first ingestion
-        var propositionCountAfterFirst = countPropositions();
+        var contextPropsAfterFirst = countPropositionsForContext(contextId);
         var relationshipCountAfterFirst = countUserRelationships(user.getId());
         System.out.println("\nAfter first ingestion:");
-        System.out.println("  Total propositions in DB: " + propositionCountAfterFirst);
+        System.out.println("  Propositions for this context: " + contextPropsAfterFirst);
         System.out.println("  User relationships in DB: " + relationshipCountAfterFirst);
 
         // Second ingestion - same user, same document content, SAME CONTEXT ID
@@ -461,11 +461,16 @@ class RjIngestionIT {
         assertFalse(result2.persistedPropositions().isEmpty(), "Second ingestion should persist propositions");
 
         // Count after second ingestion
-        var propositionCountAfterSecond = countPropositions();
+        var contextPropsAfterSecond = countPropositionsForContext(contextId);
         var relationshipCountAfterSecond = countUserRelationships(user.getId());
         System.out.println("\nAfter second ingestion:");
-        System.out.println("  Total propositions in DB: " + propositionCountAfterSecond);
+        System.out.println("  Propositions for this context: " + contextPropsAfterSecond);
         System.out.println("  User relationships in DB: " + relationshipCountAfterSecond);
+
+        // Verify proposition deduplication - count should be same or only slightly different
+        System.out.println("\nProposition count change: " + (contextPropsAfterSecond - contextPropsAfterFirst));
+        assertEquals(contextPropsAfterFirst, contextPropsAfterSecond,
+                "Propositions should be deduplicated - count should not increase on second ingestion");
 
         // Verify no duplicate relationships were created
         // The same relationship (e.g., RJ -[:LIKES]-> Wagner) should not be duplicated
@@ -487,12 +492,13 @@ class RjIngestionIT {
     }
 
     /**
-     * Count total propositions in the database.
+     * Count propositions for a specific context.
      */
-    private long countPropositions() {
-        var cypher = "MATCH (p:Proposition) RETURN count(p) AS count";
+    private long countPropositionsForContext(String contextId) {
+        var cypher = "MATCH (p:Proposition {contextId: $contextId}) RETURN count(p) AS count";
         return persistenceManager.getOne(
                 QuerySpecification.withStatement(cypher)
+                        .bind(Map.of("contextId", contextId))
                         .transform(Long.class)
         );
     }
