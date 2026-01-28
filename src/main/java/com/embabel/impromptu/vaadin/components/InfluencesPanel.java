@@ -15,6 +15,7 @@
  */
 package com.embabel.impromptu.vaadin.components;
 
+import com.embabel.impromptu.data.GraphExportService;
 import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -40,11 +41,13 @@ public class InfluencesPanel extends VerticalLayout {
     private static final Logger logger = LoggerFactory.getLogger(InfluencesPanel.class);
 
     private final ComposerInfluenceLoader influenceLoader;
+    private final GraphExportService exportService;
     private final Span relationshipCountSpan;
     private TextField csvPathField;
 
-    public InfluencesPanel(ComposerInfluenceLoader influenceLoader) {
+    public InfluencesPanel(ComposerInfluenceLoader influenceLoader, GraphExportService exportService) {
         this.influenceLoader = influenceLoader;
+        this.exportService = exportService;
 
         setPadding(false);
         setSpacing(false);
@@ -127,11 +130,19 @@ public class InfluencesPanel extends VerticalLayout {
         deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
         deleteButton.addClickListener(e -> deleteAllInfluences());
 
-        // Button row
-        var buttonRow = new HorizontalLayout(importButton, importAllButton, deleteButton);
-        buttonRow.setSpacing(true);
+        // Export Cypher button
+        var exportButton = new Button("Export Cypher", VaadinIcon.UPLOAD.create());
+        exportButton.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
+        exportButton.addClickListener(e -> exportCypher());
 
-        section.add(csvPathField, buttonRow);
+        // Button rows
+        var importRow = new HorizontalLayout(importButton, importAllButton, deleteButton);
+        importRow.setSpacing(true);
+
+        var exportRow = new HorizontalLayout(exportButton);
+        exportRow.setSpacing(true);
+
+        section.add(csvPathField, importRow, exportRow);
         return section;
     }
 
@@ -182,6 +193,33 @@ public class InfluencesPanel extends VerticalLayout {
                 }
             } catch (Exception e) {
                 logger.error("Failed to delete influences", e);
+                if (ui != null) {
+                    ui.access(() -> {
+                        Notification.show("Error: " + e.getMessage(), 5000, Notification.Position.BOTTOM_CENTER)
+                                .addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    });
+                }
+            }
+        }).start();
+    }
+
+    private void exportCypher() {
+        var ui = getUI().orElse(null);
+
+        new Thread(() -> {
+            try {
+                var result = exportService.exportReferences();
+                if (ui != null) {
+                    ui.access(() -> {
+                        Notification.show(
+                                String.format("Exported %d nodes, %d relationships to %s",
+                                        result.nodes(), result.relationships(), result.file()),
+                                5000, Notification.Position.BOTTOM_CENTER
+                        ).addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                    });
+                }
+            } catch (Exception e) {
+                logger.error("Failed to export graph", e);
                 if (ui != null) {
                     ui.access(() -> {
                         Notification.show("Error: " + e.getMessage(), 5000, Notification.Position.BOTTOM_CENTER)

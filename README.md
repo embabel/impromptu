@@ -586,6 +586,33 @@ To wipe all data and start fresh, delete the volume in `docker compose down` as 
 docker compose down -v
 ```
 
+### Backing Up and Restoring the Database
+
+**Backup** (requires stopping Neo4j):
+```bash
+docker stop impromptu-neo4j
+docker run --rm -v impromptu_neo4j_data:/data -v $(pwd):/backup alpine tar cvf /backup/neo4j-backup.tar /data
+docker start impromptu-neo4j
+```
+
+**Restore from backup**:
+```bash
+docker stop impromptu-neo4j
+docker run --rm -v impromptu_neo4j_data:/data -v $(pwd):/backup alpine sh -c "cd /data && tar xvf /backup/neo4j-backup.tar --strip 1"
+docker start impromptu-neo4j
+```
+
+**Export to Cypher**: Use the "Export Cypher" button in the Impromptu panel's Influences tab to export all Reference nodes (Composers, Works, Epochs, Genres) and relationships to `data/exports/references.cypher`.
+
+**Load from Cypher export** (e.g., to populate a fresh database):
+```bash
+# Clear existing data first (optional)
+docker exec impromptu-neo4j cypher-shell -u neo4j -p brahmsian "MATCH (n) DETACH DELETE n"
+
+# Load the Cypher export
+docker exec -i impromptu-neo4j cypher-shell -u neo4j -p brahmsian < data/exports/references.cypher
+```
+
 ### Automatic Data Loading on Startup
 
 The application can automatically load data sources when it starts. This runs in the background so the app remains responsive during loading. Data is only loaded if it doesn't already exist.

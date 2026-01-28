@@ -17,10 +17,12 @@ package com.embabel.impromptu.domain;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.fasterxml.jackson.annotation.JsonClassDescription;
 
 /**
  * Represents a musical epoch/period (e.g., "Baroque", "Romantic", "20th Century").
  */
+@JsonClassDescription("Represents a musical epoch/period (e.g., \"Baroque\", \"Romantic\", \"20th Century\").")
 @CreationPermitted(false)
 public interface Epoch extends NamedEntity {
 }

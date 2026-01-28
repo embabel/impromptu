@@ -45,8 +45,8 @@ public interface Composer extends NamedEntity {
     @Relationship(name = "INFLUENCED")
     List<Composer> getInfluenced();
 
-    @Relationship(name = "IN_PERIOD")
-    Period getPeriod();
+    @Relationship(name = "OF_EPOCH")
+    Epoch getEpoch();
 
     @Nullable
     default Long lifespan() {

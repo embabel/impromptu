@@ -107,7 +107,7 @@ public class GeneralKnowledgeLlmComposerInfluenceGenerator implements ComposerIn
             var response = ai
                     .withLlm(properties.propositionExtractionLlm())
                     .withId("generate_composer_influences")
-                    .withTemplate("generate_composer_influences")
+                    .rendering("generate_composer_influences")
                     .createObject(InfluenceResponse.class, Map.of(
                             "composerId", composer.id(),
                             "composerName", composer.completeName(),

@@ -2,6 +2,7 @@ package com.embabel.impromptu.vaadin.components;
 
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.data.GraphExportService;
 import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
 import com.embabel.impromptu.rag.DocumentService;
 import com.vaadin.flow.component.Key;
@@ -39,7 +40,8 @@ public class BackstagePanel extends Div {
             DocumentService documentService,
             ReferencesPanel.IndexStats indexStats,
             ImpromptuProperties properties,
-            ComposerInfluenceLoader influenceLoader
+            ComposerInfluenceLoader influenceLoader,
+            GraphExportService exportService
     ) {
     }
 
@@ -114,7 +116,7 @@ public class BackstagePanel extends Div {
         sourcesContent.setVisible(false);
 
         // Influences content
-        var influencesContent = new InfluencesPanel(config.influenceLoader());
+        var influencesContent = new InfluencesPanel(config.influenceLoader(), config.exportService());
         influencesContent.setVisible(false);
 
         // Settings content

@@ -10,6 +10,7 @@ import com.embabel.chat.*;
 import com.embabel.common.util.StringTrimmingUtilsKt;
 import com.embabel.dice.proposition.EntityMention;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.data.GraphExportService;
 import com.embabel.impromptu.data.influence.ComposerInfluenceLoader;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
@@ -74,6 +75,7 @@ public class VaadinChatView extends VerticalLayout {
     private final PersonaService personaService;
     private final ThemeService themeService;
     private final ComposerInfluenceLoader influenceLoader;
+    private final GraphExportService exportService;
     private final String defaultPersona;
     private final ImpromptuUser currentUser;
 
@@ -99,6 +101,7 @@ public class VaadinChatView extends VerticalLayout {
             PersonaService personaService,
             ThemeService themeService,
             ComposerInfluenceLoader influenceLoader,
+            GraphExportService exportService,
             ApplicationEventPublisher eventPublisher,
             @Value("${database.datasources.neo.host:localhost}") String neo4jHost,
             @Value("${database.datasources.neo.port:7687}") int neo4jPort,
@@ -106,6 +109,7 @@ public class VaadinChatView extends VerticalLayout {
             @Value("${database.datasources.neo.password:neo4j}") String neo4jPassword,
             @Value("${neo4j.http.port:7474}") int neo4jHttpPort) {
         this.influenceLoader = influenceLoader;
+        this.exportService = exportService;
         this.chatbot = chatbot;
         this.userService = userService;
         this.eventPublisher = eventPublisher;
@@ -169,7 +173,8 @@ public class VaadinChatView extends VerticalLayout {
                 documentService,
                 indexStats,
                 properties,
-                influenceLoader
+                influenceLoader,
+                exportService
         );
         backstagePanel = new BackstagePanel(backstageConfig);
         getElement().appendChild(backstagePanel.getElement());

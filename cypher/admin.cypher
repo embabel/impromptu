@@ -1,5 +1,14 @@
 // Useful admin commands
 
+MATCH (n:Reference)
+WITH collect(DISTINCT n) AS nodes
+MATCH (:Reference)-[r]->(:Reference)
+WITH nodes, collect(DISTINCT r) AS rels
+CALL apoc.export.json.data(nodes, rels, null, {stream: true})
+YIELD data
+RETURN data;
+
+
 // Delete all propositions
 MATCH (p:Proposition)
 DETACH DELETE p;

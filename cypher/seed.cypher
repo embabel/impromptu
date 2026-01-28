@@ -6,20 +6,20 @@ MATCH (c:Composer)
 WITH c, toInteger((c.birthYear + c.deathYear) / 2.0) AS mid
 WITH c,
      CASE
-       WHEN mid < 1760 THEN 'Baroque'
+       WHEN mid < 1400 THEN 'Medieval'
+       WHEN mid < 1600 THEN 'Renaissance'
+       WHEN mid < 1750 THEN 'Baroque'
        WHEN mid < 1820 THEN 'Classical'
-       WHEN mid < 1910 THEN 'Romantic'
-       WHEN mid < 1975 THEN '20th-century'
+       WHEN mid < 1890 THEN 'Romantic'
+       WHEN mid < 1945 THEN 'Modern'
+       WHEN mid < 1975 THEN 'Post-war'
        ELSE 'Contemporary'
-       END AS period
+       END
 MATCH (p:Period {name: period})
 MERGE (c)-[r:IN_PERIOD]->(p)
   ON CREATE SET r.method='heuristic', r.confidence=0.35
   ON MATCH  SET r.method=coalesce(r.method,'heuristic');
 
-
-CREATE CONSTRAINT instrument_id IF NOT EXISTS
-FOR (i:Instrument) REQUIRE i.id IS UNIQUE;
 
 MATCH (w:Work)
 WHERE w.subtitle IS NOT NULL AND toLower(w.subtitle) STARTS WITH 'for '
