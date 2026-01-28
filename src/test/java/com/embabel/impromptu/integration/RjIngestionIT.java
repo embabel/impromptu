@@ -151,9 +151,22 @@ class RjIngestionIT {
             String sourceName,
             ImpromptuUser user,
             String testIdPrefix) {
-
         var testId = testIdPrefix + "_" + System.currentTimeMillis();
         var contextId = testIdPrefix + "_context_" + testId;
+        return ingestDocument(documentContent, sourceName, user, testId, contextId);
+    }
+
+    /**
+     * Generic document ingestion method with explicit context ID.
+     * Use this when you need to ingest multiple documents with the same context
+     * (e.g., for deduplication testing).
+     */
+    private IngestionResult ingestDocument(
+            String documentContent,
+            String sourceName,
+            ImpromptuUser user,
+            String testId,
+            String contextId) {
 
         System.out.println("=" .repeat(70));
         System.out.println("DOCUMENT INGESTION: " + sourceName);
@@ -411,6 +424,111 @@ class RjIngestionIT {
         System.out.println("\n=== FINAL SUMMARY ===");
         System.out.println("New entities created: " + result.extractionResult().newEntities().size());
         System.out.println("Entities referenced in Neo4j: " + result.persistedEntities().size());
+    }
+
+    @Test
+    @DisplayName("Ingest rj.txt twice and verify no duplication")
+    void ingestRjFileTwiceNoDuplication() throws IOException {
+        // Read document
+        var documentContent = new ClassPathResource("data/rj.txt")
+                .getContentAsString(StandardCharsets.UTF_8);
+
+        // Create user context - same user for both ingestions
+        var testId = "rj_dedup_test_" + System.currentTimeMillis();
+        var contextId = "rj_dedup_context_" + testId;
+        var user = new ImpromptuUser(testId, "RJ", "rj", "rj@test.example.com");
+
+        System.out.println("=".repeat(70));
+        System.out.println("DUPLICATION TEST - Ingesting same document twice");
+        System.out.println("=".repeat(70));
+        System.out.println("Using same context ID: " + contextId);
+
+        // First ingestion
+        System.out.println("\n>>> FIRST INGESTION <<<");
+        var result1 = ingestDocument(documentContent, "rj-preferences-file", user, testId, contextId);
+        assertFalse(result1.persistedPropositions().isEmpty(), "First ingestion should persist propositions");
+
+        // Count after first ingestion
+        var propositionCountAfterFirst = countPropositions();
+        var relationshipCountAfterFirst = countUserRelationships(user.getId());
+        System.out.println("\nAfter first ingestion:");
+        System.out.println("  Total propositions in DB: " + propositionCountAfterFirst);
+        System.out.println("  User relationships in DB: " + relationshipCountAfterFirst);
+
+        // Second ingestion - same user, same document content, SAME CONTEXT ID
+        System.out.println("\n>>> SECOND INGESTION (same document, same context) <<<");
+        var result2 = ingestDocument(documentContent, "rj-preferences-file", user, testId, contextId);
+        assertFalse(result2.persistedPropositions().isEmpty(), "Second ingestion should persist propositions");
+
+        // Count after second ingestion
+        var propositionCountAfterSecond = countPropositions();
+        var relationshipCountAfterSecond = countUserRelationships(user.getId());
+        System.out.println("\nAfter second ingestion:");
+        System.out.println("  Total propositions in DB: " + propositionCountAfterSecond);
+        System.out.println("  User relationships in DB: " + relationshipCountAfterSecond);
+
+        // Verify no duplicate relationships were created
+        // The same relationship (e.g., RJ -[:LIKES]-> Wagner) should not be duplicated
+        System.out.println("\n=== DUPLICATION CHECK ===");
+
+        // Check for duplicate relationships
+        var duplicateRelationships = countDuplicateRelationships(user.getId());
+        System.out.println("Duplicate relationships found: " + duplicateRelationships);
+
+        assertEquals(0, duplicateRelationships,
+                "Should not have duplicate relationships after ingesting the same document twice");
+
+        // Relationships should have merged (count same or only slightly different if new context found new relations)
+        System.out.println("Relationship count change: " + (relationshipCountAfterSecond - relationshipCountAfterFirst));
+
+        // The propositions will be different (different context IDs), but relationships should merge
+        System.out.println("\n✓ No duplicate relationships detected");
+        System.out.println("=".repeat(70));
+    }
+
+    /**
+     * Count total propositions in the database.
+     */
+    private long countPropositions() {
+        var cypher = "MATCH (p:Proposition) RETURN count(p) AS count";
+        return persistenceManager.getOne(
+                QuerySpecification.withStatement(cypher)
+                        .transform(Long.class)
+        );
+    }
+
+    /**
+     * Count relationships from a specific user.
+     */
+    private long countUserRelationships(String userId) {
+        var cypher = """
+                MATCH (source {id: $userId})-[r]->(target)
+                WHERE NOT type(r) IN ['HAS_MENTION', 'INSTANCE_OF']
+                RETURN count(r) AS count
+                """;
+        return persistenceManager.getOne(
+                QuerySpecification.withStatement(cypher)
+                        .bind(Map.of("userId", userId))
+                        .transform(Long.class)
+        );
+    }
+
+    /**
+     * Count duplicate relationships from a user (same source, type, and target).
+     */
+    private long countDuplicateRelationships(String userId) {
+        var cypher = """
+                MATCH (source {id: $userId})-[r]->(target)
+                WHERE NOT type(r) IN ['HAS_MENTION', 'INSTANCE_OF']
+                WITH source, type(r) AS relType, target, count(r) AS relCount
+                WHERE relCount > 1
+                RETURN sum(relCount - 1) AS duplicates
+                """;
+        return persistenceManager.getOne(
+                QuerySpecification.withStatement(cypher)
+                        .bind(Map.of("userId", userId))
+                        .transform(Long.class)
+        );
     }
 
 }
