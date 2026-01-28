@@ -508,6 +508,80 @@ effectiveConfidence = confidence × exp(-k × daysSinceRevision / 365)
 
 This ensures recent interactions are weighted more heavily while preserving long-term knowledge.
 
+---
+
+### Reference Data Model
+
+The application maintains a rich graph of classical music reference data. This data is loaded from [Open Opus](https://openopus.org/) and enhanced via the [Composer Enhancement Pipeline](#composer-enhancement-pipeline).
+
+```mermaid
+graph LR
+    subgraph "Core Entities"
+        C[Composer]
+        W[Work]
+    end
+
+    subgraph "Classification"
+        E[Epoch]
+        G[Genre]
+        N[Nationality]
+    end
+
+    subgraph "Instrumentation"
+        ENS[Ensemble]
+        I[Instrument]
+        F[Family]
+    end
+
+    subgraph "Musicology"
+        T[Technique]
+        C2[Composer]
+    end
+
+    C -->|COMPOSED| W
+    C -->|OF_EPOCH| E
+    C -->|HAS_NATIONALITY| N
+    C -->|USES| T
+    C -->|INFLUENCED| C2
+
+    W -->|OF_GENRE| G
+    W -->|SCORED_FOR| ENS
+    W -->|SCORED_FOR| I
+    W -->|FEATURES| I
+
+    ENS -->|CONTAINS| I
+    I -->|OF_FAMILY| F
+```
+
+**Entity Descriptions:**
+
+| Entity | Description | Example |
+|--------|-------------|---------|
+| **Composer** | A musical composer | Johannes Brahms |
+| **Work** | A musical composition | Symphony No. 4 in E minor |
+| **Epoch** | Historical period | Romantic, Baroque, Modern |
+| **Genre** | Musical form/category | Orchestral, Chamber, Keyboard |
+| **Nationality** | Composer's nationality | German, Austrian, French |
+| **Technique** | Compositional technique | Counterpoint, Serialism, Minimalism |
+| **Ensemble** | Performing group type | Symphony Orchestra, String Quartet |
+| **Instrument** | Musical instrument | Violin, Piano, French Horn |
+| **Family** | Instrument family | Strings, Woodwinds, Brass |
+
+**Relationship Descriptions:**
+
+| Relationship | Description |
+|--------------|-------------|
+| `COMPOSED` | Links composer to their works |
+| `OF_EPOCH` | Classifies composer by historical period |
+| `OF_GENRE` | Classifies work by musical genre |
+| `HAS_NATIONALITY` | Composer's national identity |
+| `INFLUENCED` | Musical influence between composers |
+| `USES` | Techniques employed by a composer |
+| `SCORED_FOR` | Instruments/ensembles a work requires |
+| `FEATURES` | Featured solo instruments (concertos) |
+| `CONTAINS` | Instruments that make up an ensemble |
+| `OF_FAMILY` | Instrument's family classification |
+
 ## Getting Started
 
 ### Prerequisites

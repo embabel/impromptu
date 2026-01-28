@@ -26,6 +26,12 @@ import java.util.List;
 /**
  * Represents a musical work in the graph database.
  * Linked to Composer via COMPOSED relationship and to Genre via OF_GENRE relationship.
+ * <p>
+ * Instrumentation is modeled with two relationships:
+ * <ul>
+ *   <li>SCORED_FOR - all instruments and ensembles required for the work</li>
+ *   <li>FEATURES - the featured solo instrument(s) in concertos (subset of SCORED_FOR)</li>
+ * </ul>
  */
 @JsonClassDescription("A musical work, such as a symphony, concerto, or sonata")
 @CreationPermitted(false)
@@ -43,6 +49,22 @@ public interface Work extends NamedEntity {
     @Relationship(name = "OF_GENRE")
     Genre getGenre();
 
+    /**
+     * Ensembles this work is scored for (e.g., orchestra for a symphony or concerto).
+     */
+    @Relationship(name = "SCORED_FOR")
+    List<Ensemble> getEnsembles();
+
+    /**
+     * Instruments this work is scored for (e.g., piano for a sonata, or piano + orchestra instruments).
+     */
     @Relationship(name = "SCORED_FOR")
     List<Instrument> getInstruments();
+
+    /**
+     * Featured solo instruments in concertos.
+     * These are a subset of the instruments in SCORED_FOR that are the featured soloists.
+     */
+    @Relationship(name = "FEATURES")
+    List<Instrument> getFeaturedInstruments();
 }

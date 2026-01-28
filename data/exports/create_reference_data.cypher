@@ -115,13 +115,45 @@ UNWIND [
 // Other
 {id:'wind-ensemble',        name:'Wind Ensemble',        description:'A large ensemble of wind and percussion instruments'},
 {id:'brass-band',           name:'Brass Band',           description:'An ensemble of brass instruments and percussion'},
-{id:'solo',                 name:'Solo',                 description:'A single performer'},
-{id:'duo',                  name:'Duo',                  description:'Two performers'},
 {id:'consort',              name:'Consort',              description:'A Renaissance or early Baroque ensemble of instruments from the same family'}
 ] AS e
 MERGE (ens:Ensemble:Reference:__Entity__ {id: e.id})
 SET ens.name = e.name,
     ens.description = e.description;
+
+// Ensemble -[:CONTAINS]-> Instrument relationships
+UNWIND [
+// Orchestral ensembles contain all standard orchestral instruments
+{ensemble:'symphony-orchestra', instruments:['violin','viola','cello','double-bass','flute','piccolo','oboe','english-horn','clarinet','bass-clarinet','bassoon','contrabassoon','french-horn','trumpet','trombone','tuba','timpani','snare-drum','bass-drum','cymbals','xylophone','harp']},
+{ensemble:'chamber-orchestra',  instruments:['violin','viola','cello','double-bass','flute','oboe','clarinet','bassoon','french-horn','trumpet']},
+{ensemble:'string-orchestra',   instruments:['violin','viola','cello','double-bass']},
+{ensemble:'baroque-orchestra',  instruments:['violin','viola','cello','double-bass','flute','oboe','bassoon','french-horn','trumpet','harpsichord']},
+// Chamber - Strings
+{ensemble:'string-quartet',     instruments:['violin','viola','cello']},
+{ensemble:'string-trio',        instruments:['violin','viola','cello']},
+{ensemble:'string-quintet',     instruments:['violin','viola','cello']},
+{ensemble:'string-sextet',      instruments:['violin','viola','cello']},
+// Chamber - Piano
+{ensemble:'piano-trio',         instruments:['piano','violin','cello']},
+{ensemble:'piano-quartet',      instruments:['piano','violin','viola','cello']},
+{ensemble:'piano-quintet',      instruments:['piano','violin','viola','cello']},
+// Chamber - Wind
+{ensemble:'wind-quintet',       instruments:['flute','oboe','clarinet','bassoon','french-horn']},
+{ensemble:'wind-octet',         instruments:['oboe','clarinet','bassoon','french-horn']},
+{ensemble:'brass-quintet',      instruments:['trumpet','french-horn','trombone','tuba']},
+{ensemble:'clarinet-quintet',   instruments:['clarinet','violin','viola','cello']},
+// Vocal
+{ensemble:'choir',              instruments:['soprano','contralto','tenor','bass']},
+{ensemble:'chamber-choir',      instruments:['soprano','contralto','tenor','bass']},
+{ensemble:'a-cappella',         instruments:['soprano','mezzo-soprano','contralto','tenor','baritone','bass']},
+// Other
+{ensemble:'wind-ensemble',      instruments:['flute','piccolo','oboe','english-horn','clarinet','bass-clarinet','bassoon','contrabassoon','saxophone','french-horn','trumpet','trombone','tuba','timpani','snare-drum','bass-drum','cymbals','xylophone','marimba']},
+{ensemble:'brass-band',         instruments:['cornet','trumpet','french-horn','trombone','tuba','timpani','snare-drum','bass-drum','cymbals']}
+] AS rel
+MATCH (ens:Ensemble {id: rel.ensemble})
+UNWIND rel.instruments AS instId
+MATCH (inst:Instrument {id: instId})
+MERGE (ens)-[:CONTAINS]->(inst);
 
 // Techniques / compositional methods
 UNWIND [
