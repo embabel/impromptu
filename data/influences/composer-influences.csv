@@ -308,7 +308,7 @@ fernando-sor-1778,frederic-chopin-1810,"Sor's guitar compositions and teaching i
 ludwig-van-beethoven-1770,franz-liszt-1811,"Liszt was deeply influenced by Beethoven's symphonic and piano works, adopting and expanding upon Beethoven's dramatic and structural innovations.",0.90,1.00,0.30,pending
 franz-schubert-1797,franz-liszt-1811,"Liszt admired Schubert's melodic gift and harmonic language, often transcribing and promoting Schubert's lieder and piano works.",0.70,0.90,0.40,pending
 hector-berlioz-1803,franz-liszt-1811,"Berlioz's orchestration and programmatic music influenced Liszt's own symphonic poems and orchestral writing.",0.70,0.90,0.50,pending
-frédéric-chopin-1810,franz-liszt-1811,"Chopin's piano style and poetic expression influenced Liszt's piano compositions and performance style.",0.80,0.95,0.40,pending
+frederic-chopin-1810,franz-liszt-1811,"Chopin's piano style and poetic expression influenced Liszt's piano compositions and performance style.",0.80,0.95,0.40,pending
 niccolo-paganini-1782,franz-liszt-1811,"Paganini's virtuosic violin technique inspired Liszt to develop unprecedented piano virtuosity and technical innovations.",0.85,1.00,0.30,pending
 richard-wagner-1813,franz-liszt-1811,"Wagner's harmonic language and leitmotif technique influenced Liszt's late harmonic experiments and thematic transformations.",0.60,0.90,0.60,pending
 franz-joseph-haydn-1732,franz-liszt-1811,"Haydn's classical forms and clarity provided a foundation for Liszt's early compositional training and understanding of structure.",0.50,0.80,0.50,pending
@@ -472,7 +472,7 @@ franz-liszt-1811,charles-marie-widor-1844,"Liszt's virtuosic piano and organ wor
 camille-saint-saens-1835,gabriel-faure-1845,"Saint-Saëns was Fauré's teacher and mentor, profoundly shaping his compositional style and musical development.",0.90,1.00,0.30,pending
 jules-massenet-1842,gabriel-faure-1845,"Massenet's lyrical and melodic style influenced Fauré's approach to melody and operatic expression.",0.70,0.90,0.40,pending
 franz-liszt-1811,gabriel-faure-1845,"Liszt's harmonic innovations and piano techniques influenced Fauré's harmonic language and piano writing.",0.60,0.80,0.50,pending
-frédéric-chopin-1810,gabriel-faure-1845,"Chopin's poetic piano style and harmonic subtlety influenced Fauré's piano compositions and harmonic palette.",0.70,0.90,0.40,pending
+frederic-chopin-1810,gabriel-faure-1845,"Chopin's poetic piano style and harmonic subtlety influenced Fauré's piano compositions and harmonic palette.",0.70,0.90,0.40,pending
 richard-wagner-1813,gabriel-faure-1845,"Wagner's advanced harmonic language and chromaticism had an indirect influence on Fauré's harmonic exploration.",0.50,0.70,0.60,pending
 johannes-brahms-1833,gabriel-faure-1845,"Brahms' structural rigor and melodic development influenced Fauré's compositional craftsmanship.",0.60,0.80,0.50,pending
 charles-gounod-1818,gabriel-faure-1845,"Gounod's melodic lyricism and sacred music tradition influenced Fauré's vocal and choral works.",0.60,0.80,0.50,pending
@@ -511,7 +511,7 @@ edouard-lalo-1823,eugene-ysaye-1858,"Lalo's violin works, especially his Symphon
 franz-liszt-1811,eugene-ysaye-1858,"Liszt's virtuosic piano compositions and innovations in musical form inspired Ysaÿe's own virtuosic and expressive violin compositions.",0.60,0.80,0.50,pending
 camille-saint-saens-1835,eugene-ysaye-1858,"Saint-Saëns' elegant and technically demanding violin works influenced Ysaÿe's compositional style and violin technique.",0.70,0.85,0.40,pending
 richard-wagner-1813,eugene-ysaye-1858,"Wagner's harmonic innovations and dramatic expressiveness impacted Ysaÿe's musical language and emotional depth in his compositions.",0.50,0.75,0.60,pending
-joseph-jacques-offenbach-1819,eugene-ysaye-1858,"Offenbach's operatic and melodic style influenced the lyrical qualities found in Ysaÿe's violin compositions.",0.40,0.60,0.70,pending
+jacques-offenbach-1819,eugene-ysaye-1858,"Offenbach's operatic and melodic style influenced the lyrical qualities found in Ysaÿe's violin compositions.",0.40,0.60,0.70,pending
 johannes-brahms-1833,victor-herbert-1859,"Victor Herbert was influenced by Brahms' Romantic orchestration and melodic style, which shaped his own compositions in operettas and orchestral works.",0.70,0.90,0.40,pending
 giuseppe-verdi-1813,victor-herbert-1859,"Herbert's operettas show the influence of Verdi's Italian operatic tradition, especially in vocal writing and dramatic structure.",0.60,0.85,0.50,pending
 richard-wagner-1813,victor-herbert-1859,"Wagner's use of leitmotifs and rich orchestration influenced Herbert's approach to thematic development and orchestral color.",0.50,0.80,0.60,pending
@@ -619,7 +619,7 @@ arnold-schoenberg-1874,alexander-von-zemlinsky-1871,"As Zemlinsky's student and 
 johannes-brahms-1833,alexander-von-zemlinsky-1871,"Brahms' structural rigor and late-Romantic idiom shaped Zemlinsky's early compositional style.",0.60,0.85,0.40,pending
 claude-debussy-1862,alexander-von-zemlinsky-1871,"Debussy's impressionistic harmonic palette influenced Zemlinsky's exploration of color and atmosphere in his orchestral works.",0.50,0.70,0.60,pending
 franz-liszt-1811,alexander-scriabin-1872,"Liszt's innovative piano techniques and harmonic explorations deeply influenced Scriabin's early piano compositions and his approach to chromaticism.",0.90,0.95,0.40,pending
-frédéric-chopin-1810,alexander-scriabin-1872,"Chopin's poetic piano style and use of rubato shaped Scriabin's early works and his lyrical piano writing.",0.80,0.90,0.50,pending
+frederic-chopin-1810,alexander-scriabin-1872,"Chopin's poetic piano style and use of rubato shaped Scriabin's early works and his lyrical piano writing.",0.80,0.90,0.50,pending
 richard-wagner-1813,alexander-scriabin-1872,"Wagner's harmonic language and mystical ideas influenced Scriabin's later harmonic experiments and his synesthetic concepts.",0.70,0.85,0.70,pending
 alexander-borodin-1833,alexander-scriabin-1872,"Borodin's Russian nationalist style and use of modal melodies impacted Scriabin's early Russian musical identity.",0.60,0.80,0.60,pending
 nikolai-rimsky-korsakov-1844,alexander-scriabin-1872,"Rimsky-Korsakov's orchestration and modal harmonies influenced Scriabin's orchestral works and harmonic palette.",0.60,0.80,0.60,pending
@@ -633,7 +633,6 @@ edward-elgar-1857,ralph-vaughan-williams-1872,"Elgar's English romanticism and o
 gustav-holst-1874,ralph-vaughan-williams-1872,"Holst, a close friend and contemporary, shared folk music interests and compositional techniques with Vaughan Williams, mutually influencing each other.",0.60,0.90,0.30,pending
 pyotr-ilyich-tchaikovsky-1840,sergei-rachmaninoff-1873,"Tchaikovsky was a major influence on Rachmaninoff's melodic style and emotional expressiveness, and Rachmaninoff admired his orchestration and lyricism.",0.90,1.00,0.20,pending
 franz-liszt-1811,sergei-rachmaninoff-1873,"Liszt's virtuosic piano writing and harmonic innovations influenced Rachmaninoff's piano compositions and his approach to thematic transformation.",0.80,0.90,0.30,pending
-sergei-taneev-1856,sergei-rachmaninoff-1873,"Taneev, Rachmaninoff's teacher, influenced his contrapuntal technique and compositional discipline.",0.70,0.95,0.30,pending
 alexander-glazunov-1865,sergei-rachmaninoff-1873,"Glazunov's orchestration and late-Romantic style had an impact on Rachmaninoff's symphonic works.",0.60,0.85,0.40,pending
 johannes-brahms-1833,sergei-rachmaninoff-1873,"Brahms' structural rigor and rich harmonic language influenced Rachmaninoff's compositional approach, especially in his chamber and symphonic music.",0.50,0.80,0.50,pending
 franz-schubert-1797,sergei-rachmaninoff-1873,"Schubert's lyrical melodies and harmonic progressions influenced Rachmaninoff's melodic writing and song compositions.",0.50,0.75,0.50,pending
@@ -663,7 +662,7 @@ gustav-mahler-1860,gustav-holst-1874,"Mahler's expansive symphonic structures an
 claude-debussy-1862,gustav-holst-1874,"Debussy's impressionistic harmonies and modal explorations impacted Holst's harmonic palette and interest in exotic scales.",0.60,0.85,0.70,pending
 ralph-vaughan-williams-1872,gustav-holst-1874,"As a close friend and contemporary, Vaughan Williams influenced Holst's use of English folk music and modal harmonies.",0.80,0.95,0.30,pending
 edward-elgar-1857,gustav-holst-1874,"Elgar's nationalistic style and orchestration influenced Holst's development of a distinctly English musical voice.",0.50,0.70,0.50,pending
-nicolai-rimsky-korsakov-1844,gustav-holst-1874,"Rimsky-Korsakov's mastery of orchestration and use of folk elements influenced Holst's orchestral writing and interest in exoticism.",0.60,0.75,0.60,pending
+nikolai-rimsky-korsakov-1844,gustav-holst-1874,"Rimsky-Korsakov's mastery of orchestration and use of folk elements influenced Holst's orchestral writing and interest in exoticism.",0.60,0.75,0.60,pending
 ludwig-van-beethoven-1770,charles-ives-1874,"Ives studied Beethoven's symphonies and was influenced by his structural innovations and emotional depth.",0.70,0.90,0.40,pending
 johann-sebastian-bach-1685,charles-ives-1874,"Ives was deeply influenced by Bach's contrapuntal techniques and use of polyphony.",0.60,0.85,0.50,pending
 richard-wagner-1813,charles-ives-1874,"Ives admired Wagner's harmonic language and dramatic expressiveness, which informed some of his own harmonic experimentation.",0.50,0.80,0.60,pending
@@ -718,7 +717,7 @@ camille-saint-saens-1835,george-enescu-1881,"Saint-Saëns' classical clarity and
 nikolai-rimsky-korsakov-1844,igor-stravinsky-1882,"Rimsky-Korsakov was Stravinsky's teacher and had a strong impact on his early compositional style and orchestration techniques.",0.90,1.00,0.40,pending
 claude-debussy-1862,igor-stravinsky-1882,"Debussy's impressionistic style influenced Stravinsky's harmonic language and orchestral color, especially in his early works.",0.70,0.90,0.70,pending
 richard-wagner-1813,igor-stravinsky-1882,"Wagner's innovations in harmony and orchestration were part of the broader musical environment that shaped Stravinsky's development.",0.50,0.80,0.80,pending
-igorglazunov-1865,igor-stravinsky-1882,"Glazunov was a prominent Russian composer whose works and style influenced the Russian musical tradition that Stravinsky inherited.",0.60,0.80,0.60,pending
+alexander-glazunov-1865,igor-stravinsky-1882,"Glazunov was a prominent Russian composer whose works and style influenced the Russian musical tradition that Stravinsky inherited.",0.60,0.80,0.60,pending
 sergei-rachmaninoff-1873,igor-stravinsky-1882,"Rachmaninoff's Romantic style and pianistic idiom were part of the Russian musical context influencing Stravinsky's early compositions.",0.50,0.70,0.70,pending
 arnold-schoenberg-1874,igor-stravinsky-1882,"Schoenberg's exploration of atonality and twelve-tone technique influenced Stravinsky's later serial works.",0.60,0.90,0.70,pending
 maurice-ravel-1875,igor-stravinsky-1882,"Ravel's mastery of orchestration and impressionistic style influenced Stravinsky's approach to color and texture.",0.70,0.85,0.60,pending
@@ -775,19 +774,19 @@ claude-debussy-1862,jacques-ibert-1890,"Debussy's impressionistic style and inno
 maurice-ravel-1875,jacques-ibert-1890,"Ravel's mastery of orchestration and clarity of form had a notable impact on Ibert's compositional style, especially in his orchestral works.",0.70,0.90,0.50,pending
 sergei-rachmaninoff-1873,sergei-prokofiev-1891,"Rachmaninoff's Romantic style and pianistic virtuosity influenced Prokofiev's early piano compositions and melodic development.",0.70,0.90,0.40,pending
 igor-stravinsky-1882,sergei-prokofiev-1891,"Stravinsky's innovative rhythms and modernist approach had a significant impact on Prokofiev's compositional style, especially in his ballets and orchestral works.",0.80,0.95,0.50,pending
-sergei-tchaikovsky-1840,sergei-prokofiev-1891,"Tchaikovsky's melodic richness and orchestration techniques influenced Prokofiev's lyrical and dramatic writing.",0.60,0.85,0.50,pending
+pyotr-ilyich-tchaikovsky-1840,sergei-prokofiev-1891,"Tchaikovsky's melodic richness and orchestration techniques influenced Prokofiev's lyrical and dramatic writing.",0.60,0.85,0.50,pending
 claude-debussy-1862,sergei-prokofiev-1891,"Debussy's harmonic innovations and coloristic orchestration influenced Prokofiev's harmonic language and texture.",0.50,0.80,0.70,pending
 maurice-ravel-1875,sergei-prokofiev-1891,"Ravel's clarity, precision, and orchestral color had an impact on Prokofiev's approach to orchestration and form.",0.50,0.80,0.60,pending
 alexander-glazunov-1865,sergei-prokofiev-1891,"Glazunov's role as a teacher and his late-Romantic style influenced Prokofiev's early compositional development.",0.60,0.85,0.50,pending
 claude-debussy-1862,darius-milhaud-1892,"Milhaud was influenced by Debussy's impressionistic harmonic language and innovative orchestration techniques.",0.70,0.90,0.50,pending
 arnold-schoenberg-1874,darius-milhaud-1892,"Milhaud was aware of Schoenberg's atonal and twelve-tone techniques, though he did not fully adopt them, incorporating some modernist elements.",0.40,0.80,0.70,pending
-igorr-stravinsky-1882,darius-milhaud-1892,"Stravinsky's rhythmic innovation and neoclassical style influenced Milhaud, especially as both were part of Les Six.",0.80,0.95,0.40,pending
+igor-stravinsky-1882,darius-milhaud-1892,"Stravinsky's rhythmic innovation and neoclassical style influenced Milhaud, especially as both were part of Les Six.",0.80,0.95,0.40,pending
 maurice-ravel-1875,darius-milhaud-1892,"Ravel's mastery of orchestration and clarity of form had a significant impact on Milhaud's compositional style.",0.60,0.85,0.50,pending
 erik-satie-1866,darius-milhaud-1892,"Satie's simplicity and anti-Romantic aesthetic influenced Milhaud and the other members of Les Six.",0.50,0.80,0.60,pending
 gabriel-faure-1845,darius-milhaud-1892,"Faure's harmonic language and melodic style influenced Milhaud's early development as a composer.",0.40,0.70,0.60,pending
 claude-debussy-1862,arthur-honegger-1892,"Debussy's impressionistic harmonic language and orchestral color influenced Honegger's early compositional style.",0.70,0.90,0.60,pending
 paul-dukas-1865,arthur-honegger-1892,"Dukas' mastery of orchestration and form had a notable impact on Honegger, especially during his studies at the Paris Conservatoire.",0.60,0.80,0.50,pending
-igorr-stravinsky-1882,arthur-honegger-1892,"Stravinsky's rhythmic innovation and modernist approach influenced Honegger's rhythmic vitality and modernist tendencies.",0.70,0.85,0.70,pending
+igor-stravinsky-1882,arthur-honegger-1892,"Stravinsky's rhythmic innovation and modernist approach influenced Honegger's rhythmic vitality and modernist tendencies.",0.70,0.85,0.70,pending
 richard-wagner-1813,arthur-honegger-1892,"Wagner's dramatic intensity and use of leitmotifs influenced Honegger's approach to dramatic and programmatic music.",0.50,0.70,0.60,pending
 gustav-mahler-1860,arthur-honegger-1892,"Mahler's expansive symphonic structures and emotional depth influenced Honegger's symphonic works.",0.60,0.75,0.50,pending
 vincent-dindy-1851,arthur-honegger-1892,"Vincent d'Indy, as Honegger's teacher, directly influenced his compositional technique and adherence to classical forms.",0.80,0.95,0.40,pending
@@ -891,7 +890,7 @@ dmitry-kabalevsky-1904,dmitri-shostakovich-1906,"Kabalevsky was a fellow Soviet 
 sergei-prokofiev-1891,dmitri-shostakovich-1906,"Prokofiev was a major Russian composer whose modernist style and orchestration techniques influenced Shostakovich's early works and symphonic writing.",0.70,0.90,0.50,pending
 igor-stravinsky-1882,dmitri-shostakovich-1906,"Stravinsky's innovative rhythms and modernist idioms had a significant impact on Shostakovich's compositional style, especially in his use of rhythm and orchestration.",0.60,0.85,0.70,pending
 gustav-mahler-1860,dmitri-shostakovich-1906,"Mahler's symphonic scale and emotional depth influenced Shostakovich's symphonies, particularly in their dramatic and structural complexity.",0.80,0.95,0.40,pending
-dmitry-glazunov-1865,dmitri-shostakovich-1906,"Glazunov was Shostakovich's teacher and mentor, directly influencing his early compositional development and technique.",0.90,1.00,0.30,pending
+alexander-glazunov-1865,dmitri-shostakovich-1906,"Glazunov was Shostakovich's teacher and mentor, directly influencing his early compositional development and technique.",0.90,1.00,0.30,pending
 sergei-rachmaninoff-1873,dmitri-shostakovich-1906,"Rachmaninoff's romanticism and pianistic style influenced Shostakovich's piano compositions and melodic writing.",0.50,0.80,0.60,pending
 arnold-schoenberg-1874,dmitri-shostakovich-1906,"Schoenberg's expressionism and use of dissonance influenced Shostakovich's harmonic language and modernist tendencies.",0.40,0.70,0.70,pending
 maurice-ravel-1875,dmitri-shostakovich-1906,"Ravel's orchestration and clarity of texture influenced Shostakovich's approach to orchestral color and detail.",0.40,0.75,0.60,pending
@@ -1044,7 +1043,7 @@ dmitri-shostakovich-1906,sofia-gubaidulina-1931,"Shostakovich's use of intense e
 igor-stravinsky-1882,sofia-gubaidulina-1931,"Stravinsky's innovative rhythmic and harmonic language impacted Gubaidulina's exploration of new musical forms.",0.70,0.80,0.60,pending
 arnold-schoenberg-1874,sofia-gubaidulina-1931,"Schoenberg's development of twelve-tone technique and atonality influenced Gubaidulina's modernist tendencies.",0.60,0.70,0.70,pending
 olivier-messiaen-1908,sofia-gubaidulina-1931,"Messiaen's spiritual themes and use of color and rhythm deeply inspired Gubaidulina's own spiritual and mystical compositions.",0.90,0.95,0.40,pending
-reimhold-glier-1875,sofia-gubaidulina-1931,"Glière's Russian nationalist style and orchestration techniques influenced Gubaidulina's early musical education and style.",0.50,0.60,0.60,pending
+reinhold-gliere-1875,sofia-gubaidulina-1931,"Glière's Russian nationalist style and orchestration techniques influenced Gubaidulina's early musical education and style.",0.50,0.60,0.60,pending
 arnold-schoenberg-1874,krzysztof-penderecki-1933,"Penderecki was influenced by Schoenberg's twelve-tone technique and expressionist style, which shaped his early avant-garde compositions.",0.80,0.90,0.60,pending
 krzysztof-penderecki-1933,krzysztof-penderecki-1933,"Penderecki's early works show influence from the Second Viennese School, especially Schoenberg and Webern, in their use of serialism and tone clusters.",0.70,0.85,0.70,pending
 igor-stravinsky-1882,krzysztof-penderecki-1933,"Stravinsky's rhythmic innovation and modernist approach influenced Penderecki's compositional techniques and orchestration.",0.60,0.80,0.50,pending
@@ -1067,10 +1066,10 @@ edgard-varese-1883,harrison-birtwistle-1934,"Varese's exploration of sound masse
 arnold-schoenberg-1874,harrison-birtwistle-1934,"Schoenberg's serialism and atonal techniques informed Birtwistle's modernist compositional techniques, though Birtwistle developed a distinct style.",0.60,0.80,0.70,pending
 gyorgy-ligeti-1923,harrison-birtwistle-1934,"Ligeti's micropolyphony and textural innovation influenced Birtwistle's approach to complex layering and sound mass.",0.60,0.75,0.60,pending
 johann-sebastian-bach-1685,arvo-part-1935,"Pärt was deeply influenced by Bach's contrapuntal techniques and sacred music, which shaped his early compositional style and spiritual approach.",0.80,1.00,0.40,pending
-oleg-messiaen-1908,arvo-part-1935,"Messiaen's use of modes, spirituality, and rhythmic innovation influenced Pärt's development of his tintinnabuli style.",0.70,0.90,0.50,pending
+olivier-messiaen-1908,arvo-part-1935,"Messiaen's use of modes, spirituality, and rhythmic innovation influenced Pärt's development of his tintinnabuli style.",0.70,0.90,0.50,pending
 arnold-schoenberg-1874,arvo-part-1935,"Pärt studied serialism and twelve-tone techniques early in his career, reflecting Schoenberg's influence before developing his own style.",0.60,0.80,0.70,pending
 giovanni-pierluigi-da-palestrina-1525,arvo-part-1935,"Pärt's tintinnabuli style draws on the clarity and purity of Renaissance polyphony exemplified by Palestrina.",0.70,0.85,0.50,pending
-henrich-schutz-1585,arvo-part-1935,"Schütz's sacred vocal music and expressive use of text influenced Pärt's spiritual and minimalist approach.",0.50,0.70,0.60,pending
+heinrich-schutz-1585,arvo-part-1935,"Schütz's sacred vocal music and expressive use of text influenced Pärt's spiritual and minimalist approach.",0.50,0.70,0.60,pending
 john-cage-1912,steve-reich-1936,"John Cage's experimental approach to rhythm and sound greatly influenced Reich's exploration of minimalism and repetitive structures.",0.90,1.00,0.50,pending
 igor-stravinsky-1882,steve-reich-1936,"Stravinsky's rhythmic innovations and use of ostinato patterns influenced Reich's rhythmic complexity and layering.",0.70,0.90,0.60,pending
 arthur-honegger-1892,steve-reich-1936,"Honegger's rhythmic vitality and modernist tendencies contributed to the development of Reich's rhythmic and harmonic language.",0.50,0.70,0.70,pending
