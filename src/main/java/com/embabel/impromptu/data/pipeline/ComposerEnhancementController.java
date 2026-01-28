@@ -100,9 +100,11 @@ public class ComposerEnhancementController {
 
     /**
      * Apply all CSVs to the database.
+     * @param force if true, ignores status field and applies all rows
      */
     @PostMapping("/apply-all")
-    public List<ComposerEnhancementPipeline.ApplyAllResult> applyAll() throws IOException {
-        return pipeline.applyAll();
+    public List<ComposerEnhancementPipeline.ApplyAllResult> applyAll(
+            @RequestParam(defaultValue = "false") boolean force) throws IOException {
+        return pipeline.applyAll(force);
     }
 }
