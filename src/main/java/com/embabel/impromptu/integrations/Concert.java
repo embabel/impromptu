@@ -188,7 +188,7 @@ public record Concert(
     @Override
     public Tool playTool() {
         return Tool.create(
-                "playConcert",
+                "Listen to Concert",
                 "Play the entire concert: " + title(),
                 input -> Tool.Result.text(playbackInfo())
         );
@@ -218,9 +218,14 @@ public record Concert(
         for (int i = 0; i < performances.size(); i++) {
             var perf = performances.get(i);
             int index = i + 1;
+            // Short work name for button label (first 35 chars)
+            var workName = perf.workName();
+            var shortName = workName != null && !workName.isBlank()
+                    ? workName.substring(0, Math.min(35, workName.length()))
+                    : "#" + index;
             tools.add(Tool.create(
-                    "play_" + index,
-                    "Play #" + index + ": " + perf.title(),
+                    index + ". " + shortName,
+                    "Play " + perf.title(),
                     input -> Tool.Result.text(perf.playbackInfo())
             ));
         }

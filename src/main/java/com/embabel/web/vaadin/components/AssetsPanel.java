@@ -117,6 +117,11 @@ public class AssetsPanel extends VerticalLayout {
 
         var header = new Div();
         header.addClassName("asset-header");
+        header.getStyle()
+                .set("display", "flex")
+                .set("justify-content", "space-between")
+                .set("align-items", "center")
+                .set("gap", "1em");
         header.add(name, time);
 
         content.add(header, description);

@@ -60,19 +60,6 @@ public record YouTubePerformanceImpl(
     }
 
     /**
-     * Create a YouTubePerformance from a single video (legacy, no work name).
-     */
-    public static YouTubePerformanceImpl create(
-            String workId,
-            String performer,
-            String ensemble,
-            String conductor,
-            YouTubeVideo video
-    ) {
-        return create(workId, null, performer, ensemble, conductor, video);
-    }
-
-    /**
      * Create a YouTubePerformance from multiple videos.
      */
     public static YouTubePerformanceImpl create(

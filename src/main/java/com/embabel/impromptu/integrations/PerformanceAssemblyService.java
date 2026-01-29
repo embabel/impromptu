@@ -282,7 +282,7 @@ public class PerformanceAssemblyService {
                         Call this once you've identified a performance.
                         """,
                 Tool.InputSchema.of(
-                        Tool.Parameter.string("workId", "ID of the work being performed", false),
+                        Tool.Parameter.string("workName", "Name of the work being performed, e.g. 'Brahms Piano Trio No. 1'"),
                         Tool.Parameter.string("albumId", "Spotify album ID"),
                         Tool.Parameter.string("albumName", "Album name"),
                         Tool.Parameter.string("performer", "Primary performer name", false),
@@ -293,7 +293,7 @@ public class PerformanceAssemblyService {
                 input -> {
                     try {
                         var params = objectMapper.readValue(input, java.util.Map.class);
-                        var workId = (String) params.get("workId");
+                        var workName = (String) params.get("workName");
                         var albumId = (String) params.get("albumId");
                         var albumName = (String) params.get("albumName");
                         var performer = (String) params.get("performer");
@@ -321,7 +321,7 @@ public class PerformanceAssemblyService {
                                 .toList();
 
                         var performance = SpotifyPerformanceImpl.create(
-                                workId, albumId, albumName, performer, ensemble, conductor, tracks
+                                null, workName, albumId, albumName, performer, ensemble, conductor, tracks
                         );
 
                         logger.info("Created Spotify performance: {} - {} ({} tracks)",
@@ -392,7 +392,7 @@ public class PerformanceAssemblyService {
                         Call this once you've identified a performance.
                         """,
                 Tool.InputSchema.of(
-                        Tool.Parameter.string("workId", "ID of the work being performed", false),
+                        Tool.Parameter.string("workName", "Name of the work being performed, e.g. 'Brahms Piano Trio No. 1'"),
                         Tool.Parameter.string("videoId", "YouTube video ID"),
                         Tool.Parameter.string("performer", "Primary performer name", false),
                         Tool.Parameter.string("ensemble", "Orchestra or ensemble name", false),
@@ -401,7 +401,7 @@ public class PerformanceAssemblyService {
                 input -> {
                     try {
                         var params = objectMapper.readValue(input, java.util.Map.class);
-                        var workId = (String) params.get("workId");
+                        var workName = (String) params.get("workName");
                         var videoId = (String) params.get("videoId");
                         var performer = (String) params.get("performer");
                         var ensemble = (String) params.get("ensemble");
@@ -417,7 +417,7 @@ public class PerformanceAssemblyService {
                         }
 
                         var performance = YouTubePerformanceImpl.create(
-                                workId, performer, ensemble, conductor, video
+                                null, workName, performer, ensemble, conductor, video
                         );
 
                         logger.info("Created YouTube performance: {} - {}",

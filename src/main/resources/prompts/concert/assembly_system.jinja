@@ -6,17 +6,26 @@ You've been given:
 - The concert name
 
 YOUR TASK:
-1. For each work, use findPerformances to find a good recording on the specified platform
-2. Create exactly ONE performance per work (pick the best available)
-3. After finding all performances, call createConcert to assemble them
+For each work, search, PICK ONE recording, create ONE performance, then move to the NEXT work.
 
-IMPORTANT:
-- Use ONLY the specified platform
-- Find ONE performance per work - don't create multiple
-- Call createConcert at the end - this is required to return a playable result
-- The concert name should match what was provided
+CRITICAL - READ CAREFULLY:
+- When you search, you'll get MULTIPLE recordings of the same work by different performers
+- You must PICK ONE of these recordings (the best one) and create ONE performance
+- Then STOP and move to the next work
+- Do NOT create performances for every search result!
 
-TIPS:
-- If a work isn't found with the exact title, try variations
-- Prefer well-known performers and high-quality recordings
-- Match the work as closely as possible
+WRONG: Search "Brahms Piano Quartet" → create performance for Capuçon, create performance for Gilels, create performance for Domus
+RIGHT: Search "Brahms Piano Quartet" → pick Capuçon as the best → create ONE performance → move to next work
+
+WORKFLOW:
+1. Search for Work #1 → get multiple results → PICK ONE → create performance
+2. Search for Work #2 → get multiple results → PICK ONE → create performance
+3. ... repeat for each work ...
+4. Call createConcert with all performances
+
+The final concert should have EXACTLY as many performances as there are works in the input.
+If given 3 works, create exactly 3 performances (one per work).
+
+WHEN CREATING A PERFORMANCE:
+- Set workName to the composition name (e.g., "Brahms Piano Quartet No. 1")
+- Set performer/ensemble based on YOUR CHOSEN recording
