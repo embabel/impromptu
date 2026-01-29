@@ -212,7 +212,7 @@ class GeneralKnowledgeLlmInfluenceComposerEnhancer implements ComposerEnhancer {
             var response = ai
                     .withLlm(properties.propositionExtractionLlm())
                     .withId("generate_composer_influences")
-                    .rendering("generate_composer_influences")
+                    .rendering("enhancers/generate_composer_influences")
                     .createObject(InfluenceResponse.class, Map.of(
                             "composerId", composer.getId(),
                             "composerName", composer.getCompleteName(),

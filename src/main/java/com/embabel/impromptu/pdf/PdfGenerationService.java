@@ -108,7 +108,7 @@ public class PdfGenerationService {
         var response = ai
                 .withLlm(properties.pdfGenerationLlm())
                 .withId("pdf_generate_xhtml")
-                .withTemplate("pdf_generate_xhtml")
+                .withTemplate("xhtml/pdf_generate_xhtml")
                 .generateText(
                         Map.of(
                                 "purpose", request.purpose(),
@@ -157,7 +157,7 @@ public class PdfGenerationService {
     private GeneratedXhtml fixXhtml(GeneratedXhtml invalid) {
         var response = ai
                 .withLlm(properties.pdfGenerationLlm().withTemperature(0.0))
-                .withTemplate("pdf_fix_xhtml")
+                .withTemplate("xhtml/pdf_fix_xhtml")
                 .generateText(
                         Map.of(
                                 "xhtml", invalid.xhtml(),

@@ -241,7 +241,7 @@ public class ComposerNationalityEnhancer implements ComposerEnhancer {
             var response = ai
                     .withLlm(properties.propositionExtractionLlm())
                     .withId("generate_composer_nationalities")
-                    .rendering("generate_composer_nationalities")
+                    .rendering("enhancers/generate_composer_nationalities")
                     .createObject(NationalityResponse.class, Map.of(
                             "composerId", composer.getId(),
                             "composerName", composer.getCompleteName(),

@@ -241,7 +241,7 @@ public class ComposerTechniqueEnhancer implements ComposerEnhancer {
             var response = ai
                     .withLlm(properties.propositionExtractionLlm())
                     .withId("generate_composer_techniques")
-                    .rendering("generate_composer_techniques")
+                    .rendering("enhancers/generate_composer_techniques")
                     .createObject(TechniqueResponse.class, Map.of(
                             "composerId", composer.getId(),
                             "composerName", composer.getCompleteName(),
