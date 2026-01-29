@@ -15,6 +15,7 @@
  */
 package com.embabel.impromptu.integrations;
 
+import com.embabel.agent.api.tool.AgenticTool;
 import com.embabel.agent.api.tool.Tool;
 import com.embabel.impromptu.integrations.spotify.SpotifyPerformanceImpl;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
@@ -27,49 +28,122 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Tools for the Performance finder AgenticTool.
- * These tools are used by the LLM to search for and gather performance data
- * from Spotify and YouTube.
+ * Service for finding and assembling performances of classical works.
  * <p>
- * The create*Performance tools return Performance objects as artifacts,
- * enabling the caller to access the structured data.
+ * Uses an {@link AgenticTool} that orchestrates searches across Spotify and YouTube,
+ * using the LLM to:
+ * <ul>
+ *   <li>Construct appropriate search queries for the work</li>
+ *   <li>Parse performer/conductor/ensemble from track metadata</li>
+ *   <li>Group tracks into coherent performances</li>
+ *   <li>Return structured Performance objects</li>
+ * </ul>
  */
-public class PerformanceSearchTools {
+@Service
+public class PerformanceAssemblyService {
 
-    private static final Logger logger = LoggerFactory.getLogger(PerformanceSearchTools.class);
+    private static final Logger logger = LoggerFactory.getLogger(PerformanceAssemblyService.class);
+
+    private static final String SYSTEM_PROMPT = """
+            You are a classical music expert finding performances of classical works.
+
+            IMPORTANT: The 'platforms' parameter tells you which platforms to search.
+            Only search the platforms listed. Only use the tools for those platforms.
+            For example, if platforms is "youtube", do NOT search Spotify.
+
+            Given a work (composer and title), your task is to:
+            1. Search for performances on the appropriate platform(s)
+            2. For each result, identify:
+               - The performer (soloist for concertos, lead musician for chamber music)
+               - The ensemble/orchestra (if applicable)
+               - The conductor (if applicable)
+            3. Group tracks that belong to the same performance (same album, same performers)
+            4. Create Performance objects for each distinct performance found
+
+            Tips for parsing classical music metadata:
+            - The "artist" field often contains the composer, not the performer
+            - Look for performer names in the track title or album name
+            - Common patterns: "Work - Performer, Orchestra, Conductor"
+            - Multiple tracks with sequential numbers (I., II., III. or 1., 2., 3.) are movements
+            - Movements of the same work share album ID and similar track names
+
+            For Spotify:
+            1. First search for tracks matching the work
+            2. Use getSpotifyAlbumTracks to get all tracks from promising albums
+            3. Identify which tracks are movements of the work
+            4. Create a SpotifyPerformance with those track URIs
+
+            For YouTube:
+            1. Search for videos of the work
+            2. Prefer videos with full performances (longer duration)
+            3. Create a YouTubePerformance for each good result (aim for 3-5 performances)
+
+            Return performances from the platform(s) requested by the user.
+            """;
 
     private final SpotifyService spotifyService;
     private final YouTubeService youTubeService;
-    private final ImpromptuUser user;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PerformanceSearchTools(
-            SpotifyService spotifyService,
-            YouTubeService youTubeService,
-            ImpromptuUser user) {
+    public PerformanceAssemblyService(SpotifyService spotifyService, YouTubeService youTubeService) {
         this.spotifyService = spotifyService;
         this.youTubeService = youTubeService;
-        this.user = user;
-        this.objectMapper = new ObjectMapper();
     }
 
     /**
-     * Get all tools provided by this class.
+     * Create an AgenticTool configured for finding performances.
+     * This tool can be used in an agent action's tool loop.
+     *
+     * @param user The user (needed for Spotify API access)
+     * @return Configured AgenticTool
      */
-    public List<Tool> tools() {
+    public Tool createPerformanceFinderTool(ImpromptuUser user) {
+        return new AgenticTool(
+                "findPerformances",
+                """
+                        Find performances of a classical work on streaming platforms.
+                        Returns structured performance data including performers, conductors, and track lists.
+                        IMPORTANT: Set the 'platforms' parameter based on the user's request.
+                        """
+        )
+                .withTools(tools(user).toArray(new Tool[0]))
+                .withSystemPrompt(SYSTEM_PROMPT)
+                .withParameter(Tool.Parameter.string(
+                        "workQuery",
+                        "The work to search for, e.g., 'Glazunov Violin Concerto' or 'Brahms Symphony No. 4'"
+                ))
+                .withParameter(Tool.Parameter.string(
+                        "platforms",
+                        "Comma-separated list of platforms to search. Use 'youtube' for YouTube, 'spotify' for Spotify. E.g., 'youtube' or 'youtube,spotify'"
+                ));
+    }
+
+    /**
+     * Check if performance finding is available (at least one platform configured).
+     */
+    public boolean isAvailable(ImpromptuUser user) {
+        boolean spotifyAvailable = spotifyService.isConfigured() && spotifyService.isLinked(user);
+        boolean youtubeAvailable = youTubeService.isConfigured();
+        return spotifyAvailable || youtubeAvailable;
+    }
+
+    /**
+     * Get all tools for the given user.
+     */
+    private List<Tool> tools(ImpromptuUser user) {
         var tools = new LinkedList<Tool>();
 
         if (spotifyService.isConfigured() && spotifyService.isLinked(user)) {
-            tools.add(searchSpotifyTracksTool());
-            tools.add(getSpotifyAlbumTracksTool());
-            tools.add(createSpotifyPerformanceTool());
+            tools.add(searchSpotifyTracksTool(user));
+            tools.add(getSpotifyAlbumTracksTool(user));
+            tools.add(createSpotifyPerformanceTool(user));
         }
 
         if (youTubeService.isConfigured()) {
@@ -80,7 +154,7 @@ public class PerformanceSearchTools {
         return tools;
     }
 
-    private Tool searchSpotifyTracksTool() {
+    private Tool searchSpotifyTracksTool(ImpromptuUser user) {
         return Tool.create(
                 "searchSpotifyTracks",
                 """
@@ -122,7 +196,7 @@ public class PerformanceSearchTools {
         );
     }
 
-    private Tool getSpotifyAlbumTracksTool() {
+    private Tool getSpotifyAlbumTracksTool(ImpromptuUser user) {
         return Tool.create(
                 "getSpotifyAlbumTracks",
                 """
@@ -161,7 +235,7 @@ public class PerformanceSearchTools {
         );
     }
 
-    private Tool createSpotifyPerformanceTool() {
+    private Tool createSpotifyPerformanceTool(ImpromptuUser user) {
         return Tool.create(
                 "createSpotifyPerformance",
                 """
@@ -322,8 +396,6 @@ public class PerformanceSearchTools {
         );
     }
 
-    // ========== Helper methods ==========
-
     private String toJson(Object obj) {
         try {
             return objectMapper.writeValueAsString(obj);
@@ -343,8 +415,7 @@ public class PerformanceSearchTools {
             String albumId,
             int durationSeconds,
             int trackNumber
-    ) {
-    }
+    ) {}
 
     record AlbumTrackInfo(
             String uri,
@@ -352,8 +423,7 @@ public class PerformanceSearchTools {
             String artist,
             int trackNumber,
             int discNumber
-    ) {
-    }
+    ) {}
 
     record VideoInfo(
             String videoId,
@@ -361,6 +431,5 @@ public class PerformanceSearchTools {
             String channelTitle,
             int durationSeconds,
             String durationFormatted
-    ) {
-    }
+    ) {}
 }

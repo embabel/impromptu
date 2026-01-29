@@ -29,7 +29,7 @@ import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
-import com.embabel.impromptu.integrations.PerformanceFinderService;
+import com.embabel.impromptu.integrations.PerformanceAssemblyService;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.spotify.SpotifyTools;
 import com.embabel.impromptu.integrations.youtube.YouTubePendingPlayback;
@@ -58,7 +58,7 @@ public record ChatActions(
         MemoryProjector memoryProjector,
         PropositionRepository propositionRepository,
         ApplicationEventPublisher eventPublisher,
-        PerformanceFinderService performanceFinderService,
+        PerformanceAssemblyService performanceAssemblyService,
         ImpromptuProperties properties,
         ChatConfiguration.CommonTools commonTools
 ) {
@@ -135,9 +135,9 @@ public record ChatActions(
         if (youTubeService.isConfigured()) {
             tools.add(new YouTubeTools(user, youTubeService, youTubePendingPlayback));
         }
-        if (performanceFinderService.isAvailable(user)) {
+        if (performanceAssemblyService.isAvailable(user)) {
             tools.add(
-                    assetTracker.addReturnedAssets(performanceFinderService.createPerformanceFinderTool(user)));
+                    assetTracker.addReturnedAssets(performanceAssemblyService.createPerformanceFinderTool(user)));
         }
         return tools;
     }
