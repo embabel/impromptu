@@ -55,7 +55,7 @@ public class PerformanceAssemblyService {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceAssemblyService.class);
     private static final String SYSTEM_PROMPT_PATH = "classpath:prompts/performance/assembly_system.jinja";
-    private static final String INTERNAL_SYSTEM_PROMPT_PATH = "classpath:prompts/performance/internal_assembly_system.jinja";
+    private static final String SINGLE_RESULT_PROMPT_PATH = "classpath:prompts/performance/single_result_system.jinja";
 
     private final SpotifyService spotifyService;
     private final YouTubeService youTubeService;
@@ -80,13 +80,13 @@ public class PerformanceAssemblyService {
         }
     }
 
-    private String loadInternalSystemPrompt() {
+    private String loadSingleResultPrompt() {
         try {
-            var resource = resourceLoader.getResource(INTERNAL_SYSTEM_PROMPT_PATH);
+            var resource = resourceLoader.getResource(SINGLE_RESULT_PROMPT_PATH);
             return resource.getContentAsString(StandardCharsets.UTF_8);
         } catch (IOException e) {
-            logger.error("Failed to load internal system prompt from {}", INTERNAL_SYSTEM_PROMPT_PATH, e);
-            throw new IllegalStateException("Failed to load internal performance assembly system prompt", e);
+            logger.error("Failed to load single-result system prompt from {}", SINGLE_RESULT_PROMPT_PATH, e);
+            throw new IllegalStateException("Failed to load single-result performance assembly system prompt", e);
         }
     }
 
@@ -119,12 +119,10 @@ public class PerformanceAssemblyService {
     }
 
     /**
-     * Create an internal performance finder for concert assembly.
-     * This version does NOT return artifacts - it only stores performances in the blackboard.
-     * Use this when building concerts to avoid polluting the asset tracker with intermediate results.
+     * Create a single-result performance finder for concert assembly.
      * Uses a specialized prompt that emphasizes picking ONE best recording per work.
      */
-    public Tool createInternalPerformanceFinderTool(ImpromptuUser user) {
+    public Tool createSingleResultPerformanceFinderTool(ImpromptuUser user) {
         return new AgenticTool(
                 "findPerformances",
                 """
@@ -133,8 +131,8 @@ public class PerformanceAssemblyService {
                         Do NOT create multiple performances for the same work.
                         """
         )
-                .withTools(internalTools(user).toArray(new Tool[0]))
-                .withSystemPrompt(loadInternalSystemPrompt())
+                .withTools(tools(user).toArray(new Tool[0]))
+                .withSystemPrompt(loadSingleResultPrompt())
                 .withParameter(Tool.Parameter.string(
                         "workQuery",
                         "The work to search for, e.g., 'Glazunov Violin Concerto' or 'Brahms Symphony No. 4'"
@@ -166,7 +164,7 @@ public class PerformanceAssemblyService {
     }
 
     /**
-     * Get all tools for the given user (returns artifacts for asset tracking).
+     * Get all tools for the given user.
      */
     private List<Tool> tools(ImpromptuUser user) {
         var tools = new LinkedList<Tool>();
@@ -174,32 +172,12 @@ public class PerformanceAssemblyService {
         if (spotifyService.isConfigured() && spotifyService.isLinked(user)) {
             tools.add(searchSpotifyTracksTool(user));
             tools.add(getSpotifyAlbumTracksTool(user));
-            tools.add(createSpotifyPerformanceTool(user, true));
+            tools.add(createSpotifyPerformanceTool(user));
         }
 
         if (youTubeService.isConfigured()) {
             tools.add(searchYouTubeVideosTool());
-            tools.add(createYouTubePerformanceTool(true));
-        }
-
-        return tools;
-    }
-
-    /**
-     * Get internal tools (no artifacts - for concert assembly).
-     */
-    private List<Tool> internalTools(ImpromptuUser user) {
-        var tools = new LinkedList<Tool>();
-
-        if (spotifyService.isConfigured() && spotifyService.isLinked(user)) {
-            tools.add(searchSpotifyTracksTool(user));
-            tools.add(getSpotifyAlbumTracksTool(user));
-            tools.add(createSpotifyPerformanceTool(user, false));
-        }
-
-        if (youTubeService.isConfigured()) {
-            tools.add(searchYouTubeVideosTool());
-            tools.add(createYouTubePerformanceTool(false));
+            tools.add(createYouTubePerformanceTool());
         }
 
         return tools;
@@ -286,7 +264,7 @@ public class PerformanceAssemblyService {
         );
     }
 
-    private Tool createSpotifyPerformanceTool(ImpromptuUser user, boolean returnArtifact) {
+    private Tool createSpotifyPerformanceTool(ImpromptuUser user) {
         return Tool.create(
                 "createSpotifyPerformance",
                 """
@@ -344,11 +322,7 @@ public class PerformanceAssemblyService {
                         var message = "Created Spotify performance: %s (%d tracks) - %s"
                                 .formatted(performance.title(), tracks.size(), performance.url());
 
-                        if (returnArtifact) {
-                            return Tool.Result.withArtifact(message, performance);
-                        } else {
-                            return Tool.Result.text(message);
-                        }
+                        return Tool.Result.withArtifact(message, performance);
                     } catch (Exception e) {
                         logger.error("Failed to create Spotify performance", e);
                         return Tool.Result.text("Error creating performance: %s".formatted(e.getMessage()));
@@ -396,7 +370,7 @@ public class PerformanceAssemblyService {
         );
     }
 
-    private Tool createYouTubePerformanceTool(boolean returnArtifact) {
+    private Tool createYouTubePerformanceTool() {
         return Tool.create(
                 "createYouTubePerformance",
                 """
@@ -440,11 +414,7 @@ public class PerformanceAssemblyService {
                         var message = "Created YouTube performance: %s - %s"
                                 .formatted(performance.title(), performance.url());
 
-                        if (returnArtifact) {
-                            return Tool.Result.withArtifact(message, performance);
-                        } else {
-                            return Tool.Result.text(message);
-                        }
+                        return Tool.Result.withArtifact(message, performance);
                     } catch (Exception e) {
                         logger.error("Failed to create YouTube performance", e);
                         return Tool.Result.text("Error creating performance: %s".formatted(e.getMessage()));

@@ -84,8 +84,8 @@ public class ConcertAssemblyService {
                         The Concert will appear in assets with play buttons."""
         )
                 .withTools(
-                        // Use internal finder that doesn't return artifacts (only stores in blackboard)
-                        performanceAssemblyService.createInternalPerformanceFinderTool(user),
+                        // Use single-result finder that picks ONE best recording per work
+                        performanceAssemblyService.createSingleResultPerformanceFinderTool(user),
                         createConcertTool()
                 )
                 .withSystemPrompt(loadSystemPrompt())
