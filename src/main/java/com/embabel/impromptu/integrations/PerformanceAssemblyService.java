@@ -55,6 +55,7 @@ public class PerformanceAssemblyService {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceAssemblyService.class);
     private static final String SYSTEM_PROMPT_PATH = "classpath:prompts/performance/assembly_system.jinja";
+    private static final String INTERNAL_SYSTEM_PROMPT_PATH = "classpath:prompts/performance/internal_assembly_system.jinja";
 
     private final SpotifyService spotifyService;
     private final YouTubeService youTubeService;
@@ -76,6 +77,16 @@ public class PerformanceAssemblyService {
         } catch (IOException e) {
             logger.error("Failed to load system prompt from {}", SYSTEM_PROMPT_PATH, e);
             throw new IllegalStateException("Failed to load performance assembly system prompt", e);
+        }
+    }
+
+    private String loadInternalSystemPrompt() {
+        try {
+            var resource = resourceLoader.getResource(INTERNAL_SYSTEM_PROMPT_PATH);
+            return resource.getContentAsString(StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            logger.error("Failed to load internal system prompt from {}", INTERNAL_SYSTEM_PROMPT_PATH, e);
+            throw new IllegalStateException("Failed to load internal performance assembly system prompt", e);
         }
     }
 
@@ -111,18 +122,19 @@ public class PerformanceAssemblyService {
      * Create an internal performance finder for concert assembly.
      * This version does NOT return artifacts - it only stores performances in the blackboard.
      * Use this when building concerts to avoid polluting the asset tracker with intermediate results.
+     * Uses a specialized prompt that emphasizes picking ONE best recording per work.
      */
     public Tool createInternalPerformanceFinderTool(ImpromptuUser user) {
         return new AgenticTool(
                 "findPerformances",
                 """
-                        Find performances of a classical work on streaming platforms.
-                        Returns structured performance data including performers, conductors, and track lists.
-                        IMPORTANT: Set the 'platforms' parameter based on the platform you need.
+                        Find ONE performance of a classical work on streaming platforms.
+                        IMPORTANT: Search, pick the BEST recording, create ONE performance, then STOP.
+                        Do NOT create multiple performances for the same work.
                         """
         )
                 .withTools(internalTools(user).toArray(new Tool[0]))
-                .withSystemPrompt(loadSystemPrompt())
+                .withSystemPrompt(loadInternalSystemPrompt())
                 .withParameter(Tool.Parameter.string(
                         "workQuery",
                         "The work to search for, e.g., 'Glazunov Violin Concerto' or 'Brahms Symphony No. 4'"
