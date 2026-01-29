@@ -66,6 +66,10 @@ public class SessionPanel extends Div {
 
     private final PropositionsPanel propositionsPanel;
     private YouTubePlayerPanel youTubePlayerPanel;
+    private final Tabs tabs;
+    private final Tab assetsTab;
+    private final AssetsPanel assetsPanel;
+    private final Config config;
 
     /**
      * Configuration for the session panel.
@@ -88,6 +92,7 @@ public class SessionPanel extends Div {
     }
 
     public SessionPanel(Config config) {
+        this.config = config;
         addClassName("session-panel-container");
 
         // Backdrop for closing panel when clicking outside
@@ -142,12 +147,12 @@ public class SessionPanel extends Div {
 
         // Tabs
         var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
-        var assetsTab = new Tab(VaadinIcon.CUBE.create(), new Span("Assets"));
+        assetsTab = new Tab(VaadinIcon.CUBE.create(), new Span("Assets"));
         var memoryTab = new Tab(VaadinIcon.LIGHTBULB.create(), new Span("Memory"));
         var personalityTab = new Tab(VaadinIcon.AUTOMATION.create(), new Span("Personality"));
         var themeTab = new Tab(VaadinIcon.PAINT_ROLL.create(), new Span("Theme"));
 
-        var tabs = new Tabs(mediaTab, assetsTab, memoryTab, personalityTab, themeTab);
+        tabs = new Tabs(mediaTab, assetsTab, memoryTab, personalityTab, themeTab);
         tabs.setWidthFull();
         sidePanel.add(tabs);
 
@@ -162,8 +167,8 @@ public class SessionPanel extends Div {
         mediaContent.setVisible(true);
 
         // Assets content - with tool invoker for playback buttons
-        var assetsContent = new AssetsPanel(config.assetViewSupplier(), tool -> invokeTool(tool, config));
-        assetsContent.setVisible(false);
+        assetsPanel = new AssetsPanel(config.assetViewSupplier(), tool -> invokeTool(tool, config));
+        assetsPanel.setVisible(false);
 
         // Memory content (user propositions)
         var memoryContent = new VerticalLayout();
@@ -218,7 +223,7 @@ public class SessionPanel extends Div {
         var themeContent = new ThemeSelectionPanel(config.themeService(), config.user(), config.onThemeChange());
         themeContent.setVisible(false);
 
-        contentArea.add(mediaContent, assetsContent, memoryContent, personalityContent, themeContent);
+        contentArea.add(mediaContent, assetsPanel, memoryContent, personalityContent, themeContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
@@ -226,13 +231,13 @@ public class SessionPanel extends Div {
         tabs.addSelectedChangeListener(event -> {
             var selected = event.getSelectedTab();
             mediaContent.setVisible(selected == mediaTab);
-            assetsContent.setVisible(selected == assetsTab);
+            assetsPanel.setVisible(selected == assetsTab);
             memoryContent.setVisible(selected == memoryTab);
             personalityContent.setVisible(selected == personalityTab);
             themeContent.setVisible(selected == themeTab);
 
             if (selected == assetsTab) {
-                assetsContent.refresh();
+                assetsPanel.refresh();
             }
             if (selected == memoryTab) {
                 propositionsPanel.refresh();
@@ -286,6 +291,15 @@ public class SessionPanel extends Div {
         escapeShortcut = getUI().map(ui ->
                 ui.addShortcutListener(this::close, Key.ESCAPE)
         ).orElse(null);
+    }
+
+    /**
+     * Open the panel directly to the Assets tab.
+     */
+    public void openToAssets() {
+        tabs.setSelectedTab(assetsTab);
+        assetsPanel.refresh();
+        open();
     }
 
     public void close() {
@@ -455,5 +469,16 @@ public class SessionPanel extends Div {
 
     public YouTubePlayerPanel getYouTubePlayerPanel() {
         return youTubePlayerPanel;
+    }
+
+    public AssetsPanel getAssetsPanel() {
+        return assetsPanel;
+    }
+
+    /**
+     * Invoke a tool and handle playback. Used by inline asset cards.
+     */
+    public void invokeToolFromAsset(Tool tool) {
+        invokeTool(tool, config);
     }
 }

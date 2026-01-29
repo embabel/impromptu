@@ -1289,6 +1289,74 @@ span[style*="background: var(--lumo-contrast-10pct)"] {
   display: block;
 }
 
+/* --- Inline Asset Card (in conversation) --- */
+.inline-asset-card {
+  display: flex;
+  align-items: center;
+  padding: var(--lumo-space-s) var(--lumo-space-m);
+  margin: var(--lumo-space-s) 0;
+  background: linear-gradient(135deg, var(--panel-bg-end) 0%, var(--piano-black) 100%);
+  border: 1px solid var(--accent-glow);
+  border-left: 4px solid var(--accent-primary);
+  border-radius: var(--lumo-border-radius-m);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.inline-asset-card:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.inline-asset-icon {
+  font-size: 1.5rem;
+  margin-right: var(--lumo-space-s);
+}
+
+.inline-asset-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  margin-right: var(--lumo-space-m);
+}
+
+.inline-asset-title {
+  font-weight: 600;
+  font-size: var(--lumo-font-size-m);
+  color: var(--accent-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inline-asset-subtitle {
+  font-size: var(--lumo-font-size-xs);
+  color: var(--lumo-secondary-text-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inline-asset-buttons {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.inline-asset-play-btn {
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-soft) 100%) !important;
+  color: var(--concert-black) !important;
+}
+
+.inline-asset-view-btn {
+  color: var(--lumo-secondary-text-color) !important;
+}
+
+.inline-asset-view-btn:hover {
+  color: var(--accent-primary) !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   h3::before, h3::after {

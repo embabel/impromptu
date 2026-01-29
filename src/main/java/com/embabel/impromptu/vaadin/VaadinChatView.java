@@ -43,6 +43,7 @@ import com.embabel.impromptu.vaadin.components.ChatHeader;
 import com.embabel.impromptu.vaadin.components.SessionPanel;
 import com.embabel.web.vaadin.components.ChatMessageBubble;
 import com.embabel.web.vaadin.components.EntityCard;
+import com.embabel.web.vaadin.components.InlineAssetCard;
 import com.embabel.web.vaadin.components.VoiceControl;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.UI;
@@ -405,6 +406,10 @@ public class VaadinChatView extends VerticalLayout {
         // Get or create session (needs UI for progress indicators)
         var sessionData = getOrCreateSession(ui);
 
+        // Track asset count before sending
+        var assetView = getAssetView();
+        int assetCountBefore = assetView != null ? assetView.getAssets().size() : 0;
+
         // Send to chatbot asynchronously
         new Thread(() -> {
             try {
@@ -422,6 +427,9 @@ public class VaadinChatView extends VerticalLayout {
                         messagesLayout.add(ChatMessageBubble.assistant(getPersona(), content));
                         // Speak the response if defaultVoice output is enabled
                         voiceControl.speak(content);
+
+                        // Check for new assets and add inline cards
+                        addInlineAssetCards(assetCountBefore);
                     } else {
                         messagesLayout.add(ChatMessageBubble.error("Response timed out"));
                     }
@@ -446,6 +454,29 @@ public class VaadinChatView extends VerticalLayout {
                 });
             }
         }).start();
+    }
+
+    /**
+     * Add inline asset cards for any assets added since the given count.
+     */
+    private void addInlineAssetCards(int assetCountBefore) {
+        var assetView = getAssetView();
+        if (assetView == null) return;
+
+        var assets = assetView.getAssets();
+        if (assets.size() <= assetCountBefore) return;
+
+        // Get new assets (they appear at the end of the list)
+        var newAssets = assets.subList(assetCountBefore, assets.size());
+        for (var asset : newAssets) {
+            var card = new InlineAssetCard(
+                    asset,
+                    tool -> sessionPanel.invokeToolFromAsset(tool),
+                    () -> sessionPanel.openToAssets()
+            );
+            messagesLayout.add(card);
+            logger.info("Added inline asset card for: {}", asset.reference().getName());
+        }
     }
 
     private void analyzeConversation() {
