@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 /**
- * Result of PDF rendering.
+ * Result of XHTML generation.
  *
- * @param pdfBytes the generated PDF as bytes
- * @param filename suggested filename for the PDF
+ * @param xhtml the validated XHTML content
+ * @param filename suggested filename for the XHTML
  */
-public record PdfResult(
-        byte[] pdfBytes,
+public record XhtmlResult(
+        String xhtml,
         String filename
-) {
-    /**
-     * Get the size of the PDF in bytes.
-     */
-    public int size() {
-        return pdfBytes != null ? pdfBytes.length : 0;
-    }
-}
+) {}

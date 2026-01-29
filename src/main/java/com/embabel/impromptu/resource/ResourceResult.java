@@ -13,18 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 /**
- * Exception thrown when PDF rendering fails.
+ * Result of resource generation.
+ *
+ * @param bytes    the generated resource as bytes
+ * @param filename suggested filename for the resource
  */
-public class PdfRenderingException extends RuntimeException {
-
-    public PdfRenderingException(String message) {
-        super(message);
-    }
-
-    public PdfRenderingException(String message, Throwable cause) {
-        super(message, cause);
+public record ResourceResult(
+        byte[] bytes,
+        String filename
+) {
+    /**
+     * Get the size of the resource in bytes.
+     */
+    public int size() {
+        return bytes != null ? bytes.length : 0;
     }
 }

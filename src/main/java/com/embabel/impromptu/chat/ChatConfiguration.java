@@ -32,9 +32,9 @@ import com.embabel.dice.projection.memory.support.RelationBasedKnowledgeTypeClas
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.integrations.imslp.ImslpTools;
 import com.embabel.impromptu.integrations.metmuseum.MetMuseumTools;
-import com.embabel.impromptu.pdf.PdfGenerationService;
-import com.embabel.impromptu.pdf.ResourceDelivery;
-import com.embabel.impromptu.pdf.ResourceTools;
+import com.embabel.impromptu.resource.ResourceDelivery;
+import com.embabel.impromptu.resource.ResourceGenerationService;
+import com.embabel.impromptu.resource.ResourceTools;
 import com.embabel.impromptu.rag.DocumentService;
 import com.embabel.impromptu.user.DrivineImpromptuUserService;
 import com.embabel.impromptu.user.ImpromptuUserService;
@@ -109,8 +109,8 @@ class ChatConfiguration {
     @Bean
     CommonTools commonTools(
             McpToolFactory mcpToolFactory,
-            PdfGenerationService pdfGenerationService,
-            ResourceDelivery pdfDelivery,
+            ResourceGenerationService resourceGenerationService,
+            ResourceDelivery resourceDelivery,
             CypherQueryTools cypherQueryTools) {
         var deter = "Use this tool only after trying the sources tool";
         return new CommonTools(List.of(
@@ -122,7 +122,7 @@ class ChatConfiguration {
                         Set.of("search_wikipedia", "get_article", "get_related_topics", "get_summary", "get_wikipedia_summary")),
                 MetMuseumTools.DEFAULT,
                 ImslpTools.DEFAULT,
-                new ResourceTools(pdfGenerationService, pdfDelivery),
+                new ResourceTools(resourceGenerationService, resourceDelivery),
                 cypherQueryTools.tool("""
                         Use this tool to query existing entities such as composers and works.
                         If you are asked questions like "Who composed the most violin concertos?" or

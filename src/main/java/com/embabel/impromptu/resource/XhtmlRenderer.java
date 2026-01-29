@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,25 +31,25 @@ import java.nio.file.Path;
  * Takes validated XHTML and produces PDF bytes.
  */
 @Component
-public class PdfRenderer {
+public class XhtmlRenderer {
 
-    private static final Logger logger = LoggerFactory.getLogger(PdfRenderer.class);
-    private static final Path XHTML_OUTPUT_DIR = Path.of(System.getProperty("user.home"), "impromptu-pdfs");
+    private static final Logger logger = LoggerFactory.getLogger(XhtmlRenderer.class);
+    private static final Path XHTML_OUTPUT_DIR = Path.of(System.getProperty("user.home"), "impromptu-resources");
 
     /**
      * Render validated XHTML to PDF.
      *
      * @param xhtml    the validated XHTML content
      * @param filename suggested filename for the output
-     * @return PDF result with bytes and filename
-     * @throws PdfRenderingException if rendering fails
+     * @return resource result with bytes and filename
+     * @throws ResourceGenerationException if rendering fails
      */
-    public PdfResult render(GeneratedXhtml xhtml, String filename) {
+    public ResourceResult render(GeneratedXhtml xhtml, String filename) {
         if (!xhtml.valid()) {
-            throw new PdfRenderingException("Cannot render invalid XHTML: " + xhtml.validationError());
+            throw new ResourceGenerationException("Cannot render invalid XHTML: " + xhtml.validationError());
         }
 
-        logger.info("Rendering PDF: {}", filename);
+        logger.info("Rendering resource: {}", filename);
         writeXhtmlDebugCopy(xhtml.xhtml(), filename);
 
         try {
@@ -61,26 +61,26 @@ public class PdfRenderer {
             renderer.createPDF(baos);
             baos.close();
 
-            var result = new PdfResult(baos.toByteArray(), filename);
-            logger.info("PDF rendered successfully: {} bytes", result.size());
+            var result = new ResourceResult(baos.toByteArray(), filename);
+            logger.info("Resource rendered successfully: {} bytes", result.size());
             return result;
 
         } catch (Exception e) {
-            logger.error("PDF rendering failed", e);
-            throw new PdfRenderingException("Failed to render PDF: " + e.getMessage(), e);
+            logger.error("Resource rendering failed", e);
+            throw new ResourceGenerationException("Failed to render resource: " + e.getMessage(), e);
         }
     }
 
     /**
      * Render with auto-generated filename based on timestamp.
      */
-    public PdfResult render(GeneratedXhtml xhtml) {
+    public ResourceResult render(GeneratedXhtml xhtml) {
         var filename = "document-" + System.currentTimeMillis() + ".pdf";
         return render(xhtml, filename);
     }
 
-    private void writeXhtmlDebugCopy(String xhtml, String pdfFilename) {
-        var xhtmlFilename = pdfFilename.replaceAll("(?i)\\.pdf$", "") + ".xhtml";
+    private void writeXhtmlDebugCopy(String xhtml, String filename) {
+        var xhtmlFilename = filename.replaceAll("(?i)\\.pdf$", "") + ".xhtml";
         var xhtmlPath = XHTML_OUTPUT_DIR.resolve(xhtmlFilename);
         try {
             Files.createDirectories(XHTML_OUTPUT_DIR);

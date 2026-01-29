@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,14 +55,14 @@ public class ResourceDownloadController {
             return ResponseEntity.notFound().build();
         }
 
-        var pdf = result.get();
+        var resource = result.get();
         var headers = new HttpHeaders();
-        headers.setContentType(resolveContentType(pdf.filename()));
-        headers.setContentDispositionFormData("attachment", pdf.filename());
-        headers.setContentLength(pdf.size());
+        headers.setContentType(resolveContentType(resource.filename()));
+        headers.setContentDispositionFormData("attachment", resource.filename());
+        headers.setContentLength(resource.size());
 
-        logger.info("Serving resource: {} ({} bytes)", pdf.filename(), pdf.size());
-        return new ResponseEntity<>(pdf.pdfBytes(), headers, HttpStatus.OK);
+        logger.info("Serving resource: {} ({} bytes)", resource.filename(), resource.size());
+        return new ResponseEntity<>(resource.bytes(), headers, HttpStatus.OK);
     }
 
     /**

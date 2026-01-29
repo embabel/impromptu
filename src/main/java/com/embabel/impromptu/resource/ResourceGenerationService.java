@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 import com.embabel.agent.api.common.Ai;
 import com.embabel.agent.api.common.AiBuilder;
@@ -25,26 +25,26 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 /**
- * High-level service for PDF generation.
+ * High-level service for resource generation.
  * Orchestrates the XHTML generation, validation, and rendering flow.
  * <p>
  * This service can be used directly without going through the action framework
  * for simpler use cases.
  */
 @Service
-public class PdfGenerationService {
+public class ResourceGenerationService {
 
-    private static final Logger logger = LoggerFactory.getLogger(PdfGenerationService.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResourceGenerationService.class);
     private static final int MAX_FIX_ATTEMPTS = 2;
 
     private final Ai ai;
     private final XhtmlValidator validator;
-    private final PdfRenderer renderer;
+    private final XhtmlRenderer renderer;
     private final ImpromptuProperties properties;
 
-    public PdfGenerationService(AiBuilder aiBuilder,
-                                ImpromptuProperties properties,
-                                XhtmlValidator validator, PdfRenderer renderer) {
+    public ResourceGenerationService(AiBuilder aiBuilder,
+                                     ImpromptuProperties properties,
+                                     XhtmlValidator validator, XhtmlRenderer renderer) {
         this.ai = aiBuilder.ai();
         this.properties = properties;
         this.validator = validator;
@@ -52,15 +52,15 @@ public class PdfGenerationService {
     }
 
     /**
-     * Generate a PDF from a request.
+     * Generate a resource from a request.
      * Handles the full flow: XHTML generation → validation → fix loop → render.
      *
-     * @param request the PDF request with content and style
-     * @return the rendered PDF result
-     * @throws PdfRenderingException if generation fails after all retry attempts
+     * @param request the resource request with content and style
+     * @return the rendered resource result
+     * @throws ResourceGenerationException if generation fails after all retry attempts
      */
-    public PdfResult generate(PdfRequest request) {
-        logger.info("Starting PDF generation for purpose: {}", request.purpose());
+    public ResourceResult generate(ResourceRequest request) {
+        logger.info("Starting resource generation for purpose: {}", request.purpose());
 
         // Step 1: Generate initial XHTML
         var xhtml = generateXhtml(request);
@@ -72,14 +72,14 @@ public class PdfGenerationService {
         var filename = generateFilename(request.purpose());
         var result = renderer.render(validated, filename);
 
-        logger.info("PDF generation complete: {} ({} bytes)", filename, result.size());
+        logger.info("Resource generation complete: {} ({} bytes)", filename, result.size());
         return result;
     }
 
     /**
      * Generate validated XHTML only (no PDF rendering).
      */
-    public XhtmlResult generateXhtmlOnly(PdfRequest request) {
+    public XhtmlResult generateXhtmlOnly(ResourceRequest request) {
         logger.info("Starting XHTML generation for purpose: {}", request.purpose());
 
         // Step 1: Generate initial XHTML
@@ -93,21 +93,21 @@ public class PdfGenerationService {
     }
 
     /**
-     * Generate a PDF from raw content with default style.
+     * Generate a resource from raw content with default style.
      */
-    public PdfResult generate(String purpose, String content) {
-        return generate(new PdfRequest(purpose, content));
+    public ResourceResult generate(String purpose, String content) {
+        return generate(new ResourceRequest(purpose, content));
     }
 
     /**
      * Generate XHTML from request using LLM.
      */
-    private GeneratedXhtml generateXhtml(PdfRequest request) {
+    private GeneratedXhtml generateXhtml(ResourceRequest request) {
         var style = request.effectiveStyle();
 
         var response = ai
                 .withLlm(properties.pdfGenerationLlm())
-                .withId("pdf_generate_xhtml")
+                .withId("resource_generate_xhtml")
                 .withTemplate("xhtml/pdf_generate_xhtml")
                 .generateText(
                         Map.of(
@@ -125,7 +125,7 @@ public class PdfGenerationService {
     /**
      * Validate XHTML and fix if needed, with retry loop.
      */
-    private GeneratedXhtml validateAndFix(GeneratedXhtml xhtml, PdfRequest request) {
+    private GeneratedXhtml validateAndFix(GeneratedXhtml xhtml, ResourceRequest request) {
         var current = xhtml;
 
         while (current.fixAttempts() <= MAX_FIX_ATTEMPTS) {
@@ -136,7 +136,7 @@ public class PdfGenerationService {
             }
 
             if (current.fixAttempts() >= MAX_FIX_ATTEMPTS) {
-                throw new PdfRenderingException(
+                throw new ResourceGenerationException(
                         "Failed to generate valid XHTML after " + MAX_FIX_ATTEMPTS +
                                 " fix attempts. Last error: " + validated.validationError());
             }
@@ -148,7 +148,7 @@ public class PdfGenerationService {
             current = fixXhtml(validated);
         }
 
-        throw new PdfRenderingException("Exceeded maximum fix attempts");
+        throw new ResourceGenerationException("Exceeded maximum fix attempts");
     }
 
     /**

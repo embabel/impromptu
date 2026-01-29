@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 import org.springframework.lang.Nullable;
 
 /**
- * Request for PDF generation.
+ * Request for resource generation.
  *
  * @param purpose the type of document (e.g., "invoice", "report", "summary", "concert program")
- * @param content the structured data or text to include in the PDF
+ * @param content the structured data or text to include in the resource
  * @param style   optional style preset to use
  */
-public record PdfRequest(
+public record ResourceRequest(
         String purpose,
         String content,
-        @Nullable PdfStyle style
+        @Nullable ResourceStyle style
 ) {
-    public PdfRequest(String purpose, String content) {
-        this(purpose, content, PdfStyle.PROFESSIONAL);
+    public ResourceRequest(String purpose, String content) {
+        this(purpose, content, ResourceStyle.PROFESSIONAL);
     }
 
-    public PdfStyle effectiveStyle() {
-        return style != null ? style : PdfStyle.PROFESSIONAL;
+    public ResourceStyle effectiveStyle() {
+        return style != null ? style : ResourceStyle.PROFESSIONAL;
     }
 }

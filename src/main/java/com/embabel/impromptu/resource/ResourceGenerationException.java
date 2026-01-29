@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 /**
- * Result of XHTML generation.
- *
- * @param xhtml the validated XHTML content
- * @param filename suggested filename for the XHTML
+ * Exception thrown when resource generation fails.
  */
-public record XhtmlResult(
-        String xhtml,
-        String filename
-) {}
+public class ResourceGenerationException extends RuntimeException {
+
+    public ResourceGenerationException(String message) {
+        super(message);
+    }
+
+    public ResourceGenerationException(String message, Throwable cause) {
+        super(message, cause);
+    }
+}

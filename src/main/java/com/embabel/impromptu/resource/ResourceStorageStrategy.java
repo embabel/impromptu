@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 import java.util.Optional;
 
 /**
- * Strategy interface for PDF storage.
- * Implementations can store PDFs in different backends (filesystem, S3, GCS, etc.).
+ * Strategy interface for resource storage.
+ * Implementations can store resources in different backends (filesystem, S3, GCS, etc.).
  */
-public interface PdfStorageStrategy {
+public interface ResourceStorageStrategy {
 
     /**
-     * Store a PDF and return a storage identifier.
+     * Store a resource and return a storage identifier.
      *
-     * @param result the PDF to store
-     * @return a storage identifier that can be used to retrieve the PDF
+     * @param result the resource to store
+     * @return a storage identifier that can be used to retrieve the resource
      */
-    String store(PdfResult result);
+    String store(ResourceResult result);
 
     /**
-     * Get the user-accessible location for a stored PDF.
+     * Get the user-accessible location for a stored resource.
      * This could be a file path, URL, or other location string.
      *
      * @param storageId the storage identifier returned by {@link #store}
@@ -41,15 +41,15 @@ public interface PdfStorageStrategy {
     Optional<String> getLocation(String storageId);
 
     /**
-     * Retrieve the PDF bytes.
+     * Retrieve the resource bytes.
      *
      * @param storageId the storage identifier
-     * @return the PDF result, or empty if not found
+     * @return the resource result, or empty if not found
      */
-    Optional<PdfResult> retrieve(String storageId);
+    Optional<ResourceResult> retrieve(String storageId);
 
     /**
-     * Delete a stored PDF.
+     * Delete a stored resource.
      *
      * @param storageId the storage identifier
      * @return true if deleted, false if not found

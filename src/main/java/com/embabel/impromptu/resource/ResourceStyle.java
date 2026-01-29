@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,32 +23,32 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Pre-built CSS style templates for PDF generation.
+ * Pre-built CSS style templates for resource generation.
  * Each style provides a complete CSS stylesheet optimized for Flying Saucer (CSS 2.1).
  */
-public enum PdfStyle {
+public enum ResourceStyle {
 
     /**
      * Clean, modern professional style suitable for business documents.
      */
-    PROFESSIONAL("pdf/styles/professional.css"),
+    PROFESSIONAL("resource/styles/professional.css"),
 
     /**
      * Minimal style with maximum readability.
      */
-    MINIMAL("pdf/styles/minimal.css"),
+    MINIMAL("resource/styles/minimal.css"),
 
     /**
      * Elegant style inspired by the Impromptu theme - concert hall aesthetic.
      */
-    ELEGANT("pdf/styles/elegant.css");
+    ELEGANT("resource/styles/elegant.css");
 
-    private static final Logger logger = LoggerFactory.getLogger(PdfStyle.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResourceStyle.class);
 
     private final String resourcePath;
     private String cachedCss;
 
-    PdfStyle(String resourcePath) {
+    ResourceStyle(String resourcePath) {
         this.resourcePath = resourcePath;
     }
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +27,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Service for storing generated documents and managing their lifecycle.
- * Delegates actual storage to a {@link PdfStorageStrategy}.
+ * Service for storing generated resources and managing their lifecycle.
+ * Delegates actual storage to a {@link ResourceStorageStrategy}.
  */
 @Service
 public class ResourceDelivery {
@@ -36,18 +36,18 @@ public class ResourceDelivery {
     private static final Logger logger = LoggerFactory.getLogger(ResourceDelivery.class);
     private static final int EXPIRATION_MINUTES = 30;
 
-    private final PdfStorageStrategy storageStrategy;
+    private final ResourceStorageStrategy storageStrategy;
     private final Map<String, Instant> expirationTracker = new ConcurrentHashMap<>();
 
-    public ResourceDelivery(PdfStorageStrategy storageStrategy) {
+    public ResourceDelivery(ResourceStorageStrategy storageStrategy) {
         this.storageStrategy = storageStrategy;
         logger.info("Resource delivery initialized with storage: {}", storageStrategy.getDescription());
     }
 
     /**
-     * Store a document result and return a storage ID.
+     * Store a resource result and return a storage ID.
      */
-    public String store(PdfResult result) {
+    public String store(ResourceResult result) {
         var id = storageStrategy.store(result);
         expirationTracker.put(id, Instant.now());
         logger.info("Resource stored: {} ({} bytes)", result.filename(), result.size());
@@ -55,7 +55,7 @@ public class ResourceDelivery {
     }
 
     /**
-     * Get the user-accessible location for a stored document.
+     * Get the user-accessible location for a stored resource.
      */
     public Optional<String> getLocation(String id) {
         if (!expirationTracker.containsKey(id)) {
@@ -65,9 +65,9 @@ public class ResourceDelivery {
     }
 
     /**
-     * Retrieve a stored document by its storage ID.
+     * Retrieve a stored resource by its storage ID.
      */
-    public Optional<PdfResult> retrieve(String id) {
+    public Optional<ResourceResult> retrieve(String id) {
         if (!expirationTracker.containsKey(id)) {
             return Optional.empty();
         }
@@ -75,9 +75,9 @@ public class ResourceDelivery {
     }
 
     /**
-     * Retrieve and remove a stored document (one-time download).
+     * Retrieve and remove a stored resource (one-time download).
      */
-    public Optional<PdfResult> retrieveAndRemove(String id) {
+    public Optional<ResourceResult> retrieveAndRemove(String id) {
         expirationTracker.remove(id);
         var result = storageStrategy.retrieve(id);
         if (result.isPresent()) {
@@ -88,14 +88,14 @@ public class ResourceDelivery {
     }
 
     /**
-     * Check if a document exists for the given ID.
+     * Check if a resource exists for the given ID.
      */
     public boolean exists(String id) {
         return expirationTracker.containsKey(id);
     }
 
     /**
-     * Clean up expired documents every 5 minutes.
+     * Clean up expired resources every 5 minutes.
      */
     @Scheduled(fixedRate = 300000)
     public void cleanupExpired() {

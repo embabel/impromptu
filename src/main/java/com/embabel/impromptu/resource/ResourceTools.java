@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 import com.embabel.agent.api.annotation.LlmTool;
 import com.embabel.agent.api.annotation.MatryoshkaTools;
@@ -27,19 +27,19 @@ import java.nio.charset.StandardCharsets;
  * LLM tools for document/resource generation.
  * Uses {@link MatryoshkaTools} for progressive tool disclosure.
  * <p>
- * The LLM first sees a "pdf" facade tool. When invoked, document generation tools become available.
+ * The LLM first sees a "resource_creation" facade tool. When invoked, document generation tools become available.
  * <p>
  * Generated documents are stored temporarily and a download marker is returned in the response.
  * The chat UI parses these markers and renders them as download buttons.
  */
 @MatryoshkaTools(
-        name = "pdf",
+        name = "resource_creation",
         description = """
                 Generate downloadable documents/resources such as concert programs, \
                 composer biographies, listening guides, or summaries."""
 )
 public record ResourceTools(
-        PdfGenerationService pdfService,
+        ResourceGenerationService generationService,
         ResourceDelivery delivery
 ) {
     private static final Logger logger = LoggerFactory.getLogger(ResourceTools.class);
@@ -61,7 +61,7 @@ public record ResourceTools(
             and optional style ('professional', 'minimal', or 'elegant'). \
             The content should be well-structured with headings, paragraphs, and lists. \
             IMPORTANT: Always return the download marker from this tool response.""")
-    public String generatePdf(
+    public String generateXhtml(
             String purpose,
             String content,
             @Nullable String style
@@ -70,12 +70,12 @@ public record ResourceTools(
                 purpose, style, content != null ? content.length() : 0);
 
         try {
-            var pdfStyle = parseStyle(style);
-            var request = new PdfRequest(purpose, content, pdfStyle);
-            var result = pdfService.generateXhtmlOnly(request);
+            var resourceStyle = parseStyle(style);
+            var request = new ResourceRequest(purpose, content, resourceStyle);
+            var result = generationService.generateXhtmlOnly(request);
 
             var bytes = result.xhtml().getBytes(StandardCharsets.UTF_8);
-            var stored = new PdfResult(bytes, result.filename());
+            var stored = new ResourceResult(bytes, result.filename());
             var downloadId = delivery.store(stored);
             logger.info("XHTML generated successfully: {} ({} bytes)", result.filename(), bytes.length);
 
@@ -89,7 +89,7 @@ public record ResourceTools(
                     Download endpoint: `/api/resource/download/%s`
                     """, downloadMarker, downloadId);
 
-        } catch (PdfRenderingException e) {
+        } catch (ResourceGenerationException e) {
             logger.error("Document generation failed", e);
             return "I wasn't able to generate the document: " + e.getMessage();
         } catch (Exception e) {
@@ -105,22 +105,22 @@ public record ResourceTools(
     public String listStyles() {
         return """
                 Available document styles:
-                
+
                 - **professional**: Clean, modern business style with blue accents. Good for reports and summaries.
                 - **minimal**: Ultra-clean with maximum whitespace. Focus on typography and readability.
                 - **elegant**: Refined aesthetic with gold accents and serif fonts. Perfect for concert programs.
                 """;
     }
 
-    private PdfStyle parseStyle(String style) {
+    private ResourceStyle parseStyle(String style) {
         if (style == null || style.isBlank()) {
-            return PdfStyle.ELEGANT; // Default for music context
+            return ResourceStyle.ELEGANT; // Default for music context
         }
         try {
-            return PdfStyle.valueOf(style.toUpperCase().trim());
+            return ResourceStyle.valueOf(style.toUpperCase().trim());
         } catch (IllegalArgumentException e) {
             logger.warn("Unknown style '{}', using ELEGANT", style);
-            return PdfStyle.ELEGANT;
+            return ResourceStyle.ELEGANT;
         }
     }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.pdf;
+package com.embabel.impromptu.resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,38 +29,38 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * PDF storage strategy that writes files to the local filesystem.
- * Default implementation; activated when pdf.storage=filesystem or not set.
+ * Resource storage strategy that writes files to the local filesystem.
+ * Default implementation; activated when resource.storage=filesystem or not set.
  */
 @Component
-@ConditionalOnProperty(name = "pdf.storage", havingValue = "filesystem", matchIfMissing = true)
-public class LocalFilesystemPdfStorage implements PdfStorageStrategy {
+@ConditionalOnProperty(name = "resource.storage", havingValue = "filesystem", matchIfMissing = true)
+public class LocalFilesystemResourceStorage implements ResourceStorageStrategy {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocalFilesystemPdfStorage.class);
-    private static final Path PDF_OUTPUT_DIR = Path.of(System.getProperty("user.home"), "impromptu-pdfs");
+    private static final Logger logger = LoggerFactory.getLogger(LocalFilesystemResourceStorage.class);
+    private static final Path RESOURCE_OUTPUT_DIR = Path.of(System.getProperty("user.home"), "impromptu-resources");
 
-    private final Map<String, StoredPdfInfo> storage = new ConcurrentHashMap<>();
+    private final Map<String, StoredResourceInfo> storage = new ConcurrentHashMap<>();
 
-    public LocalFilesystemPdfStorage() {
+    public LocalFilesystemResourceStorage() {
         try {
-            Files.createDirectories(PDF_OUTPUT_DIR);
-            logger.info("PDF output directory: {}", PDF_OUTPUT_DIR.toAbsolutePath());
+            Files.createDirectories(RESOURCE_OUTPUT_DIR);
+            logger.info("Resource output directory: {}", RESOURCE_OUTPUT_DIR.toAbsolutePath());
         } catch (IOException e) {
-            logger.error("Failed to create PDF output directory", e);
+            logger.error("Failed to create resource output directory", e);
         }
     }
 
     @Override
-    public String store(PdfResult result) {
+    public String store(ResourceResult result) {
         var id = UUID.randomUUID().toString();
-        var filePath = PDF_OUTPUT_DIR.resolve(result.filename());
+        var filePath = RESOURCE_OUTPUT_DIR.resolve(result.filename());
 
         try {
-            Files.write(filePath, result.pdfBytes());
-            storage.put(id, new StoredPdfInfo(result.filename(), filePath));
-            logger.info("Stored PDF: {} -> {}", id, filePath.toAbsolutePath());
+            Files.write(filePath, result.bytes());
+            storage.put(id, new StoredResourceInfo(result.filename(), filePath));
+            logger.info("Stored resource: {} -> {}", id, filePath.toAbsolutePath());
         } catch (IOException e) {
-            logger.error("Failed to write PDF to file", e);
+            logger.error("Failed to write resource to file", e);
         }
 
         return id;
@@ -77,7 +77,7 @@ public class LocalFilesystemPdfStorage implements PdfStorageStrategy {
     }
 
     @Override
-    public Optional<PdfResult> retrieve(String storageId) {
+    public Optional<ResourceResult> retrieve(String storageId) {
         var info = storage.get(storageId);
         if (info == null) {
             return Optional.empty();
@@ -85,9 +85,9 @@ public class LocalFilesystemPdfStorage implements PdfStorageStrategy {
 
         try {
             var bytes = Files.readAllBytes(info.filePath);
-            return Optional.of(new PdfResult(bytes, info.filename));
+            return Optional.of(new ResourceResult(bytes, info.filename));
         } catch (IOException e) {
-            logger.error("Failed to read PDF from file: {}", info.filePath, e);
+            logger.error("Failed to read resource from file: {}", info.filePath, e);
             return Optional.empty();
         }
     }
@@ -101,18 +101,18 @@ public class LocalFilesystemPdfStorage implements PdfStorageStrategy {
 
         try {
             Files.deleteIfExists(info.filePath);
-            logger.info("Deleted PDF: {}", storageId);
+            logger.info("Deleted resource: {}", storageId);
             return true;
         } catch (IOException e) {
-            logger.error("Failed to delete PDF file: {}", info.filePath, e);
+            logger.error("Failed to delete resource file: {}", info.filePath, e);
             return false;
         }
     }
 
     @Override
     public String getDescription() {
-        return "Local filesystem: " + PDF_OUTPUT_DIR.toAbsolutePath();
+        return "Local filesystem: " + RESOURCE_OUTPUT_DIR.toAbsolutePath();
     }
 
-    private record StoredPdfInfo(String filename, Path filePath) {}
+    private record StoredResourceInfo(String filename, Path filePath) {}
 }
