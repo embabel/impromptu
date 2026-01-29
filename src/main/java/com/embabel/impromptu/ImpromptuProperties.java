@@ -52,8 +52,10 @@ public record ImpromptuProperties(
         @NestedConfigurationProperty LlmOptions pdfGenerationLlm,
         @NestedConfigurationProperty LlmOptions cypherGenerationLlm,
         String embeddingService,
-        String objective,
-        String behaviour,
+        @DefaultValue(DEFAULT) String guardrails,
+        @DefaultValue(DEFAULT) String objective,
+        @DefaultValue(DEFAULT) String opinions,
+        @DefaultValue(DEFAULT) String behaviour,
         @DefaultValue("50") int conversationWindow,
         @NestedConfigurationProperty Personality defaultPersonality,
         @NestedConfigurationProperty Extraction extraction,
@@ -67,6 +69,8 @@ public record ImpromptuProperties(
         @Nullable @NestedConfigurationProperty Speech speech,
         @Nullable @NestedConfigurationProperty DataLoading dataLoading
 ) {
+
+    private static final String DEFAULT = "default";
 
     public record Personality(
             String persona,

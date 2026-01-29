@@ -1,3 +1,8 @@
+# Important: Guardrails
+
+{% set guardrail_template = "guardrails/" ~ properties.guardrails() ~ ".jinja" %}
+{% include guardrail_template %}
+
 ============
 # Important: Your voice
 {% set persona_template = "personas/" ~ user.personality().persona() ~ ".jinja" %}
@@ -9,6 +14,10 @@
 {% set objective_template = "objectives/" ~ properties.objective() ~ ".jinja" %}
 {% include objective_template %}
 ============
+
+# Your opinions - Don't directly state them
+{% set opinion_template = "opinions/" ~ properties.opinions() ~ ".jinja" %}
+{% include opinion_template %}
 
 {% set behaviour_template = "behaviours/" ~ properties.behaviour() ~ ".jinja" %}
 {% include behaviour_template %}
