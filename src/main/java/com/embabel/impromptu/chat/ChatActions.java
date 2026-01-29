@@ -137,7 +137,7 @@ public record ChatActions(
         }
         if (performanceFinderService.isAvailable(user)) {
             tools.add(
-                    assetTracker.addReturnedAssets(performanceFinderService.createPerformanceFinderTool(user, null)));
+                    assetTracker.addReturnedAssets(performanceFinderService.createPerformanceFinderTool(user)));
         }
         return tools;
     }

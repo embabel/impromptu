@@ -88,11 +88,10 @@ public class PerformanceFinderService {
      * Create an AgenticTool configured for finding performances.
      * This tool can be used in an agent action's tool loop.
      *
-     * @param user   The user (needed for Spotify API access)
-     * @param workId The ID of the Work being searched for
+     * @param user The user (needed for Spotify API access)
      * @return Configured AgenticTool
      */
-    public Tool createPerformanceFinderTool(ImpromptuUser user, String workId) {
+    public Tool createPerformanceFinderTool(ImpromptuUser user) {
         var searchTools = new PerformanceSearchTools(spotifyService, youTubeService, user);
 
         return new AgenticTool(
@@ -122,23 +121,5 @@ public class PerformanceFinderService {
         boolean spotifyAvailable = spotifyService.isConfigured() && spotifyService.isLinked(user);
         boolean youtubeAvailable = youTubeService.isConfigured();
         return spotifyAvailable || youtubeAvailable;
-    }
-
-    /**
-     * Get availability status message.
-     */
-    public String getAvailabilityStatus(ImpromptuUser user) {
-        boolean spotify = spotifyService.isConfigured() && spotifyService.isLinked(user);
-        boolean youtube = youTubeService.isConfigured();
-
-        if (spotify && youtube) {
-            return "Spotify and YouTube available";
-        } else if (spotify) {
-            return "Spotify available (YouTube not configured)";
-        } else if (youtube) {
-            return "YouTube available (Spotify not linked)";
-        } else {
-            return "No music platforms available";
-        }
     }
 }
