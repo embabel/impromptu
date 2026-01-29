@@ -34,8 +34,9 @@ import java.nio.charset.StandardCharsets;
  */
 @MatryoshkaTools(
         name = "pdf",
-        description = "Generate downloadable documents/resources such as concert programs, " +
-                "composer biographies, listening guides, or summaries."
+        description = """
+                Generate downloadable documents/resources such as concert programs, \
+                composer biographies, listening guides, or summaries."""
 )
 public record ResourceTools(
         PdfGenerationService pdfService,
@@ -54,11 +55,12 @@ public record ResourceTools(
      * @param style   optional style: "professional" (default), "minimal", or "elegant"
      * @return confirmation message with download marker
      */
-    @LlmTool(description = "Generate a styled document or resource. " +
-            "Provide: purpose (e.g., 'concert program'), content (the full text to include), " +
-            "and optional style ('professional', 'minimal', or 'elegant'). " +
-            "The content should be well-structured with headings, paragraphs, and lists. " +
-            "IMPORTANT: Always return the download marker from this tool response.")
+    @LlmTool(description = """
+            Generate a styled document or resource. \
+            Provide: purpose (e.g., 'concert program'), content (the full text to include), \
+            and optional style ('professional', 'minimal', or 'elegant'). \
+            The content should be well-structured with headings, paragraphs, and lists. \
+            IMPORTANT: Always return the download marker from this tool response.""")
     public String generatePdf(
             String purpose,
             String content,

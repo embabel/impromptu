@@ -27,8 +27,9 @@ import org.jspecify.annotations.Nullable;
  * Note: Some individuals may be both composers and performers (e.g., Rachmaninoff, Liszt).
  */
 @CreationPermitted(true)
-@JsonClassDescription("A performer such as a pianist, conductor, orchestra, or singer." +
-        "User the performerType property to specify the type of performer.")
+@JsonClassDescription("""
+        A performer such as a pianist, conductor, orchestra, or singer. \
+        Use the performerType property to specify the type of performer.""")
 public interface Performer extends NamedEntity {
 
     /**

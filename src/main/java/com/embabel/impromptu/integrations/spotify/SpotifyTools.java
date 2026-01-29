@@ -33,8 +33,9 @@ import java.util.stream.Collectors;
  */
 @MatryoshkaTools(
         name = "spotify",
-        description = "Access Spotify music features. Invoke this tool to enable Spotify operations " +
-                "like playing music, searching tracks, managing playlists, and controlling playback."
+        description = """
+                Access Spotify music features. Invoke this tool to enable Spotify operations \
+                like playing music, searching tracks, managing playlists, and controlling playback."""
 )
 public record SpotifyTools(
         ImpromptuUser user,

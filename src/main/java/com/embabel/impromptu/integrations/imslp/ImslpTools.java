@@ -32,10 +32,11 @@ import org.slf4j.LoggerFactory;
  */
 @MatryoshkaTools(
         name = "imslp",
-        description = "Access IMSLP (International Music Score Library Project) to find and download " +
-                "public domain music scores. Invoke this tool to search for sheet music by composer " +
-                "and work title, browse available editions, and get PDF download links." +
-                "Search for all kinds of variant names until you find what you need. If it's a common work you will find it"
+        description = """
+                Access IMSLP (International Music Score Library Project) to find and download \
+                public domain music scores. Invoke this tool to search for sheet music by composer \
+                and work title, browse available editions, and get PDF download links. \
+                Search for all kinds of variant names until you find what you need. If it's a common work you will find it"""
 )
 public record ImslpTools(
         ImslpService imslpService

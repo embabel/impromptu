@@ -34,9 +34,10 @@ import java.util.List;
  */
 @MatryoshkaTools(
         name = "metmuseum",
-        description = "Access the Metropolitan Museum of Art collection. Invoke this tool to search artworks, " +
-                "get artwork details, explore departments, and discover highlighted works from one of the world's " +
-                "largest art museums."
+        description = """
+                Access the Metropolitan Museum of Art collection. Invoke this tool to search artworks, \
+                get artwork details, explore departments, and discover highlighted works from one of the world's \
+                largest art museums."""
 )
 public record MetMuseumTools(
         MetMuseumService metMuseumService
@@ -49,8 +50,9 @@ public record MetMuseumTools(
     /**
      * Search for artworks in the Met collection.
      */
-    @LlmTool(description = "Search for artworks in the Metropolitan Museum of Art collection by keyword. " +
-            "Returns a list of matching artworks with basic information.")
+    @LlmTool(description = """
+            Search for artworks in the Metropolitan Museum of Art collection by keyword. \
+            Returns a list of matching artworks with basic information.""")
     public String searchArtworks(String query, Boolean hasImages) {
         try {
             var result = metMuseumService.search(query, hasImages, null, null, null);
@@ -93,8 +95,9 @@ public record MetMuseumTools(
     /**
      * Search for highlighted/notable artworks.
      */
-    @LlmTool(description = "Search for highlighted artworks in the Met collection - these are notable, " +
-            "important works that the museum has designated as highlights of the collection.")
+    @LlmTool(description = """
+            Search for highlighted artworks in the Met collection - these are notable, \
+            important works that the museum has designated as highlights of the collection.""")
     public String searchHighlightedArtworks(String query) {
         try {
             var result = metMuseumService.search(query, true, true, null, null);
@@ -130,8 +133,9 @@ public record MetMuseumTools(
     /**
      * Search for artworks currently on display.
      */
-    @LlmTool(description = "Search for artworks currently on display at the Metropolitan Museum. " +
-            "Useful for planning a visit or seeing what's currently viewable.")
+    @LlmTool(description = """
+            Search for artworks currently on display at the Metropolitan Museum. \
+            Useful for planning a visit or seeing what's currently viewable.""")
     public String searchOnViewArtworks(String query) {
         try {
             var result = metMuseumService.search(query, true, null, true, null);
@@ -171,8 +175,9 @@ public record MetMuseumTools(
     /**
      * Get detailed information about a specific artwork.
      */
-    @LlmTool(description = "Get detailed information about a specific artwork from the Met collection by its ID. " +
-            "Returns comprehensive details including artist, date, medium, dimensions, and images.")
+    @LlmTool(description = """
+            Get detailed information about a specific artwork from the Met collection by its ID. \
+            Returns comprehensive details including artist, date, medium, dimensions, and images.""")
     public String getArtworkDetails(int objectId) {
         try {
             var obj = metMuseumService.getObject(objectId);
@@ -274,8 +279,9 @@ public record MetMuseumTools(
     /**
      * List all museum departments.
      */
-    @LlmTool(description = "List all departments in the Metropolitan Museum of Art. " +
-            "Useful for browsing the collection by department or filtering searches.")
+    @LlmTool(description = """
+            List all departments in the Metropolitan Museum of Art. \
+            Useful for browsing the collection by department or filtering searches.""")
     public String getDepartments() {
         try {
             var departments = metMuseumService.getDepartments();
@@ -301,8 +307,9 @@ public record MetMuseumTools(
     /**
      * Search within a specific department.
      */
-    @LlmTool(description = "Search for artworks within a specific Met Museum department. " +
-            "Use getDepartments to see available departments and their IDs.")
+    @LlmTool(description = """
+            Search for artworks within a specific Met Museum department. \
+            Use getDepartments to see available departments and their IDs.""")
     public String searchByDepartment(String query, int departmentId) {
         try {
             var result = metMuseumService.search(query, true, null, null, departmentId);
