@@ -15,6 +15,7 @@
  */
 package com.embabel.impromptu.user;
 
+import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.TestDrivineConfiguration;
 import org.drivine.manager.GraphObjectManager;
 import org.drivine.manager.PersistenceManager;
@@ -23,6 +24,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,9 +35,23 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = TestDrivineConfiguration.class)
+@Import(DrivineImpromptuUserServiceTest.TestConfig.class)
 @ActiveProfiles("testcontainer")
 @Transactional
 class DrivineImpromptuUserServiceTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        ImpromptuProperties impromptuProperties() {
+            return new ImpromptuProperties(
+                    null, null, null, null,
+                    "default", "default", "default", "default",
+                    50, null, null, null, null, null, null,
+                    false, false, false, null, null
+            );
+        }
+    }
 
     @Autowired
     private GraphObjectManager graphObjectManager;
@@ -41,11 +59,14 @@ class DrivineImpromptuUserServiceTest {
     @Autowired
     private PersistenceManager persistenceManager;
 
+    @Autowired
+    private ImpromptuProperties properties;
+
     private DrivineImpromptuUserService userService;
 
     @BeforeEach
     void setUp() {
-        userService = new DrivineImpromptuUserService(graphObjectManager);
+        userService = new DrivineImpromptuUserService(graphObjectManager, properties);
         // Clean up any existing test users
         persistenceManager.execute(
                 QuerySpecification.withStatement("MATCH (u:User) WHERE u.id STARTS WITH 'test-' DETACH DELETE u")

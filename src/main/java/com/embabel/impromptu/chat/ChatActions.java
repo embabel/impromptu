@@ -29,6 +29,8 @@ import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
+import com.embabel.impromptu.integrations.ConcertAssemblyService;
+import com.embabel.impromptu.integrations.ConcertPlanningService;
 import com.embabel.impromptu.integrations.PerformanceAssemblyService;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.spotify.SpotifyTools;
@@ -59,6 +61,8 @@ public record ChatActions(
         PropositionRepository propositionRepository,
         ApplicationEventPublisher eventPublisher,
         PerformanceAssemblyService performanceAssemblyService,
+        ConcertPlanningService concertPlanningService,
+        ConcertAssemblyService concertAssemblyService,
         ImpromptuProperties properties,
         ChatConfiguration.CommonTools commonTools
 ) {
@@ -138,6 +142,12 @@ public record ChatActions(
         if (performanceAssemblyService.isAvailable(user)) {
             tools.add(
                     assetTracker.addReturnedAssets(performanceAssemblyService.createPerformanceFinderTool(user)));
+        }
+        // Planning tool is always available (no platform dependencies)
+        tools.add(assetTracker.addReturnedAssets(concertPlanningService.createConcertPlanningTool()));
+        if (concertAssemblyService.isAvailable(user)) {
+            tools.add(
+                    assetTracker.addReturnedAssets(concertAssemblyService.createConcertAssemblyTool(user)));
         }
         return tools;
     }

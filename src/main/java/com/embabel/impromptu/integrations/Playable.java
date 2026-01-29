@@ -90,29 +90,32 @@ public interface Playable extends Asset {
     }
 
     /**
-     * Short identifier for tool naming. Defaults to source + first 8 chars of ID.
-     * Override to provide a more meaningful short name.
+     * Short identifier for reference naming.
+     * Creates a readable name from title rather than using opaque IDs.
      */
     default String shortId() {
-        var id = getId();
-        var shortPart = id.length() > 8 ? id.substring(0, 8) : id;
-        return source() + "_" + shortPart;
+        var name = title().toLowerCase()
+                .replaceAll("[^a-z0-9]+", "_")
+                .replaceAll("^_|_$", "");
+        if (name.length() > 25) {
+            name = name.substring(0, 25);
+        }
+        return name;
     }
 
     /**
      * Default reference implementation providing a play tool.
-     * Uses shortId() for the tool prefix to keep tool names manageable.
      */
     @Override
     @NonNull
     default LlmReference reference() {
         String duration = durationFormatted();
-        String durationPart = duration != null ? " (" + duration + ")" : "";
+        String durationPart = duration != null ? " [" + duration + "]" : "";
         return LlmReference.of(
                 shortId(),
-                "Playable media: " + title() + durationPart,
+                title() + durationPart,
                 List.of(playTool()),
-                "Use the play tool to start playback. Title: " + title() + ". URL: " + url()
+                source() + " - " + title() + ". URL: " + url()
         );
     }
 }

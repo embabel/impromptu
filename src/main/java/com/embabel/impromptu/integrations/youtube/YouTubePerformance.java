@@ -113,8 +113,8 @@ public interface YouTubePerformance extends Performance<YouTubeVideo> {
         String durationPart = duration != null ? " [" + duration + "]" : "";
 
         return LlmReference.of(
-                shortId(),
-                title() + durationPart,
+                title(),
+                durationPart + " on YouTube",
                 List.of(playTool()),
                 "YouTube performance. Use the play tool to start playback. URL: " + url()
         );
@@ -128,5 +128,15 @@ public interface YouTubePerformance extends Performance<YouTubeVideo> {
     @Override
     default String source() {
         return "youtube";
+    }
+
+    /**
+     * Override playbackInfo to include videoId explicitly for playback.
+     */
+    @Override
+    default String playbackInfo() {
+        return """
+                {"source":"youtube","id":"%s","videoId":"%s","title":"%s","url":"%s","durationSeconds":%d}
+                """.formatted(getId(), getVideoId(), title(), url(), durationSeconds()).trim();
     }
 }

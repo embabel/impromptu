@@ -42,6 +42,11 @@ import com.vaadin.flow.component.tabs.Tabs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.embabel.agent.api.tool.Tool;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.function.Supplier;
@@ -53,6 +58,7 @@ import java.util.function.Supplier;
 public class SessionPanel extends Div {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionPanel.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final VerticalLayout sidePanel;
     private final Div backdrop;
@@ -155,8 +161,8 @@ public class SessionPanel extends Div {
         var mediaContent = createMediaContent(config);
         mediaContent.setVisible(true);
 
-        // Assets content
-        var assetsContent = new AssetsPanel(config.assetViewSupplier());
+        // Assets content - with tool invoker for playback buttons
+        var assetsContent = new AssetsPanel(config.assetViewSupplier(), tool -> invokeTool(tool, config));
         assetsContent.setVisible(false);
 
         // Memory content (user propositions)
@@ -289,6 +295,154 @@ public class SessionPanel extends Div {
             escapeShortcut.remove();
             escapeShortcut = null;
         }
+    }
+
+    /**
+     * Invoke a tool from an asset and handle playback.
+     */
+    private void invokeTool(Tool tool, Config config) {
+        try {
+            var result = tool.call("{}");
+            if (result instanceof Tool.Result.Text textResult) {
+                var json = objectMapper.readTree(textResult.getContent());
+                handlePlaybackJson(json, config);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to invoke tool: {}", tool.getDefinition().getName(), e);
+        }
+    }
+
+    /**
+     * Handle playback JSON from a tool result.
+     */
+    private void handlePlaybackJson(JsonNode json, Config config) {
+        var source = json.path("source").asText();
+        var type = json.path("type").asText();
+
+        if ("concert".equals(type)) {
+            // Concert - play all performances
+            var performances = json.path("performances");
+            var platform = json.path("platform").asText();
+            if (performances.isArray() && !performances.isEmpty()) {
+                if ("spotify".equals(platform)) {
+                    // Collect all Spotify track URIs from all performances
+                    List<String> allUris = new java.util.ArrayList<>();
+                    for (var perf : performances) {
+                        var trackUris = perf.path("trackUris");
+                        if (trackUris.isArray()) {
+                            for (var uri : trackUris) {
+                                allUris.add(uri.asText());
+                            }
+                        }
+                    }
+                    if (!allUris.isEmpty() && config.user().isSpotifyLinked()) {
+                        try {
+                            config.spotifyService().play(config.user(), null, allUris);
+                            logger.info("Playing Spotify concert ({} tracks): {}",
+                                    allUris.size(), json.path("title").asText());
+                        } catch (Exception e) {
+                            logger.error("Failed to play Spotify concert", e);
+                        }
+                    }
+                } else if ("youtube".equals(platform)) {
+                    // Collect all video IDs and open as YouTube playlist
+                    List<String> videoIds = new java.util.ArrayList<>();
+                    for (var perf : performances) {
+                        var videoId = perf.path("videoId").asText();
+                        if (videoId.isBlank()) {
+                            videoId = perf.path("id").asText();
+                        }
+                        if (!videoId.isBlank()) {
+                            videoIds.add(videoId);
+                        }
+                    }
+                    if (!videoIds.isEmpty()) {
+                        openYouTubePlaylist(videoIds, json.path("title").asText());
+                    }
+                }
+            }
+        } else if ("spotify".equals(source)) {
+            if (config.user().isSpotifyLinked()) {
+                try {
+                    List<String> uris = new java.util.ArrayList<>();
+
+                    // First check for trackUris array (from SpotifyPerformance)
+                    var trackUrisNode = json.path("trackUris");
+                    if (trackUrisNode.isArray() && !trackUrisNode.isEmpty()) {
+                        for (var uriNode : trackUrisNode) {
+                            uris.add(uriNode.asText());
+                        }
+                    }
+
+                    // Fall back to single uri (from SpotifyTrackDetails)
+                    if (uris.isEmpty()) {
+                        var uri = json.path("uri").asText();
+                        if (!uri.isBlank()) {
+                            uris.add(uri);
+                        }
+                    }
+
+                    // Fall back to constructing from id
+                    if (uris.isEmpty()) {
+                        var id = json.path("id").asText();
+                        if (!id.isBlank() && id.startsWith("spotify:")) {
+                            uris.add(id);
+                        }
+                    }
+
+                    if (!uris.isEmpty()) {
+                        config.spotifyService().play(config.user(), null, uris);
+                        logger.info("Playing Spotify ({}): {}", uris.size(), json.path("title").asText());
+                    } else {
+                        logger.warn("No Spotify URIs found in playback JSON: {}", json);
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to play Spotify track", e);
+                }
+            }
+        } else if ("youtube".equals(source)) {
+            var videoId = json.path("id").asText();
+            var title = json.path("title").asText();
+            if (!videoId.isBlank()) {
+                // Queue for YouTube player
+                config.youTubePendingPlayback().requestPlayback(
+                        config.user().getId(), videoId, title, "");
+                if (youTubePlayerPanel != null) {
+                    youTubePlayerPanel.loadVideo(videoId, title, "");
+                }
+                logger.info("Playing YouTube video: {}", title);
+            }
+        }
+    }
+
+    /**
+     * Open multiple YouTube videos as a playlist.
+     */
+    private void openYouTubePlaylist(List<String> videoIds, String title) {
+        if (videoIds.isEmpty()) return;
+
+        // Use YouTube's watch_videos feature to create a temporary playlist
+        String ids = String.join(",", videoIds);
+        String url = "https://www.youtube.com/watch_videos?video_ids=" + ids;
+
+        // Update the player panel with first video info
+        if (youTubePlayerPanel != null) {
+            youTubePlayerPanel.loadVideo(videoIds.getFirst(), title + " (playlist)", "");
+        }
+
+        // Open playlist in popup
+        getUI().ifPresent(ui -> ui.getPage().executeJs("""
+                        var w = Math.round(screen.width * 0.6);
+                        var h = Math.round(screen.height * 0.6);
+                        var left = Math.round((screen.width - w) / 2);
+                        var top = Math.round((screen.height - h) / 2);
+                        window.open($0, 'youtube_player',
+                            'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top +
+                            ',menubar=no,toolbar=no,location=no,status=no,resizable=yes');
+                        """,
+                url
+        ));
+        logger.info("Opening YouTube playlist ({} videos): {}", videoIds.size(), title);
     }
 
     public boolean isOpen() {

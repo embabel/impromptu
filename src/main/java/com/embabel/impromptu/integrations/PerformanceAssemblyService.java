@@ -17,6 +17,7 @@ package com.embabel.impromptu.integrations;
 
 import com.embabel.agent.api.tool.AgenticTool;
 import com.embabel.agent.api.tool.Tool;
+import com.embabel.agent.core.AgentProcess;
 import com.embabel.impromptu.integrations.spotify.SpotifyPerformanceImpl;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.spotify.SpotifyTrack;
@@ -28,8 +29,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,51 +54,29 @@ import java.util.List;
 public class PerformanceAssemblyService {
 
     private static final Logger logger = LoggerFactory.getLogger(PerformanceAssemblyService.class);
-
-    private static final String SYSTEM_PROMPT = """
-            You are a classical music expert finding performances of classical works.
-
-            IMPORTANT: The 'platforms' parameter tells you which platforms to search.
-            Only search the platforms listed. Only use the tools for those platforms.
-            For example, if platforms is "youtube", do NOT search Spotify.
-
-            Given a work (composer and title), your task is to:
-            1. Search for performances on the appropriate platform(s)
-            2. For each result, identify:
-               - The performer (soloist for concertos, lead musician for chamber music)
-               - The ensemble/orchestra (if applicable)
-               - The conductor (if applicable)
-            3. Group tracks that belong to the same performance (same album, same performers)
-            4. Create Performance objects for each distinct performance found
-
-            Tips for parsing classical music metadata:
-            - The "artist" field often contains the composer, not the performer
-            - Look for performer names in the track title or album name
-            - Common patterns: "Work - Performer, Orchestra, Conductor"
-            - Multiple tracks with sequential numbers (I., II., III. or 1., 2., 3.) are movements
-            - Movements of the same work share album ID and similar track names
-
-            For Spotify:
-            1. First search for tracks matching the work
-            2. Use getSpotifyAlbumTracks to get all tracks from promising albums
-            3. Identify which tracks are movements of the work
-            4. Create a SpotifyPerformance with those track URIs
-
-            For YouTube:
-            1. Search for videos of the work
-            2. Prefer videos with full performances (longer duration)
-            3. Create a YouTubePerformance for each good result (aim for 3-5 performances)
-
-            Return performances from the platform(s) requested by the user.
-            """;
+    private static final String SYSTEM_PROMPT_PATH = "classpath:prompts/performance/assembly_system.jinja";
 
     private final SpotifyService spotifyService;
     private final YouTubeService youTubeService;
+    private final ResourceLoader resourceLoader;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PerformanceAssemblyService(SpotifyService spotifyService, YouTubeService youTubeService) {
+    public PerformanceAssemblyService(SpotifyService spotifyService,
+                                      YouTubeService youTubeService,
+                                      ResourceLoader resourceLoader) {
         this.spotifyService = spotifyService;
         this.youTubeService = youTubeService;
+        this.resourceLoader = resourceLoader;
+    }
+
+    private String loadSystemPrompt() {
+        try {
+            var resource = resourceLoader.getResource(SYSTEM_PROMPT_PATH);
+            return resource.getContentAsString(StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            logger.error("Failed to load system prompt from {}", SYSTEM_PROMPT_PATH, e);
+            throw new IllegalStateException("Failed to load performance assembly system prompt", e);
+        }
     }
 
     /**
@@ -114,7 +96,33 @@ public class PerformanceAssemblyService {
                         """
         )
                 .withTools(tools(user).toArray(new Tool[0]))
-                .withSystemPrompt(SYSTEM_PROMPT)
+                .withSystemPrompt(loadSystemPrompt())
+                .withParameter(Tool.Parameter.string(
+                        "workQuery",
+                        "The work to search for, e.g., 'Glazunov Violin Concerto' or 'Brahms Symphony No. 4'"
+                ))
+                .withParameter(Tool.Parameter.string(
+                        "platforms",
+                        "Comma-separated list of platforms to search. Use 'youtube' for YouTube, 'spotify' for Spotify. E.g., 'youtube' or 'youtube,spotify'"
+                ));
+    }
+
+    /**
+     * Create an internal performance finder for concert assembly.
+     * This version does NOT return artifacts - it only stores performances in the blackboard.
+     * Use this when building concerts to avoid polluting the asset tracker with intermediate results.
+     */
+    public Tool createInternalPerformanceFinderTool(ImpromptuUser user) {
+        return new AgenticTool(
+                "findPerformances",
+                """
+                        Find performances of a classical work on streaming platforms.
+                        Returns structured performance data including performers, conductors, and track lists.
+                        IMPORTANT: Set the 'platforms' parameter based on the platform you need.
+                        """
+        )
+                .withTools(internalTools(user).toArray(new Tool[0]))
+                .withSystemPrompt(loadSystemPrompt())
                 .withParameter(Tool.Parameter.string(
                         "workQuery",
                         "The work to search for, e.g., 'Glazunov Violin Concerto' or 'Brahms Symphony No. 4'"
@@ -135,7 +143,18 @@ public class PerformanceAssemblyService {
     }
 
     /**
-     * Get all tools for the given user.
+     * Store a performance in the blackboard for later retrieval by createConcert.
+     */
+    private void storePerformance(Performance<?> performance) {
+        var process = AgentProcess.get();
+        if (process != null) {
+            process.getBlackboard().addObject(performance);
+            logger.debug("Stored performance in blackboard: {}", performance.title());
+        }
+    }
+
+    /**
+     * Get all tools for the given user (returns artifacts for asset tracking).
      */
     private List<Tool> tools(ImpromptuUser user) {
         var tools = new LinkedList<Tool>();
@@ -143,12 +162,32 @@ public class PerformanceAssemblyService {
         if (spotifyService.isConfigured() && spotifyService.isLinked(user)) {
             tools.add(searchSpotifyTracksTool(user));
             tools.add(getSpotifyAlbumTracksTool(user));
-            tools.add(createSpotifyPerformanceTool(user));
+            tools.add(createSpotifyPerformanceTool(user, true));
         }
 
         if (youTubeService.isConfigured()) {
             tools.add(searchYouTubeVideosTool());
-            tools.add(createYouTubePerformanceTool());
+            tools.add(createYouTubePerformanceTool(true));
+        }
+
+        return tools;
+    }
+
+    /**
+     * Get internal tools (no artifacts - for concert assembly).
+     */
+    private List<Tool> internalTools(ImpromptuUser user) {
+        var tools = new LinkedList<Tool>();
+
+        if (spotifyService.isConfigured() && spotifyService.isLinked(user)) {
+            tools.add(searchSpotifyTracksTool(user));
+            tools.add(getSpotifyAlbumTracksTool(user));
+            tools.add(createSpotifyPerformanceTool(user, false));
+        }
+
+        if (youTubeService.isConfigured()) {
+            tools.add(searchYouTubeVideosTool());
+            tools.add(createYouTubePerformanceTool(false));
         }
 
         return tools;
@@ -235,13 +274,12 @@ public class PerformanceAssemblyService {
         );
     }
 
-    private Tool createSpotifyPerformanceTool(ImpromptuUser user) {
+    private Tool createSpotifyPerformanceTool(ImpromptuUser user, boolean returnArtifact) {
         return Tool.create(
                 "createSpotifyPerformance",
                 """
                         Create a Spotify performance object with the given details.
                         Call this once you've identified a performance.
-                        Returns the Performance as an artifact.
                         """,
                 Tool.InputSchema.of(
                         Tool.Parameter.string("workId", "ID of the work being performed", false),
@@ -289,12 +327,16 @@ public class PerformanceAssemblyService {
                         logger.info("Created Spotify performance: {} - {} ({} tracks)",
                                 performance.title(), performance.albumName(), tracks.size());
 
-                        return Tool.Result.withArtifact(
-                                """
-                                        Created Spotify performance: %s (%d tracks) - %s
-                                        """.formatted(performance.title(), tracks.size(), performance.url()).trim(),
-                                performance
-                        );
+                        storePerformance(performance);
+
+                        var message = "Created Spotify performance: %s (%d tracks) - %s"
+                                .formatted(performance.title(), tracks.size(), performance.url());
+
+                        if (returnArtifact) {
+                            return Tool.Result.withArtifact(message, performance);
+                        } else {
+                            return Tool.Result.text(message);
+                        }
                     } catch (Exception e) {
                         logger.error("Failed to create Spotify performance", e);
                         return Tool.Result.text("Error creating performance: %s".formatted(e.getMessage()));
@@ -342,13 +384,12 @@ public class PerformanceAssemblyService {
         );
     }
 
-    private Tool createYouTubePerformanceTool() {
+    private Tool createYouTubePerformanceTool(boolean returnArtifact) {
         return Tool.create(
                 "createYouTubePerformance",
                 """
                         Create a YouTube performance object with the given details.
                         Call this once you've identified a performance.
-                        Returns the Performance as an artifact.
                         """,
                 Tool.InputSchema.of(
                         Tool.Parameter.string("workId", "ID of the work being performed", false),
@@ -382,12 +423,16 @@ public class PerformanceAssemblyService {
                         logger.info("Created YouTube performance: {} - {}",
                                 performance.title(), video.getTitle());
 
-                        return Tool.Result.withArtifact(
-                                """
-                                        Created YouTube performance: %s - %s
-                                        """.formatted(performance.title(), performance.url()).trim(),
-                                performance
-                        );
+                        storePerformance(performance);
+
+                        var message = "Created YouTube performance: %s - %s"
+                                .formatted(performance.title(), performance.url());
+
+                        if (returnArtifact) {
+                            return Tool.Result.withArtifact(message, performance);
+                        } else {
+                            return Tool.Result.text(message);
+                        }
                     } catch (Exception e) {
                         logger.error("Failed to create YouTube performance", e);
                         return Tool.Result.text("Error creating performance: %s".formatted(e.getMessage()));

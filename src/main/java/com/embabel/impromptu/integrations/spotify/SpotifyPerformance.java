@@ -103,8 +103,8 @@ public interface SpotifyPerformance extends Performance<SpotifyTrack> {
         String trackCount = tracks().size() > 1 ? " (" + tracks().size() + " tracks)" : "";
 
         return LlmReference.of(
-                shortId(),
-                title() + durationPart + trackCount,
+                title(),
+                durationPart + trackCount + " on Spotify",
                 List.of(playTool()),
                 "Spotify performance. Use the play tool to start playback. URL: " + url()
         );
@@ -127,5 +127,20 @@ public interface SpotifyPerformance extends Performance<SpotifyTrack> {
         return tracks().stream()
                 .map(SpotifyTrack::getUri)
                 .toList();
+    }
+
+    /**
+     * Override playbackInfo to include track URIs for actual playback.
+     */
+    @Override
+    default String playbackInfo() {
+        var uris = trackUris();
+        var urisJson = uris.stream()
+                .map(u -> "\"" + u + "\"")
+                .reduce((a, b) -> a + "," + b)
+                .orElse("");
+        return """
+                {"source":"spotify","id":"%s","title":"%s","url":"%s","durationSeconds":%d,"trackUris":[%s]}
+                """.formatted(getId(), title(), url(), durationSeconds(), urisJson).trim();
     }
 }

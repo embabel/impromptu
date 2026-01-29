@@ -26,7 +26,7 @@ import com.vaadin.flow.theme.Theme;
  * Using WebSocket transport for reliable real-time updates.
  * Custom dark theme with classical music aesthetics.
  */
-@Push(value = PushMode.AUTOMATIC, transport = Transport.LONG_POLLING)
+@Push(value = PushMode.AUTOMATIC, transport = Transport.WEBSOCKET_XHR)
 @Theme("impromptu")
 public class AppShellConfig implements AppShellConfigurator {
 }

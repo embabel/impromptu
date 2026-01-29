@@ -21,7 +21,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.List;
 
 /**
- * A performance of a classical work, potentially spanning multiple tracks/movements.
+ * A performance of a single classical work, potentially spanning multiple tracks/movements.
  * <p>
  * For example, a recording of Glazunov's Violin Concerto by Heifetz with the
  * Chicago Symphony under Reiner would be a single Performance containing

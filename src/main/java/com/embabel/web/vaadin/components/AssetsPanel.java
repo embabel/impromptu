@@ -15,14 +15,19 @@
  */
 package com.embabel.web.vaadin.components;
 
+import com.embabel.agent.api.tool.Tool;
 import com.embabel.chat.Asset;
 import com.embabel.chat.AssetView;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -33,11 +38,17 @@ public class AssetsPanel extends VerticalLayout {
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     private final Supplier<AssetView> assetViewSupplier;
+    private final Consumer<Tool> toolInvoker;
     private final VerticalLayout assetsList;
     private final Span emptyMessage;
 
     public AssetsPanel(Supplier<AssetView> assetViewSupplier) {
+        this(assetViewSupplier, null);
+    }
+
+    public AssetsPanel(Supplier<AssetView> assetViewSupplier, Consumer<Tool> toolInvoker) {
         this.assetViewSupplier = assetViewSupplier;
+        this.toolInvoker = toolInvoker;
         setPadding(true);
         setSpacing(true);
         setSizeFull();
@@ -113,7 +124,50 @@ public class AssetsPanel extends VerticalLayout {
             content.add(notesSpan);
         }
 
+        // Add buttons for no-arg tools
+        var tools = reference.tools();
+        if (tools != null && !tools.isEmpty() && toolInvoker != null) {
+            var buttonsLayout = new FlexLayout();
+            buttonsLayout.addClassName("asset-tools");
+            buttonsLayout.setFlexWrap(FlexLayout.FlexWrap.WRAP);
+            buttonsLayout.getStyle().set("gap", "0.5em");
+
+            for (var tool : tools) {
+                if (isNoArgTool(tool)) {
+                    var button = new Button(tool.getDefinition().getName());
+                    button.addThemeVariants(ButtonVariant.LUMO_SMALL);
+                    button.addClassName("asset-tool-button");
+                    button.addClickListener(e -> toolInvoker.accept(tool));
+                    buttonsLayout.add(button);
+                }
+            }
+
+            if (buttonsLayout.getComponentCount() > 0) {
+                content.add(buttonsLayout);
+            }
+        }
+
         card.add(content);
         return card;
+    }
+
+    /**
+     * Check if tool has no required parameters.
+     */
+    private boolean isNoArgTool(Tool tool) {
+        var definition = tool.getDefinition();
+        if (definition == null) {
+            return true;
+        }
+        var schema = definition.getInputSchema();
+        if (schema == null) {
+            return true;
+        }
+        var params = schema.getParameters();
+        if (params == null || params.isEmpty()) {
+            return true;
+        }
+        // Check if all parameters are optional
+        return params.stream().noneMatch(Tool.Parameter::getRequired);
     }
 }
