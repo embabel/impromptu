@@ -32,17 +32,20 @@ import com.embabel.dice.projection.memory.support.RelationBasedKnowledgeTypeClas
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.integrations.imslp.ImslpTools;
 import com.embabel.impromptu.integrations.metmuseum.MetMuseumTools;
+import com.embabel.impromptu.rag.DocumentService;
 import com.embabel.impromptu.resource.ResourceDelivery;
 import com.embabel.impromptu.resource.ResourceGenerationService;
 import com.embabel.impromptu.resource.ResourceTools;
-import com.embabel.impromptu.rag.DocumentService;
 import com.embabel.impromptu.user.DrivineImpromptuUserService;
 import com.embabel.impromptu.user.ImpromptuUserService;
 import io.modelcontextprotocol.client.McpSyncClient;
 import org.drivine.manager.GraphObjectManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,6 +55,8 @@ import java.util.stream.Collectors;
  */
 @Configuration
 class ChatConfiguration {
+
+    private final Logger logger = LoggerFactory.getLogger(ChatConfiguration.class);
 
     /**
      * Allows us to use MCP tools in the chatbot
@@ -102,6 +107,7 @@ class ChatConfiguration {
 
     /**
      * Common tools available to the chatbot regardless of user configuration.
+     * We wrap them in a record to disambiguate injection and not rely on an injected list
      */
     public record CommonTools(List<Object> tools) {
     }
@@ -113,21 +119,33 @@ class ChatConfiguration {
             ResourceDelivery resourceDelivery,
             CypherQueryTools cypherQueryTools) {
         var deter = "Use this tool only after trying the sources tool";
-        return new CommonTools(List.of(
-                mcpToolFactory.requiredToolByName("brave_web_search")
-                        .withNote(deter),
-                mcpToolFactory.matryoshkaByName(
-                        "wikipedia",
-                        "Search and find content from Wikipedia: " + deter,
-                        Set.of("search_wikipedia", "get_article", "get_related_topics", "get_summary", "get_wikipedia_summary")),
-                MetMuseumTools.DEFAULT,
-                ImslpTools.DEFAULT,
-                new ResourceTools(resourceGenerationService, resourceDelivery),
-                cypherQueryTools.tool("""
-                        Use this tool to query existing entities such as composers and works.
-                        If you are asked questions like "Who composed the most violin concertos?" or
-                        "List saxophone concertos" use this tool
-                        """)
-        ));
+        var tools = new LinkedList<>();
+
+        // MCP tools - only add if available (gracefully degrade in test environments)
+        var braveSearch = mcpToolFactory.toolByName("brave_web_search");
+        if (braveSearch != null) {
+            logger.info("Adding Brave Search MCP tool");
+            tools.add(braveSearch.withNote(deter));
+        }
+        var wikipediaTool = mcpToolFactory.matryoshkaByName(
+                "wikipedia",
+                "Search and find content from Wikipedia: " + deter,
+                Set.of("search_wikipedia", "get_article", "get_related_topics", "get_summary", "get_wikipedia_summary"));
+        if (!wikipediaTool.getInnerTools().isEmpty()) {
+            logger.info("Adding Wikipedia MCP tool");
+            tools.add(wikipediaTool);
+        }
+
+        // Always available tools
+        tools.add(MetMuseumTools.DEFAULT);
+        tools.add(ImslpTools.DEFAULT);
+        tools.add(new ResourceTools(resourceGenerationService, resourceDelivery));
+        tools.add(cypherQueryTools.tool("""
+                Use this tool to query existing entities such as composers and works.
+                If you are asked questions like "Who composed the most violin concertos?" or
+                "List saxophone concertos" use this tool
+                """));
+
+        return new CommonTools(tools);
     }
 }
