@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.integrations;
+package com.embabel.impromptu.domain.performance;
 
 import com.embabel.agent.api.common.LlmReference;
 import com.embabel.agent.api.tool.Tool;
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * <ul>
  *   <li>Symphony No. 1 - Berlin Philharmonic</li>
  *   <li>Violin Concerto - Heifetz</li>
- *   <li>Piano Concerto No. 2 - Zimerman</li>
+ *   <li>Piano Concerto No. 2 - Zimmerman</li>
  * </ul>
  */
 public record Concert(

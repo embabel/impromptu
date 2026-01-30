@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.domain;
+package com.embabel.impromptu.domain.reference;
 
+import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.fasterxml.jackson.annotation.JsonClassDescription;
 
-/**
- * A place relevant to music history.
- */
-public interface MusicPlace extends NamedEntity {
-    String getLocation();
+@JsonClassDescription("Musical ensemble, such as a string quartet or symphony orchestra")
+@CreationPermitted(false)
+public interface Ensemble extends NamedEntity {
 }

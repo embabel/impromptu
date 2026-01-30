@@ -16,7 +16,7 @@
 package com.embabel.impromptu.integrations.youtube;
 
 import com.embabel.agent.rag.model.NamedEntity;
-import com.embabel.impromptu.integrations.Playable;
+import com.embabel.impromptu.domain.performance.Playable;
 
 /**
  * A YouTube video that can be persisted as a NamedEntity.

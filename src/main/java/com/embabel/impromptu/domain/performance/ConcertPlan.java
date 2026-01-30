@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.integrations;
+package com.embabel.impromptu.domain.performance;
 
 import java.util.List;
 
@@ -23,9 +23,9 @@ import java.util.List;
  * This is the output of the planning phase, which the user can confirm or modify
  * before the system searches for actual performances.
  *
- * @param name suggested name for the concert
- * @param works the planned works in program order
- * @param rationale brief explanation of the programming choices
+ * @param name                  suggested name for the concert
+ * @param works                 the planned works in program order
+ * @param rationale             brief explanation of the programming choices
  * @param estimatedTotalMinutes approximate total duration (varies by performance)
  */
 public record ConcertPlan(
@@ -38,10 +38,10 @@ public record ConcertPlan(
     /**
      * A work planned for inclusion in the concert.
      *
-     * @param composer composer name
-     * @param title work title (e.g., "Symphony No. 5 in C minor, Op. 67")
+     * @param composer         composer name
+     * @param title            work title (e.g., "Symphony No. 5 in C minor, Op. 67")
      * @param estimatedMinutes approximate duration (will vary by performance)
-     * @param notes optional notes about this choice
+     * @param notes            optional notes about this choice
      */
     public record PlannedWork(
             String composer,
@@ -49,16 +49,7 @@ public record ConcertPlan(
             int estimatedMinutes,
             String notes
     ) {
-        public PlannedWork(String composer, String title, int estimatedMinutes) {
-            this(composer, title, estimatedMinutes, null);
-        }
 
-        /**
-         * Search query to find this work.
-         */
-        public String searchQuery() {
-            return composer + " " + title;
-        }
     }
 
     /**

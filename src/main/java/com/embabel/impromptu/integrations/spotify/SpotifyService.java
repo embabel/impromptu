@@ -15,7 +15,7 @@
  */
 package com.embabel.impromptu.integrations.spotify;
 
-import com.embabel.impromptu.integrations.Playable;
+import com.embabel.impromptu.domain.performance.Playable;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;

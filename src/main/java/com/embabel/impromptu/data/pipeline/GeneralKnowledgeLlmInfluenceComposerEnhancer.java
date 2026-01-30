@@ -18,7 +18,7 @@ package com.embabel.impromptu.data.pipeline;
 import com.embabel.agent.api.common.Ai;
 import com.embabel.agent.api.common.AiBuilder;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.domain.Composer;
+import com.embabel.impromptu.domain.reference.Composer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -64,7 +64,8 @@ class GeneralKnowledgeLlmInfluenceComposerEnhancer implements ComposerEnhancer {
     private List<String> pendingRecords;
     private PrintWriter csvWriter;
 
-    record InfluenceResponse(List<GeneratedInfluence> influences) {}
+    record InfluenceResponse(List<GeneratedInfluence> influences) {
+    }
 
     record GeneratedInfluence(
             String from,
@@ -73,7 +74,8 @@ class GeneralKnowledgeLlmInfluenceComposerEnhancer implements ComposerEnhancer {
             double strength,
             double confidence,
             double divergence
-    ) {}
+    ) {
+    }
 
     public GeneralKnowledgeLlmInfluenceComposerEnhancer(
             AiBuilder aiBuilder,

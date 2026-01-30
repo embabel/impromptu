@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.domain;
+package com.embabel.impromptu.domain.reference;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
-import com.fasterxml.jackson.annotation.JsonClassDescription;
 
 /**
- * Represents a musical epoch/period (e.g., "Baroque", "Romantic", "20th Century").
+ * Represents a musical genre (e.g., "Orchestral", "Chamber", "Keyboard", "Stage").
  */
-@JsonClassDescription("Represents a musical epoch/period (e.g., \"Baroque\", \"Romantic\", \"20th Century\").")
 @CreationPermitted(false)
-public interface Epoch extends NamedEntity {
+public interface Genre extends NamedEntity {
 }

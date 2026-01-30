@@ -16,7 +16,7 @@
 package com.embabel.impromptu;
 
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
-import com.embabel.impromptu.domain.Composer;
+import com.embabel.impromptu.domain.reference.Composer;
 import org.drivine.autoconfigure.EnableDrivine;
 import org.drivine.autoconfigure.EnableDrivineTestConfig;
 import org.drivine.manager.PersistenceManager;

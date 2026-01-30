@@ -13,12 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.domain;
+package com.embabel.impromptu.domain.reference;
 
+import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.embabel.agent.rag.model.Relationship;
+import com.fasterxml.jackson.annotation.JsonClassDescription;
 
 /**
- * A musical concept or term.
+ * A musical instrument.
  */
-public interface MusicalConcept extends NamedEntity {
+@JsonClassDescription("A musical instrument, such as a violin")
+@CreationPermitted(false)
+public interface Instrument extends NamedEntity {
+
+    @Relationship(name = "OF_FAMILY")
+    Family getFamily();
 }

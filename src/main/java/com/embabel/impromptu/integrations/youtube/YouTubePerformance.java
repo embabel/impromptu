@@ -17,7 +17,7 @@ package com.embabel.impromptu.integrations.youtube;
 
 import com.embabel.agent.api.common.LlmReference;
 import com.embabel.agent.rag.model.Relationship;
-import com.embabel.impromptu.integrations.Performance;
+import com.embabel.impromptu.domain.performance.Performance;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;

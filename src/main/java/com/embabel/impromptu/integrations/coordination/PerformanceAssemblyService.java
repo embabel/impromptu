@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.integrations;
+package com.embabel.impromptu.integrations.coordination;
 
 import com.embabel.agent.api.tool.AgenticTool;
 import com.embabel.agent.api.tool.Tool;
 import com.embabel.agent.core.AgentProcess;
+import com.embabel.impromptu.domain.performance.Performance;
 import com.embabel.impromptu.integrations.spotify.SpotifyPerformanceImpl;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.spotify.SpotifyTrack;
@@ -62,9 +63,10 @@ public class PerformanceAssemblyService {
     private final ResourceLoader resourceLoader;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public PerformanceAssemblyService(SpotifyService spotifyService,
-                                      YouTubeService youTubeService,
-                                      ResourceLoader resourceLoader) {
+    public PerformanceAssemblyService(
+            SpotifyService spotifyService,
+            YouTubeService youTubeService,
+            ResourceLoader resourceLoader) {
         this.spotifyService = spotifyService;
         this.youTubeService = youTubeService;
         this.resourceLoader = resourceLoader;
@@ -442,7 +444,8 @@ public class PerformanceAssemblyService {
             String albumId,
             int durationSeconds,
             int trackNumber
-    ) {}
+    ) {
+    }
 
     record AlbumTrackInfo(
             String uri,
@@ -450,7 +453,8 @@ public class PerformanceAssemblyService {
             String artist,
             int trackNumber,
             int discNumber
-    ) {}
+    ) {
+    }
 
     record VideoInfo(
             String videoId,
@@ -458,5 +462,6 @@ public class PerformanceAssemblyService {
             String channelTitle,
             int durationSeconds,
             String durationFormatted
-    ) {}
+    ) {
+    }
 }

@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.domain;
+package com.embabel.impromptu.domain.reference;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.fasterxml.jackson.annotation.JsonClassDescription;
 
+/**
+ * A musical instrument.
+ */
+@JsonClassDescription("Family of musical instruments, such as strings or brass")
 @CreationPermitted(false)
-public interface Nationality extends NamedEntity {
+public interface Family extends NamedEntity {
 
-    String getCountryCode();
-
-    /**
-     * Country, like "Austria," where name is "Austrian"
-     */
-    String getCountry();
 }

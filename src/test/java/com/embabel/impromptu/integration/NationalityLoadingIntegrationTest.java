@@ -18,8 +18,8 @@ package com.embabel.impromptu.integration;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.impromptu.TestLlmConfiguration;
 import com.embabel.impromptu.TestSecurityConfiguration;
-import com.embabel.impromptu.domain.Nationality;
-import com.embabel.impromptu.domain.Technique;
+import com.embabel.impromptu.domain.reference.Nationality;
+import com.embabel.impromptu.domain.reference.Technique;
 import org.drivine.autoconfigure.EnableDrivine;
 import org.drivine.autoconfigure.EnableDrivineTestConfig;
 import org.drivine.manager.PersistenceManager;
@@ -77,12 +77,12 @@ class NationalityLoadingIntegrationTest {
 
         persistenceManager.execute(
                 QuerySpecification.withStatement("""
-                        UNWIND $nationalities AS n
-                        MERGE (nat:__Entity__:Nationality:Reference {id: n.id})
-                        SET nat.name = n.name,
-                            nat.country = n.country,
-                            nat.countryCode = n.code
-                        """)
+                                UNWIND $nationalities AS n
+                                MERGE (nat:__Entity__:Nationality:Reference {id: n.id})
+                                SET nat.name = n.name,
+                                    nat.country = n.country,
+                                    nat.countryCode = n.code
+                                """)
                         .bind(Map.of("nationalities", nationalities))
         );
 
@@ -94,10 +94,10 @@ class NationalityLoadingIntegrationTest {
 
         persistenceManager.execute(
                 QuerySpecification.withStatement("""
-                        UNWIND $techniques AS t
-                        MERGE (tech:__Entity__:Technique:Reference {id: t.id})
-                        SET tech.name = t.name
-                        """)
+                                UNWIND $techniques AS t
+                                MERGE (tech:__Entity__:Technique:Reference {id: t.id})
+                                SET tech.name = t.name
+                                """)
                         .bind(Map.of("techniques", techniques))
         );
     }

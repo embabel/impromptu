@@ -16,8 +16,7 @@
 package com.embabel.impromptu.integrations.spotify;
 
 import com.embabel.agent.rag.model.NamedEntity;
-import com.embabel.impromptu.integrations.Playable;
-import org.jspecify.annotations.NonNull;
+import com.embabel.impromptu.domain.performance.Playable;
 
 /**
  * A track from Spotify that can be persisted as a NamedEntity.
@@ -29,7 +28,7 @@ public interface SpotifyTrack extends NamedEntity, Playable {
      * Spotify URI (e.g., "spotify:track:xxx").
      */
     String getUri();
- 
+
     /**
      * Artist name.
      */

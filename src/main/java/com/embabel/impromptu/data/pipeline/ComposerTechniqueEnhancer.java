@@ -19,8 +19,8 @@ import com.embabel.agent.api.common.Ai;
 import com.embabel.agent.api.common.AiBuilder;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.domain.Composer;
-import com.embabel.impromptu.domain.Technique;
+import com.embabel.impromptu.domain.reference.Composer;
+import com.embabel.impromptu.domain.reference.Technique;
 import org.drivine.manager.PersistenceManager;
 import org.drivine.query.QuerySpecification;
 import org.slf4j.Logger;
@@ -71,14 +71,16 @@ public class ComposerTechniqueEnhancer implements ComposerEnhancer {
     private PrintWriter csvWriter;
     private List<Technique> allTechniques;
 
-    record TechniqueResponse(List<TechniqueUsage> techniques) {}
+    record TechniqueResponse(List<TechniqueUsage> techniques) {
+    }
 
     record TechniqueUsage(
             String techniqueId,
             String reason,
             double strength,
             double confidence
-    ) {}
+    ) {
+    }
 
     public ComposerTechniqueEnhancer(
             AiBuilder aiBuilder,

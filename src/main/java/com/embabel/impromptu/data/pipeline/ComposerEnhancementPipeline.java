@@ -17,7 +17,7 @@ package com.embabel.impromptu.data.pipeline;
 
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.common.util.VisualizableTask;
-import com.embabel.impromptu.domain.Composer;
+import com.embabel.impromptu.domain.reference.Composer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -50,10 +50,14 @@ public class ComposerEnhancementPipeline {
     private final Map<String, Enhancer> allEnhancersById;
     private final List<Enhancer> allEnhancers;
 
-    /** How often to log progress (every N composers). */
+    /**
+     * How often to log progress (every N composers).
+     */
     private int progressInterval = 5;
 
-    /** How often to commit/save progress (every N composers). */
+    /**
+     * How often to commit/save progress (every N composers).
+     */
     private int commitInterval = 10;
 
     public ComposerEnhancementPipeline(
@@ -219,6 +223,7 @@ public class ComposerEnhancementPipeline {
 
     /**
      * Apply CSV for a specific enhancer.
+     *
      * @param ignoreStatus if true, apply all entries regardless of status
      */
     public Enhancer.ApplyResult apply(String enhancerId, boolean ignoreStatus) throws IOException {
@@ -238,6 +243,7 @@ public class ComposerEnhancementPipeline {
 
     /**
      * Apply CSVs for all enhancers.
+     *
      * @param ignoreStatus if true, apply all entries regardless of status
      */
     public List<ApplyAllResult> applyAll(boolean ignoreStatus) throws IOException {

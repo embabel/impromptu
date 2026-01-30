@@ -15,10 +15,9 @@
  */
 package com.embabel.impromptu.data.pipeline;
 
-import com.embabel.impromptu.domain.Composer;
+import com.embabel.impromptu.domain.reference.Composer;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 
 /**

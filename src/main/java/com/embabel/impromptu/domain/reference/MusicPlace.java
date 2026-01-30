@@ -1,5 +1,5 @@
 /*
- * Copyright 2024-2025 Embabel Pty Ltd.
+ * Copyright 2024-2026 Embabel Pty Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.domain;
+package com.embabel.impromptu.domain.reference;
 
-import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
 
 /**
- * Represents a musical genre (e.g., "Orchestral", "Chamber", "Keyboard", "Stage").
+ * A place relevant to music history.
  */
-@CreationPermitted(false)
-public interface Genre extends NamedEntity {
+public interface MusicPlace extends NamedEntity {
+    String getLocation();
 }

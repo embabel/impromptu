@@ -37,7 +37,7 @@ import com.embabel.dice.proposition.extraction.LlmPropositionExtractor;
 import com.embabel.dice.proposition.revision.LlmPropositionReviser;
 import com.embabel.dice.proposition.revision.PropositionReviser;
 import com.embabel.impromptu.ImpromptuProperties;
-import com.embabel.impromptu.domain.*;
+import com.embabel.impromptu.domain.reference.*;
 import com.embabel.impromptu.integrations.spotify.SpotifyPerformance;
 import com.embabel.impromptu.integrations.spotify.SpotifyTrack;
 import com.embabel.impromptu.integrations.youtube.YouTubePerformance;

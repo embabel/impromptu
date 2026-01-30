@@ -16,9 +16,9 @@
 package com.embabel.impromptu.data.pipeline;
 
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
-import com.embabel.impromptu.domain.Ensemble;
-import com.embabel.impromptu.domain.Instrument;
-import com.embabel.impromptu.domain.Work;
+import com.embabel.impromptu.domain.reference.Ensemble;
+import com.embabel.impromptu.domain.reference.Instrument;
+import com.embabel.impromptu.domain.reference.Work;
 import org.drivine.manager.PersistenceManager;
 import org.drivine.query.QuerySpecification;
 import org.slf4j.Logger;
