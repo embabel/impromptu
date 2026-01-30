@@ -50,6 +50,8 @@ public record ConcertAssembler(
         PerformanceAssemblyService performanceAssemblyService
 ) {
 
+    // TODO why does this use the blackboard at all
+
     private static final Logger logger = LoggerFactory.getLogger(ConcertAssembler.class);
     private static final int MAX_CONCURRENCY = 4;
 
@@ -223,7 +225,7 @@ public record ConcertAssembler(
                     .creating(PerformanceSearchResult.class)
                     .fromPrompt("""
                             Find the best recording of "%s" by %s on %s.
-
+                            
                             Steps:
                             1. Search for recordings using the search tool
                             2. Pick ONE high-quality recording with:
@@ -232,7 +234,7 @@ public record ConcertAssembler(
                                - Good sound quality
                             3. Create a performance using the create performance tool
                             4. Return found=true if successful
-
+                            
                             You MUST call the create performance tool to complete this task.
                             """.formatted(work.title(), work.composer(), work.platform()));
 

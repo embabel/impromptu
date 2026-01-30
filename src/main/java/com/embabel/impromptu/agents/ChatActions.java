@@ -29,6 +29,8 @@ import com.embabel.dice.agent.Memory;
 import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.agents.ProgramNoteWriter.ProgramNoteRequest;
+import com.embabel.impromptu.domain.performance.Concert;
 import com.embabel.impromptu.domain.performance.ConcertPlan;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.integrations.coordination.ConcertAssemblyService;
@@ -109,17 +111,28 @@ public record ChatActions(
                 assets.stream().map(LlmReference::getName).toList()
         );
 
+        // Build tools list - conditionally include ProgramNoteWriter when Concert is available
+        var tools = new LinkedList<Tool>();
+        tools.add(memory);
+        tools.add(sources);
+        tools.add(assetTracker.addReturnedAssets(
+                Subagent.ofClass(ConcertAssembler.class).consuming(ConcertPlan.class)));
+
+        // If there's a Concert in the assets, expose ProgramNoteWriter
+        var hasConcert = assetTracker.getAssets().stream()
+                .anyMatch(asset -> asset instanceof Concert);
+        if (hasConcert) {
+            logger.info("Concert found in assets, exposing ProgramNoteWriter subagent");
+            tools.add(assetTracker.addReturnedAssets(
+                    Subagent.ofClass(ProgramNoteWriter.class).consuming(ProgramNoteRequest.class)));
+        }
+
         var assistantMessage = context.ai()
                 .withLlm(properties.chatLlm())
                 .withId("chat_response")
                 .withPromptElements(user)
                 .withReferences(assets)
-                .withTools(
-                        memory,
-                        sources,
-                        assetTracker.addReturnedAssets(
-                                Subagent.ofClass(ConcertAssembler.class).consuming(ConcertPlan.class))
-                )
+                .withTools(tools)
                 .withToolObjects(toolObjectsForUser(user, assetTracker))
                 .rendering("impromptu_chat_response")
                 .respondWithSystemPrompt(

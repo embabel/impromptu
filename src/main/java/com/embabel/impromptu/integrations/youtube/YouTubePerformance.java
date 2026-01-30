@@ -113,8 +113,8 @@ public interface YouTubePerformance extends Performance<YouTubeVideo> {
         String durationPart = duration != null ? " [" + duration + "]" : "";
 
         return LlmReference.of(
-                title(),
-                durationPart + " on YouTube",
+                shortId(),
+                title() + durationPart + " on YouTube",
                 List.of(playTool()),
                 "YouTube performance. Use the play tool to start playback. URL: " + url()
         );

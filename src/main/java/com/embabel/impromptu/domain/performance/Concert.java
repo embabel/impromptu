@@ -199,7 +199,7 @@ public record Concert(
     @Override
     public Tool playTool() {
         return Tool.create(
-                "Listen to Concert",
+                "play_concert",
                 "Play the entire concert: " + title(),
                 input -> Tool.Result.text(playbackInfo())
         );
@@ -233,9 +233,13 @@ public record Concert(
             var workName = perf.workName();
             var shortName = workName != null && !workName.isBlank()
                     ? workName.substring(0, Math.min(35, workName.length()))
-                    : "#" + index;
+                    : "track_" + index;
+            // Sanitize tool name to match OpenAI pattern: ^[a-zA-Z0-9_-]+
+            var toolName = "play_" + index + "_" + shortName
+                    .replaceAll("[^a-zA-Z0-9_-]", "_")
+                    .replaceAll("_+", "_");
             tools.add(Tool.create(
-                    index + ". " + shortName,
+                    toolName,
                     "Play " + perf.title(),
                     input -> Tool.Result.text(perf.playbackInfo())
             ));
@@ -257,10 +261,10 @@ public record Concert(
             context.append("\n");
         }
 
-        // Use the actual title as the name for display
+        // Use shortId() for the name to ensure valid tool prefix (no spaces/special chars)
         return LlmReference.of(
-                title(),
-                description,
+                shortId(),
+                title() + " " + description,
                 tools,
                 context.toString()
         );

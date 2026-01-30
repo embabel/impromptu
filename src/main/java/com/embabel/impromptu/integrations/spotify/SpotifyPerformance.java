@@ -102,8 +102,8 @@ public interface SpotifyPerformance extends Performance<SpotifyTrack> {
         String trackCount = tracks().size() > 1 ? " (" + tracks().size() + " tracks)" : "";
 
         return LlmReference.of(
-                title(),
-                durationPart + trackCount + " on Spotify",
+                shortId(),
+                title() + durationPart + trackCount + " on Spotify",
                 List.of(playTool()),
                 "Spotify performance. Use the play tool to start playback. URL: " + url()
         );
