@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.embabel.impromptu.chat;
+package com.embabel.impromptu.agents;
 
 import com.embabel.agent.api.tool.Tool;
 import com.embabel.agent.core.AgentPlatform;

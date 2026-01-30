@@ -1171,7 +1171,7 @@ impromptu:
 
 ### Chatbot Creation
 
-The chatbot is created in [`ChatConfiguration.java`](src/main/java/com/embabel/impromptu/chat/ChatConfiguration.java):
+The chatbot is created in [`ChatConfiguration.java`](src/main/java/com/embabel/impromptu/agents/ChatConfiguration.java):
 
 ```java
 @Bean
@@ -1186,7 +1186,7 @@ appropriate messages arrive.
 
 ### Action Handling
 
-Chat actions are defined in [`ChatActions.java`](src/main/java/com/embabel/impromptu/chat/ChatActions.java):
+Chat actions are defined in [`ChatActions.java`](src/main/java/com/embabel/impromptu/agents/ChatActions.java):
 
 ```java
 @EmbabelComponent
