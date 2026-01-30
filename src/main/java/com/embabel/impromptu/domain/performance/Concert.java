@@ -143,6 +143,17 @@ public record Concert(
     }
 
     /**
+     * List of unique composers across all performances.
+     */
+    public List<String> composers() {
+        return performances.stream()
+                .map(Performance::composer)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+    }
+
+    /**
      * List of unique performers across all performances.
      */
     public List<String> performers() {

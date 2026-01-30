@@ -47,6 +47,13 @@ public interface Performance<T extends Playable> extends Playable, NamedEntity {
         return null;
     }
 
+    /**
+     * Composer of the work being performed.
+     */
+    default String composer() {
+        return null;
+    }
+
     @Override
     default @NonNull String getName() {
         return title();

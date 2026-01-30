@@ -27,6 +27,7 @@ public record YouTubePerformanceImpl(
         String id,
         String workId,
         String workName,
+        String composer,
         String videoId,
         String performer,
         String ensemble,
@@ -36,11 +37,12 @@ public record YouTubePerformanceImpl(
 ) implements YouTubePerformance {
 
     /**
-     * Create a YouTubePerformance from a single video with work name.
+     * Create a YouTubePerformance from a single video with work name and composer.
      */
     public static YouTubePerformanceImpl create(
             String workId,
             String workName,
+            String composer,
             String performer,
             String ensemble,
             String conductor,
@@ -50,6 +52,7 @@ public record YouTubePerformanceImpl(
                 video.getVideoId(),
                 workId,
                 workName,
+                composer,
                 video.getVideoId(),
                 performer,
                 ensemble,
@@ -60,7 +63,38 @@ public record YouTubePerformanceImpl(
     }
 
     /**
-     * Create a YouTubePerformance from multiple videos.
+     * Create a YouTubePerformance from a single video (legacy, no composer).
+     */
+    public static YouTubePerformanceImpl create(
+            String workId,
+            String workName,
+            String performer,
+            String ensemble,
+            String conductor,
+            YouTubeVideo video
+    ) {
+        return create(workId, workName, null, performer, ensemble, conductor, video);
+    }
+
+    /**
+     * Create a YouTubePerformance from multiple videos with composer.
+     */
+    public static YouTubePerformanceImpl create(
+            String workId,
+            String workName,
+            String composer,
+            String performer,
+            String ensemble,
+            String conductor,
+            List<YouTubeVideo> videos
+    ) {
+        String videoId = videos.isEmpty() ? "unknown" : videos.getFirst().getVideoId();
+        Instant timestamp = videos.isEmpty() ? Instant.now() : videos.getFirst().getTimestamp();
+        return new YouTubePerformanceImpl(videoId, workId, workName, composer, videoId, performer, ensemble, conductor, videos, timestamp);
+    }
+
+    /**
+     * Create a YouTubePerformance from multiple videos (legacy, no composer).
      */
     public static YouTubePerformanceImpl create(
             String workId,
@@ -70,13 +104,11 @@ public record YouTubePerformanceImpl(
             String conductor,
             List<YouTubeVideo> videos
     ) {
-        String videoId = videos.isEmpty() ? "unknown" : videos.getFirst().getVideoId();
-        Instant timestamp = videos.isEmpty() ? Instant.now() : videos.getFirst().getTimestamp();
-        return new YouTubePerformanceImpl(videoId, workId, workName, videoId, performer, ensemble, conductor, videos, timestamp);
+        return create(workId, workName, null, performer, ensemble, conductor, videos);
     }
 
     /**
-     * Create a YouTubePerformance from multiple videos (legacy, no work name).
+     * Create a YouTubePerformance from multiple videos (legacy, no work name or composer).
      */
     public static YouTubePerformanceImpl create(
             String workId,
@@ -85,7 +117,7 @@ public record YouTubePerformanceImpl(
             String conductor,
             List<YouTubeVideo> videos
     ) {
-        return create(workId, null, performer, ensemble, conductor, videos);
+        return create(workId, null, null, performer, ensemble, conductor, videos);
     }
 
     @Override

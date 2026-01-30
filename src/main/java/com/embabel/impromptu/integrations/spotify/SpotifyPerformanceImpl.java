@@ -27,6 +27,7 @@ public record SpotifyPerformanceImpl(
         String id,
         String workId,
         String workName,
+        String composer,
         String albumId,
         String albumName,
         String performer,
@@ -42,6 +43,7 @@ public record SpotifyPerformanceImpl(
     public static SpotifyPerformanceImpl create(
             String workId,
             String workName,
+            String composer,
             String albumId,
             String albumName,
             String performer,
@@ -51,11 +53,27 @@ public record SpotifyPerformanceImpl(
     ) {
         String id = albumId + ":" + (tracks.isEmpty() ? "unknown" : tracks.getFirst().getId());
         Instant timestamp = tracks.isEmpty() ? Instant.now() : tracks.getFirst().getTimestamp();
-        return new SpotifyPerformanceImpl(id, workId, workName, albumId, albumName, performer, ensemble, conductor, tracks, timestamp);
+        return new SpotifyPerformanceImpl(id, workId, workName, composer, albumId, albumName, performer, ensemble, conductor, tracks, timestamp);
     }
 
     /**
-     * Create without work name (legacy compatibility).
+     * Create without composer (legacy compatibility).
+     */
+    public static SpotifyPerformanceImpl create(
+            String workId,
+            String workName,
+            String albumId,
+            String albumName,
+            String performer,
+            String ensemble,
+            String conductor,
+            List<SpotifyTrack> tracks
+    ) {
+        return create(workId, workName, null, albumId, albumName, performer, ensemble, conductor, tracks);
+    }
+
+    /**
+     * Create without work name or composer (legacy compatibility).
      */
     public static SpotifyPerformanceImpl create(
             String workId,
@@ -66,7 +84,7 @@ public record SpotifyPerformanceImpl(
             String conductor,
             List<SpotifyTrack> tracks
     ) {
-        return create(workId, null, albumId, albumName, performer, ensemble, conductor, tracks);
+        return create(workId, null, null, albumId, albumName, performer, ensemble, conductor, tracks);
     }
 
     @Override
