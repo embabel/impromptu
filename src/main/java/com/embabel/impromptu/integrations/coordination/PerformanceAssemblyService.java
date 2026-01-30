@@ -149,9 +149,21 @@ public class PerformanceAssemblyService {
      * Check if performance finding is available (at least one platform configured).
      */
     public boolean isAvailable(ImpromptuUser user) {
-        boolean spotifyAvailable = spotifyService.isConfigured() && spotifyService.isLinked(user);
-        boolean youtubeAvailable = youTubeService.isConfigured();
-        return spotifyAvailable || youtubeAvailable;
+        return isSpotifyAvailable(user) || isYouTubeAvailable();
+    }
+
+    /**
+     * Check if Spotify is available for the user.
+     */
+    public boolean isSpotifyAvailable(ImpromptuUser user) {
+        return spotifyService.isConfigured() && spotifyService.isLinked(user);
+    }
+
+    /**
+     * Check if YouTube is available (no user-specific linking required).
+     */
+    public boolean isYouTubeAvailable() {
+        return youTubeService.isConfigured();
     }
 
     /**
@@ -166,9 +178,9 @@ public class PerformanceAssemblyService {
     }
 
     /**
-     * Get all tools for the given user.
+     * Get all search tools for the given user's linked platforms.
      */
-    private List<Tool> tools(ImpromptuUser user) {
+    public List<Tool> tools(ImpromptuUser user) {
         var tools = new LinkedList<Tool>();
 
         if (spotifyService.isConfigured() && spotifyService.isLinked(user)) {

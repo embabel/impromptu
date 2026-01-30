@@ -20,6 +20,7 @@ import com.embabel.agent.api.annotation.EmbabelComponent;
 import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.LlmReference;
 import com.embabel.agent.api.common.OperationContext;
+import com.embabel.agent.api.tool.Subagent;
 import com.embabel.agent.api.tool.Tool;
 import com.embabel.chat.AssetTracker;
 import com.embabel.chat.Conversation;
@@ -28,15 +29,14 @@ import com.embabel.dice.agent.Memory;
 import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.proposition.PropositionRepository;
 import com.embabel.impromptu.ImpromptuProperties;
+import com.embabel.impromptu.domain.performance.ConcertPlan;
 import com.embabel.impromptu.event.ConversationAnalysisRequestEvent;
 import com.embabel.impromptu.integrations.coordination.ConcertAssemblyService;
 import com.embabel.impromptu.integrations.coordination.ConcertPlanningService;
 import com.embabel.impromptu.integrations.coordination.PerformanceAssemblyService;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
-import com.embabel.impromptu.integrations.spotify.SpotifyTools;
 import com.embabel.impromptu.integrations.youtube.YouTubePendingPlayback;
 import com.embabel.impromptu.integrations.youtube.YouTubeService;
-import com.embabel.impromptu.integrations.youtube.YouTubeTools;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +102,8 @@ public record ChatActions(
                 )
                 .withProjector(memoryProjector);
 
-        var assets = conversation.getAssetTracker().mostRecentlyAdded(10).references();
+        var assetTracker = conversation.getAssetTracker();
+        var assets = assetTracker.mostRecentlyAdded(10).references();
         logger.info("Tracking {} assets: {}",
                 assets.size(),
                 assets.stream().map(LlmReference::getName).toList()
@@ -113,8 +114,13 @@ public record ChatActions(
                 .withId("chat_response")
                 .withPromptElements(user)
                 .withReferences(assets)
-                .withTools(memory, sources)
-                .withToolObjects(toolObjectsForUser(user, conversation.getAssetTracker()))
+                .withTools(
+                        memory,
+                        sources,
+                        assetTracker.addReturnedAssets(
+                                Subagent.ofClass(ConcertAssembler.class).consuming(ConcertPlan.class))
+                )
+                .withToolObjects(toolObjectsForUser(user, assetTracker))
                 .rendering("impromptu_chat_response")
                 .respondWithSystemPrompt(
                         conversation.last(properties.conversationWindow()),
@@ -133,22 +139,23 @@ public record ChatActions(
      */
     private List<Object> toolObjectsForUser(ImpromptuUser user, AssetTracker assetTracker) {
         var tools = new LinkedList<>(commonTools.tools());
-        if (user.isSpotifyLinked()) {
-            tools.add(new SpotifyTools(user, spotifyService));
-        }
-        if (youTubeService.isConfigured()) {
-            tools.add(new YouTubeTools(user, youTubeService, youTubePendingPlayback));
-        }
-        if (performanceAssemblyService.isAvailable(user)) {
-            tools.add(
-                    assetTracker.addReturnedAssets(performanceAssemblyService.createPerformanceFinderTool(user)));
-        }
+//        if (user.isSpotifyLinked()) {
+//            tools.add(new SpotifyTools(user, spotifyService));
+//        }
+//        if (youTubeService.isConfigured()) {
+//            tools.add(new YouTubeTools(user, youTubeService, youTubePendingPlayback));
+//        }
+//        if (performanceAssemblyService.isAvailable(user)) {
+//            tools.add(
+//                    assetTracker.addReturnedAssets(performanceAssemblyService.createPerformanceFinderTool(user)));
+//        }
         // Planning tool is always available (no platform dependencies)
         tools.add(assetTracker.addReturnedAssets(concertPlanningService.createConcertPlanningTool()));
-        if (concertAssemblyService.isAvailable(user)) {
-            tools.add(
-                    assetTracker.addReturnedAssets(concertAssemblyService.createConcertAssemblyTool(user)));
-        }
+        // AgenticTool version - commented out in favor of ConcertAssembler subagent
+        // if (concertAssemblyService.isAvailable(user)) {
+        //     tools.add(
+        //             assetTracker.addReturnedAssets(concertAssemblyService.createConcertAssemblyTool(user)));
+        // }
         return tools;
     }
 }
