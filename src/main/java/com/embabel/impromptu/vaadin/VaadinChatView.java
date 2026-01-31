@@ -211,6 +211,7 @@ public class VaadinChatView extends VerticalLayout {
         // Session panel (user/session-level content)
         var sessionConfig = new SessionPanel.Config(
                 currentUser,
+                properties,
                 spotifyService,
                 youTubeService,
                 youTubePendingPlayback,
@@ -222,6 +223,7 @@ public class VaadinChatView extends VerticalLayout {
                 this::onPersonaChange,
                 this::onMaxWordsChange,
                 this::onThemeChange,
+                this::onPresetChange,
                 this::analyzeConversation
         );
         sessionPanel = new SessionPanel(sessionConfig);
@@ -331,6 +333,30 @@ public class VaadinChatView extends VerticalLayout {
                     com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
             );
         }
+    }
+
+    /**
+     * Handle preset change from the SessionPanel.
+     * Applies theme, persona, and maxWords together.
+     */
+    private void onPresetChange(ImpromptuProperties.Preset preset) {
+        if (preset == null) return;
+
+        currentUser.applyPreset(preset);
+        userService.save(currentUser);
+
+        // Apply theme immediately
+        if (preset.theme() != null) {
+            applyTheme(preset.theme());
+        }
+
+        logger.info("Applied preset: theme={}, persona={}, maxWords={}",
+                preset.theme(), preset.persona(), preset.maxWords());
+        com.vaadin.flow.component.notification.Notification.show(
+                "Preset applied: " + (preset.description() != null ? preset.description() : preset.theme()),
+                3000,
+                com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
+        );
     }
 
     /**

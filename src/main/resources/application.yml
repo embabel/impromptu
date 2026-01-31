@@ -81,6 +81,30 @@ impromptu:
     persona: adaptive
     max-words: 70
 
+  # Presets bundle theme + personality settings
+  # Users can select a preset, then customize individual settings
+  presets:
+    classic:
+      theme: gold
+      persona: impromptu
+      max-words: 100
+      description: Classic concert hall experience with warm gold tones
+    kids:
+      theme: rainbow
+      persona: rainbow
+      max-words: 50
+      description: Fun and colorful for young music explorers (ages 7+)
+    bard:
+      theme: london
+      persona: shakespeare
+      max-words: 120
+      description: The Bard guides you through music in Elizabethan style
+    midnight:
+      theme: midnight
+      persona: adaptive
+      max-words: 70
+      description: Sleek dark theme that adapts to your style
+
   speech:
     tts-model: tts-1
     tts-voice: nova

@@ -17,6 +17,7 @@ package com.embabel.impromptu.vaadin.components;
 
 import com.embabel.chat.AssetView;
 import com.embabel.dice.proposition.EntityMention;
+import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.youtube.YouTubePendingPlayback;
 import com.embabel.impromptu.integrations.youtube.YouTubeService;
@@ -76,6 +77,7 @@ public class SessionPanel extends Div {
      */
     public record Config(
             ImpromptuUser user,
+            ImpromptuProperties properties,
             SpotifyService spotifyService,
             YouTubeService youTubeService,
             YouTubePendingPlayback youTubePendingPlayback,
@@ -87,6 +89,7 @@ public class SessionPanel extends Div {
             Consumer<String> onPersonaChange,
             IntConsumer onMaxWordsChange,
             Consumer<String> onThemeChange,
+            Consumer<ImpromptuProperties.Preset> onPresetChange,
             Runnable onAnalyze
     ) {
     }
@@ -149,10 +152,11 @@ public class SessionPanel extends Div {
         var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
         assetsTab = new Tab(VaadinIcon.CUBE.create(), new Span("Assets"));
         var memoryTab = new Tab(VaadinIcon.LIGHTBULB.create(), new Span("Memory"));
+        var presetsTab = new Tab(VaadinIcon.MAGIC.create(), new Span("Presets"));
         var personalityTab = new Tab(VaadinIcon.AUTOMATION.create(), new Span("Personality"));
         var themeTab = new Tab(VaadinIcon.PAINT_ROLL.create(), new Span("Theme"));
 
-        tabs = new Tabs(mediaTab, assetsTab, memoryTab, personalityTab, themeTab);
+        tabs = new Tabs(mediaTab, assetsTab, memoryTab, presetsTab, personalityTab, themeTab);
         tabs.setWidthFull();
         sidePanel.add(tabs);
 
@@ -215,6 +219,10 @@ public class SessionPanel extends Div {
         memoryContent.add(buttonRow);
         memoryContent.add(propositionsPanel);
 
+        // Presets content (bundled settings)
+        var presetsContent = new PresetSelectionPanel(config.properties(), config.user(), config.onPresetChange());
+        presetsContent.setVisible(false);
+
         // Personality content (persona selection)
         var personalityContent = new PersonalitySelectionPanel(config.personaService(), config.user(), config.onPersonaChange(), config.onMaxWordsChange());
         personalityContent.setVisible(false);
@@ -223,7 +231,7 @@ public class SessionPanel extends Div {
         var themeContent = new ThemeSelectionPanel(config.themeService(), config.user(), config.onThemeChange());
         themeContent.setVisible(false);
 
-        contentArea.add(mediaContent, assetsPanel, memoryContent, personalityContent, themeContent);
+        contentArea.add(mediaContent, assetsPanel, memoryContent, presetsContent, personalityContent, themeContent);
         sidePanel.add(contentArea);
         sidePanel.setFlexGrow(1, contentArea);
 
@@ -233,6 +241,7 @@ public class SessionPanel extends Div {
             mediaContent.setVisible(selected == mediaTab);
             assetsPanel.setVisible(selected == assetsTab);
             memoryContent.setVisible(selected == memoryTab);
+            presetsContent.setVisible(selected == presetsTab);
             personalityContent.setVisible(selected == personalityTab);
             themeContent.setVisible(selected == themeTab);
 

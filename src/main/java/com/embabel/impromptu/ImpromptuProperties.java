@@ -24,6 +24,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.lang.Nullable;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Properties for chatbot. See application.yml
@@ -34,6 +35,7 @@ import java.util.List;
  *                                 for retrieval-augmented generation
  * @param objective                the goal of the chatbot's responses: For example, to answer legal questions
  * @param defaultPersonality       the persona and output style of the chatbot while achieving its objective
+ * @param presets                  named presets that bundle theme + personality settings
  * @param extraction               configuration for extraction of propositions from conversations
  * @param neoRag                   Neo RAG configuration
  * @param chunkerConfig            content chunker configuration
@@ -58,6 +60,7 @@ public record ImpromptuProperties(
         @DefaultValue(DEFAULT) String behaviour,
         @DefaultValue("50") int conversationWindow,
         @NestedConfigurationProperty Personality defaultPersonality,
+        @Nullable Map<String, Preset> presets,
         @NestedConfigurationProperty Extraction extraction,
         @DefaultValue @NestedConfigurationProperty NeoRagServiceProperties neoRag,
         @NestedConfigurationProperty ContentChunker.Config chunkerConfig,
@@ -76,6 +79,43 @@ public record ImpromptuProperties(
             String persona,
             int maxWords
     ) {
+    }
+
+    /**
+     * A preset bundles theme + personality settings that can be applied together.
+     * Users can select a preset to populate their settings, then customize individually.
+     *
+     * @param theme       the theme CSS file name (e.g., "rainbow", "gold")
+     * @param persona     the persona template name (e.g., "rainbow", "impromptu")
+     * @param maxWords    maximum words for responses
+     * @param description human-readable description of this preset
+     */
+    public record Preset(
+            String theme,
+            String persona,
+            @DefaultValue("70") int maxWords,
+            @Nullable String description
+    ) {
+        /**
+         * Convert this preset to a Personality for user settings.
+         */
+        public Personality toPersonality() {
+            return new Personality(persona, maxWords);
+        }
+    }
+
+    /**
+     * Get a preset by name.
+     */
+    public Preset getPreset(String name) {
+        return presets != null ? presets.get(name) : null;
+    }
+
+    /**
+     * Get all available preset names.
+     */
+    public java.util.Set<String> getPresetNames() {
+        return presets != null ? presets.keySet() : java.util.Set.of();
     }
 
     public record Speech(

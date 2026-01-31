@@ -1,0 +1,112 @@
+/*
+ * Theme: rainbow
+ * Display Name: Rainbow
+ * Description: Bright and playful colors perfect for young music explorers
+ * Default: false
+ */
+
+/* Variable definitions - use :root so dynamic injection overrides static defaults */
+:root {
+  --concert-black: #1a1a2e;
+  --piano-black: #16213e;
+  --velvet-purple: #0f3460;
+  --accent-primary: #e94560;
+  --accent-soft: #ff6b6b;
+  --accent-glow: rgba(233, 69, 96, 0.2);
+  --text-primary: #ffffff;
+  --text-secondary: #f0f0f0;
+  --text-muted: #b8c1ec;
+  --panel-bg-start: #4834d4;
+  --panel-bg-end: #686de0;
+
+  /* Legacy variable aliases */
+  --ivory-white: #ffffff;
+  --silver-string: #b8c1ec;
+
+  /* Lumo overrides */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--accent-primary);
+  --lumo-primary-color-50pct: rgba(233, 69, 96, 0.5);
+  --lumo-primary-text-color: var(--accent-primary);
+  --lumo-primary-contrast-color: #ffffff;
+
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
+  --lumo-tertiary-text-color: #8892b0;
+  --lumo-disabled-text-color: #5c6b8a;
+
+  --lumo-contrast: var(--text-primary);
+  --lumo-contrast-90pct: rgba(255, 255, 255, 0.9);
+  --lumo-contrast-80pct: rgba(255, 255, 255, 0.8);
+  --lumo-contrast-70pct: rgba(255, 255, 255, 0.7);
+  --lumo-contrast-60pct: rgba(255, 255, 255, 0.6);
+  --lumo-contrast-50pct: rgba(255, 255, 255, 0.5);
+  --lumo-contrast-40pct: rgba(255, 255, 255, 0.4);
+  --lumo-contrast-30pct: rgba(255, 255, 255, 0.3);
+  --lumo-contrast-20pct: rgba(255, 255, 255, 0.2);
+  --lumo-contrast-10pct: rgba(255, 255, 255, 0.1);
+  --lumo-contrast-5pct: rgba(255, 255, 255, 0.05);
+
+  --lumo-shade: var(--concert-black);
+  --lumo-shade-5pct: rgba(26, 26, 46, 0.05);
+  --lumo-shade-10pct: rgba(26, 26, 46, 0.1);
+  --lumo-shade-20pct: rgba(26, 26, 46, 0.2);
+  --lumo-shade-30pct: rgba(26, 26, 46, 0.3);
+  --lumo-shade-40pct: rgba(26, 26, 46, 0.4);
+  --lumo-shade-50pct: rgba(26, 26, 46, 0.5);
+
+  /* Rounder, friendlier corners */
+  --lumo-border-radius-m: 16px;
+  --lumo-border-radius-l: 24px;
+
+  /* Fun, readable font */
+  --lumo-font-family: 'Nunito', 'Comic Sans MS', 'Segoe UI', sans-serif;
+
+  /* Status colors - bright and clear */
+  --lumo-error-color: #ff6b6b;
+  --lumo-success-color: #51cf66;
+
+  /* Fun gradient background */
+  --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+
+  /* Logo filter - make it pop with a warm tint */
+  --logo-filter: hue-rotate(320deg) saturate(1.2) brightness(1.1);
+}
+
+/* Theme class for component-specific overrides */
+html.theme-rainbow,
+body.theme-rainbow {
+  --accent-primary: #e94560;
+  --accent-soft: #ff6b6b;
+  --lumo-primary-color: #e94560;
+}
+
+/* Rainbow theme: fun musical symbols */
+body.theme-rainbow h3::before {
+  content: "🎵";
+  margin-right: 0.5rem;
+}
+
+body.theme-rainbow h3::after {
+  content: "🎶";
+  margin-left: 0.5rem;
+}
+
+/* Add subtle animation to buttons for playfulness */
+body.theme-rainbow vaadin-button:hover {
+  transform: scale(1.02);
+  transition: transform 0.2s ease;
+}
+
+/* Make cards feel more playful */
+body.theme-rainbow .asset-card {
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Colorful selection highlight */
+body.theme-rainbow ::selection {
+  background: rgba(233, 69, 96, 0.3);
+  color: white;
+}

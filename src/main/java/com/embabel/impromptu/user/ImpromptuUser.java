@@ -351,6 +351,27 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
         this.theme = theme != null ? theme : DEFAULT_THEME;
     }
 
+    /**
+     * Apply a preset, setting theme, personality, and maxWords together.
+     * Individual settings can still be changed afterward.
+     *
+     * @param preset the preset to apply
+     */
+    public void applyPreset(ImpromptuProperties.Preset preset) {
+        if (preset == null) {
+            return;
+        }
+        if (preset.theme() != null) {
+            setTheme(preset.theme());
+        }
+        if (preset.persona() != null) {
+            setPersonality(preset.persona());
+        }
+        if (preset.maxWords() > 0) {
+            setMaxWords(preset.maxWords());
+        }
+    }
+
     @Override
     public String toString() {
         return "ImpromptuUser{" +
