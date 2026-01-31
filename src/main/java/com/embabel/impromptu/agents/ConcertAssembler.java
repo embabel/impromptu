@@ -19,17 +19,21 @@ import com.embabel.agent.api.annotation.AchievesGoal;
 import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.Agent;
 import com.embabel.agent.api.common.OperationContext;
+import com.embabel.agent.api.tool.DelegatingTool;
 import com.embabel.agent.api.tool.Tool;
 import com.embabel.impromptu.domain.performance.Concert;
 import com.embabel.impromptu.domain.performance.ConcertPlan;
 import com.embabel.impromptu.domain.performance.Performance;
 import com.embabel.impromptu.integrations.coordination.PerformanceAssemblyService;
 import com.embabel.impromptu.user.ImpromptuUser;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 /**
  * Agent that assembles a Concert by finding performances for each work in a plan.
@@ -50,10 +54,45 @@ public record ConcertAssembler(
         PerformanceAssemblyService performanceAssemblyService
 ) {
 
-    // TODO why does this use the blackboard at all
-
     private static final Logger logger = LoggerFactory.getLogger(ConcertAssembler.class);
     private static final int MAX_CONCURRENCY = 4;
+
+    /**
+     * Tool wrapper that captures artifacts of a specific type from tool results.
+     */
+    private static class ArtifactCapturingTool<T> implements DelegatingTool {
+        private final Tool delegate;
+        private final Class<T> artifactType;
+        private final Consumer<T> artifactConsumer;
+
+        ArtifactCapturingTool(Tool delegate, Class<T> artifactType, Consumer<T> artifactConsumer) {
+            this.delegate = delegate;
+            this.artifactType = artifactType;
+            this.artifactConsumer = artifactConsumer;
+        }
+
+        @Override
+        public @NonNull Tool getDelegate() {
+            return delegate;
+        }
+
+        @Override
+        public Tool.Definition getDefinition() {
+            return delegate.getDefinition();
+        }
+
+        @Override
+        public Tool.Result call(String input) {
+            var result = delegate.call(input);
+            if (result instanceof Tool.Result.WithArtifact withArtifact) {
+                var artifact = withArtifact.getArtifact();
+                if (artifactType.isInstance(artifact)) {
+                    artifactConsumer.accept(artifactType.cast(artifact));
+                }
+            }
+            return result;
+        }
+    }
 
     /**
      * A single work that needs a performance found.
@@ -80,7 +119,7 @@ public record ConcertAssembler(
     /**
      * Simple result returned by LLM after searching for a performance.
      * Does not contain Performance objects (which are polymorphic and can't be deserialized).
-     * The actual Performance is stored on the blackboard by the create tool.
+     * The actual Performance is captured from tool artifacts.
      */
     public record PerformanceSearchResult(
             boolean found,
@@ -90,7 +129,7 @@ public record ConcertAssembler(
 
     /**
      * Result of finding a performance for a work.
-     * Contains actual Performance objects retrieved from blackboard.
+     * Contains actual Performance objects captured from tool artifacts.
      */
     public record FoundPerformance(
             WorkToFind work,
@@ -214,14 +253,16 @@ public record ConcertAssembler(
         }
 
         try {
-            // Track existing performances before search to find newly added ones
-            var blackboard = context.getProcessContext().getBlackboard();
-            var existingPerformances = new java.util.HashSet<>(blackboard.objectsOfType(Performance.class));
+            // Capture performances from tool artifacts
+            var capturedPerformances = new ArrayList<Performance<?>>();
+            var capturingTools = searchTools.stream()
+                    .map(tool -> new ArtifactCapturingTool<>(tool, Performance.class, capturedPerformances::add))
+                    .toList();
 
-            // LLM uses tools to search and create performance (stored on blackboard)
+            // LLM uses tools to search and create performance (captured from artifact)
             var result = context.ai()
                     .withDefaultLlm()
-                    .withTools(searchTools)
+                    .withTools(capturingTools)
                     .creating(PerformanceSearchResult.class)
                     .fromPrompt("""
                             Find the best recording of "%s" by %s on %s.
@@ -241,42 +282,19 @@ public record ConcertAssembler(
             logger.info("Search result for {}: found={}, message={}",
                     work.title(), result.found(), result.message());
 
-            // Find the newly added performance that matches this work
-            // Filter by work name to handle parallel execution correctly
-            var newPerformance = blackboard.objectsOfType(Performance.class).stream()
-                    .filter(p -> !existingPerformances.contains(p))
-                    .filter(p -> matchesWork(p, work))
-                    .findFirst()
-                    .orElse(null);
-
-            if (newPerformance != null) {
-                logger.info("Found performance for {}: {}", work.title(), newPerformance.title());
-                return FoundPerformance.success(work, newPerformance);
+            // Get the captured performance (should be exactly one if successful)
+            if (!capturedPerformances.isEmpty()) {
+                var performance = capturedPerformances.getFirst();
+                logger.info("Found performance for {}: {}", work.title(), performance.title());
+                return FoundPerformance.success(work, performance);
             } else {
-                logger.warn("No performance found on blackboard for: {}", work.searchQuery());
+                logger.warn("No performance captured for: {}", work.searchQuery());
                 return FoundPerformance.notFound(work);
             }
         } catch (Exception e) {
             logger.error("Error finding performance for " + work.searchQuery(), e);
             return FoundPerformance.notFound(work);
         }
-    }
-
-    /**
-     * Check if a performance matches the work we're searching for.
-     * Uses fuzzy matching since LLM-generated work names may differ slightly.
-     */
-    private boolean matchesWork(Performance performance, WorkToFind work) {
-        if (performance.workName() == null) {
-            return false;
-        }
-        var perfName = performance.workName().toLowerCase();
-        var workTitle = work.title().toLowerCase();
-
-        // Check if either contains a significant portion of the other
-        // Use first 15 chars or full title if shorter to handle variations
-        var shortTitle = workTitle.substring(0, Math.min(15, workTitle.length()));
-        return perfName.contains(shortTitle) || workTitle.contains(perfName.substring(0, Math.min(15, perfName.length())));
     }
 
     /**

@@ -17,7 +17,6 @@ package com.embabel.impromptu.integrations.coordination;
 
 import com.embabel.agent.api.tool.AgenticTool;
 import com.embabel.agent.api.tool.Tool;
-import com.embabel.agent.core.AgentProcess;
 import com.embabel.impromptu.domain.performance.Performance;
 import com.embabel.impromptu.integrations.spotify.SpotifyPerformanceImpl;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
@@ -164,17 +163,6 @@ public class PerformanceAssemblyService {
      */
     public boolean isYouTubeAvailable() {
         return youTubeService.isConfigured();
-    }
-
-    /**
-     * Store a performance in the blackboard for later retrieval by createConcert.
-     */
-    private void storePerformance(Performance<?> performance) {
-        var process = AgentProcess.get();
-        if (process != null) {
-            process.getBlackboard().addObject(performance);
-            logger.debug("Stored performance in blackboard: {}", performance.title());
-        }
     }
 
     /**
@@ -331,8 +319,6 @@ public class PerformanceAssemblyService {
                         logger.info("Created Spotify performance: {} - {} ({} tracks)",
                                 performance.title(), performance.albumName(), tracks.size());
 
-                        storePerformance(performance);
-
                         var message = "Created Spotify performance: %s (%d tracks) - %s"
                                 .formatted(performance.title(), tracks.size(), performance.url());
 
@@ -422,8 +408,6 @@ public class PerformanceAssemblyService {
 
                         logger.info("Created YouTube performance: {} - {}",
                                 performance.title(), video.getTitle());
-
-                        storePerformance(performance);
 
                         var message = "Created YouTube performance: %s - %s"
                                 .formatted(performance.title(), performance.url());
