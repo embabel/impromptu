@@ -88,12 +88,14 @@ public record ImpromptuProperties(
      * @param theme       the theme CSS file name (e.g., "rainbow", "gold")
      * @param persona     the persona template name (e.g., "rainbow", "impromptu")
      * @param maxWords    maximum words for responses
+     * @param guardrails  the guardrails template name (e.g., "kids", "default")
      * @param description human-readable description of this preset
      */
     public record Preset(
             String theme,
             String persona,
             @DefaultValue("70") int maxWords,
+            @Nullable String guardrails,
             @Nullable String description
     ) {
         /**

@@ -81,28 +81,38 @@ impromptu:
     persona: adaptive
     max-words: 70
 
-  # Presets bundle theme + personality settings
+  # Presets bundle theme + personality + guardrails settings
   # Users can select a preset, then customize individual settings
   presets:
     classic:
       theme: gold
       persona: impromptu
       max-words: 100
+      guardrails: default
       description: Classic concert hall experience with warm gold tones
     kids:
       theme: rainbow
       persona: rainbow
       max-words: 50
+      guardrails: kids
       description: Fun and colorful for young music explorers (ages 7+)
+    dahl:
+      theme: blake
+      persona: dahl
+      max-words: 80
+      guardrails: kids
+      description: Whimsical and slightly wicked, like a Roald Dahl story
     bard:
       theme: london
       persona: shakespeare
       max-words: 120
+      guardrails: default
       description: The Bard guides you through music in Elizabethan style
     midnight:
       theme: midnight
       persona: adaptive
       max-words: 70
+      guardrails: default
       description: Sleek dark theme that adapts to your style
 
   speech:

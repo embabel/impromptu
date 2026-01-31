@@ -1,6 +1,6 @@
 # Important: Guardrails
 
-{% set guardrail_template = "guardrails/" ~ properties.guardrails() ~ ".jinja" %}
+{% set guardrail_template = "guardrails/" ~ user.guardrails() ~ ".jinja" %}
 {% include guardrail_template %}
 
 ============

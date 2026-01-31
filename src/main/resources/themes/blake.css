@@ -1,0 +1,145 @@
+/*
+ * Theme: blake
+ * Display Name: Quentin Blake
+ * Description: Warm, sketchy watercolors inspired by Roald Dahl's illustrator
+ * Default: false
+ */
+
+/* Variable definitions - Quentin Blake's warm, whimsical palette */
+:root {
+  /* Light, papery backgrounds like watercolor stock */
+  --concert-black: #2c2416;
+  --piano-black: #faf6f0;
+  --velvet-purple: #fff8e7;
+  --accent-primary: #e85d04;
+  --accent-soft: #f4a261;
+  --accent-glow: rgba(232, 93, 4, 0.15);
+  --text-primary: #2c2416;
+  --text-secondary: #4a3f2f;
+  --text-muted: #7a6f5f;
+  --panel-bg-start: #fff8e7;
+  --panel-bg-end: #ffecd2;
+
+  /* Legacy variable aliases */
+  --ivory-white: #2c2416;
+  --silver-string: #7a6f5f;
+
+  /* Lumo overrides - light theme */
+  --lumo-base-color: var(--piano-black);
+  --lumo-primary-color: var(--accent-primary);
+  --lumo-primary-color-50pct: rgba(232, 93, 4, 0.5);
+  --lumo-primary-text-color: var(--accent-primary);
+  --lumo-primary-contrast-color: #ffffff;
+
+  --lumo-header-text-color: var(--text-primary);
+  --lumo-body-text-color: var(--text-secondary);
+  --lumo-secondary-text-color: var(--text-muted);
+  --lumo-tertiary-text-color: #9a8f7f;
+  --lumo-disabled-text-color: #bab3a5;
+
+  /* Dark text on light background */
+  --lumo-contrast: var(--text-primary);
+  --lumo-contrast-90pct: rgba(44, 36, 22, 0.9);
+  --lumo-contrast-80pct: rgba(44, 36, 22, 0.8);
+  --lumo-contrast-70pct: rgba(44, 36, 22, 0.7);
+  --lumo-contrast-60pct: rgba(44, 36, 22, 0.6);
+  --lumo-contrast-50pct: rgba(44, 36, 22, 0.5);
+  --lumo-contrast-40pct: rgba(44, 36, 22, 0.4);
+  --lumo-contrast-30pct: rgba(44, 36, 22, 0.3);
+  --lumo-contrast-20pct: rgba(44, 36, 22, 0.2);
+  --lumo-contrast-10pct: rgba(44, 36, 22, 0.1);
+  --lumo-contrast-5pct: rgba(44, 36, 22, 0.05);
+
+  --lumo-shade: #2c2416;
+  --lumo-shade-5pct: rgba(44, 36, 22, 0.05);
+  --lumo-shade-10pct: rgba(44, 36, 22, 0.1);
+  --lumo-shade-20pct: rgba(44, 36, 22, 0.2);
+  --lumo-shade-30pct: rgba(44, 36, 22, 0.3);
+  --lumo-shade-40pct: rgba(44, 36, 22, 0.4);
+  --lumo-shade-50pct: rgba(44, 36, 22, 0.5);
+
+  /* Slightly wobbly, hand-drawn feel */
+  --lumo-border-radius-m: 12px;
+  --lumo-border-radius-l: 18px;
+
+  /* Friendly, slightly quirky font */
+  --lumo-font-family: 'Patrick Hand', 'Caveat', 'Comic Sans MS', cursive, sans-serif;
+
+  /* Status colors - watercolor bright */
+  --lumo-error-color: #d62828;
+  --lumo-success-color: #2a9d8f;
+
+  /* Warm watercolor wash background */
+  --bg-gradient: linear-gradient(145deg, #fff8e7 0%, #ffecd2 40%, #ffd6ba 100%);
+
+  /* Logo filter - warm sepia tones */
+  --logo-filter: sepia(0.2) saturate(1.1) brightness(0.95);
+}
+
+/* Theme class for component-specific overrides */
+html.theme-blake,
+body.theme-blake {
+  --accent-primary: #e85d04;
+  --accent-soft: #f4a261;
+  --lumo-primary-color: #e85d04;
+  background: var(--bg-gradient);
+}
+
+/* Blake theme: whimsical ink splatter decorations */
+body.theme-blake h3::before {
+  content: "✦";
+  margin-right: 0.5rem;
+  color: #e85d04;
+}
+
+body.theme-blake h3::after {
+  content: "~";
+  margin-left: 0.5rem;
+  color: #f4a261;
+}
+
+/* Sketchy, hand-drawn feel for cards */
+body.theme-blake .asset-card {
+  border-radius: 8px 16px 12px 20px;
+  box-shadow: 3px 4px 0 rgba(44, 36, 22, 0.15);
+  border: 2px solid rgba(44, 36, 22, 0.1);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* Playful hover with slight rotation - like picking up a drawing */
+body.theme-blake vaadin-button:hover {
+  transform: rotate(-1deg) scale(1.02);
+  transition: transform 0.15s ease;
+}
+
+body.theme-blake vaadin-button:active {
+  transform: rotate(0.5deg) scale(0.98);
+}
+
+/* Ink-splash selection highlight */
+body.theme-blake ::selection {
+  background: rgba(244, 162, 97, 0.4);
+  color: #2c2416;
+}
+
+/* Chat bubbles with sketchy borders */
+body.theme-blake .message-bubble {
+  border-radius: 12px 18px 16px 8px;
+}
+
+/* Accent colors from Blake's palette for variety */
+body.theme-blake .accent-blue {
+  color: #457b9d;
+}
+
+body.theme-blake .accent-pink {
+  color: #e07a5f;
+}
+
+body.theme-blake .accent-green {
+  color: #81b29a;
+}
+
+body.theme-blake .accent-yellow {
+  color: #f2cc8f;
+}

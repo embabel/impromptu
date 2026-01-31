@@ -71,6 +71,7 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
 
     private String personality;
     private int maxWords;
+    private @Nullable String guardrails;
 
     @JsonCreator
     public ImpromptuUser(
@@ -320,6 +321,36 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     }
 
     /**
+     * Default guardrails name.
+     */
+    public static final String DEFAULT_GUARDRAILS = "default";
+
+    /**
+     * Get the user's guardrails template name.
+     *
+     * @return the guardrails name (defaults to {@link #DEFAULT_GUARDRAILS})
+     */
+    public String getGuardrails() {
+        return guardrails != null ? guardrails : DEFAULT_GUARDRAILS;
+    }
+
+    /**
+     * Alias for getGuardrails() for use in Jinja templates.
+     */
+    public String guardrails() {
+        return getGuardrails();
+    }
+
+    /**
+     * Set the user's guardrails template name.
+     *
+     * @param guardrails the guardrails name
+     */
+    public void setGuardrails(@Nullable String guardrails) {
+        this.guardrails = guardrails;
+    }
+
+    /**
      * Get the personality configuration as a record for use in prompts.
      *
      * @return the Personality record combining persona name and maxWords
@@ -352,7 +383,7 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
     }
 
     /**
-     * Apply a preset, setting theme, personality, and maxWords together.
+     * Apply a preset, setting theme, personality, maxWords, and guardrails together.
      * Individual settings can still be changed afterward.
      *
      * @param preset the preset to apply
@@ -369,6 +400,9 @@ public class ImpromptuUser implements User, NamedEntity, PromptContributor {
         }
         if (preset.maxWords() > 0) {
             setMaxWords(preset.maxWords());
+        }
+        if (preset.guardrails() != null) {
+            setGuardrails(preset.guardrails());
         }
     }
 
