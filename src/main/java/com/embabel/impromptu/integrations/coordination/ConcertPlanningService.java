@@ -17,6 +17,7 @@ package com.embabel.impromptu.integrations.coordination;
 
 import com.embabel.agent.api.tool.AgenticTool;
 import com.embabel.agent.api.tool.Tool;
+import com.embabel.agent.rag.neo.drivine.cyphergen.CypherQueryTools;
 import com.embabel.impromptu.domain.performance.ConcertPlan;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -32,7 +33,7 @@ import java.util.List;
 /**
  * Service for planning concert programs.
  * <p>
- * Uses classical music knowledge to select appropriate works for a concert,
+ * Uses the Open Opus database to select appropriate works for a concert,
  * considering duration, programming conventions, and user preferences.
  * This is the fast planning phase - no external API calls to streaming services.
  * <p>
@@ -45,10 +46,12 @@ public class ConcertPlanningService {
     private static final String SYSTEM_PROMPT_PATH = "classpath:prompts/concert/planning_system.jinja";
 
     private final ResourceLoader resourceLoader;
+    private final CypherQueryTools cypherQueryTools;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public ConcertPlanningService(ResourceLoader resourceLoader) {
+    public ConcertPlanningService(ResourceLoader resourceLoader, CypherQueryTools cypherQueryTools) {
         this.resourceLoader = resourceLoader;
+        this.cypherQueryTools = cypherQueryTools;
     }
 
     private String loadSystemPrompt() {
@@ -75,7 +78,17 @@ public class ConcertPlanningService {
                         for user confirmation. Fast - no streaming service searches. \
                         Call this first, then use assembleConcert after user confirms."""
         )
-                .withTools(createPlanTool())
+                .withTools(
+                        cypherQueryTools.tool("""
+                                Query the music database for composers and works. \
+                                Use this FIRST to find works matching the user's request. \
+                                The database contains the Open Opus catalog with composers, works, \
+                                genres (Orchestral, Chamber, Keyboard, Vocal, Stage), \
+                                and epochs (Baroque, Classical, Romantic, 20th Century, etc.). \
+                                Example queries: works by a composer, works of a specific genre, \
+                                popular works, works from an era."""),
+                        createPlanTool()
+                )
                 .withSystemPrompt(loadSystemPrompt())
                 .withParameter(Tool.Parameter.string(
                         "request",

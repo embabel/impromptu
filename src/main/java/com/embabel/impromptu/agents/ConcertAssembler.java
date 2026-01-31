@@ -49,7 +49,11 @@ import java.util.function.Consumer;
  * Input is a {@link ConcertPlan} - the platform is determined from the user's
  * linked services (Spotify takes priority if linked, otherwise YouTube).
  */
-@Agent(description = "Assembles a playable concert by finding recordings for each work")
+@Agent(
+        description = "Assembles a playable concert by finding recordings for each work",
+        // Don't let the planner see internal actions
+        opaque = true
+)
 public record ConcertAssembler(
         PerformanceAssemblyService performanceAssemblyService
 ) {

@@ -18,7 +18,7 @@ package com.embabel.impromptu.agents;
 import com.embabel.agent.api.tool.Tool;
 import com.embabel.agent.core.AgentPlatform;
 import com.embabel.agent.core.Verbosity;
-import com.embabel.agent.rag.neo.drivine.CypherQueryTools;
+import com.embabel.agent.rag.neo.drivine.cyphergen.CypherQueryTools;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
