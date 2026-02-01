@@ -37,28 +37,53 @@ import java.util.stream.Collectors;
  * 2. Research each topic in parallel using web search
  * 3. Write the final program notes in XHTML format
  */
-@Agent(description = "Writes program notes for a concert program")
+@Agent(
+        description = "Writes program notes for a concert program",
+        opaque = true
+)
 public class ProgramNoteWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(ProgramNoteWriter.class);
     private static final int MAX_CONCURRENCY = 8;
 
     /**
+     * Simple concert info that can be serialized/deserialized without polymorphism issues.
+     * This is the data we need from a Concert to write program notes.
+     */
+    public record ConcertInfo(
+            String title,
+            List<String> composers,
+            List<PerformanceInfo> performances,
+            List<String> performers,
+            List<String> conductors,
+            List<String> ensembles
+    ) {
+        /**
+         * Information about a single performance in the concert.
+         */
+        public record PerformanceInfo(
+                String composer,
+                String workName,
+                String performer
+        ) {}
+    }
+
+    /**
      * Request to write program notes for a concert.
+     * The concert data is retrieved from the blackboard (set by ChatActions).
+     * This record contains only the user-configurable options.
      *
-     * @param concert       the concert to write notes for
      * @param audience      description of the target audience (e.g., "general concert-goers", "music students")
      * @param style         writing style (e.g., "scholarly", "accessible", "entertaining")
      * @param wordCount     approximate word count for the final notes
      */
     public record ProgramNoteRequest(
-            Concert concert,
             String audience,
             String style,
             int wordCount
     ) {
-        public ProgramNoteRequest(Concert concert) {
-            this(concert, "general concert-goers", "accessible and engaging", 1500);
+        public ProgramNoteRequest() {
+            this("general concert-goers", "accessible and engaging", 1500);
         }
     }
 
@@ -141,11 +166,42 @@ public class ProgramNoteWriter {
     }
 
     /**
+     * Bind the Concert from the parent blackboard and convert to ConcertInfo.
+     * The Concert is placed in the blackboard by ChatActions before invoking this subagent.
+     */
+    @Action
+    public ConcertInfo bindConcert(OperationContext context) {
+        var concert = context.last(Concert.class);
+        if (concert == null) {
+            logger.error("No Concert found in blackboard");
+            throw new IllegalStateException("No Concert found - create a concert first");
+        }
+        logger.info("Bound concert from blackboard: {}", concert.title());
+
+        // Convert Concert to ConcertInfo (simple serializable form)
+        var performances = concert.performances().stream()
+                .map(perf -> new ConcertInfo.PerformanceInfo(
+                        perf.composer(),
+                        perf.workName(),
+                        perf.performer()
+                ))
+                .collect(Collectors.toList());
+
+        return new ConcertInfo(
+                concert.title(),
+                concert.composers(),
+                performances,
+                concert.performers(),
+                concert.conductors(),
+                concert.ensembles()
+        );
+    }
+
+    /**
      * Extract topics from the concert that need research.
      */
     @Action
-    public ProgramTopics extractTopics(ProgramNoteRequest request) {
-        var concert = request.concert();
+    public ProgramTopics extractTopics(ConcertInfo concert) {
 
         // Extract unique composers
         var composers = concert.composers();
@@ -184,7 +240,6 @@ public class ProgramNoteWriter {
      */
     @Action
     public ResearchFindings researchTopics(
-            ProgramNoteRequest request,
             ProgramTopics topics,
             OperationContext context) {
 
@@ -329,13 +384,12 @@ public class ProgramNoteWriter {
     @AchievesGoal(description = "Write program notes for a concert")
     @Action
     public ProgramNotes writeProgramNotes(
+            ConcertInfo concert,
             ProgramNoteRequest request,
             ResearchFindings research,
             OperationContext context) {
 
-        logger.info("Writing program notes for: {}", request.concert().title());
-
-        var concert = request.concert();
+        logger.info("Writing program notes for: {}", concert.title());
         var researchSummary = formatResearchForPrompt(research);
 
         return context.ai()
@@ -376,7 +430,7 @@ public class ProgramNoteWriter {
                         researchSummary));
     }
 
-    private String formatWorksForPrompt(Concert concert) {
+    private String formatWorksForPrompt(ConcertInfo concert) {
         var sb = new StringBuilder();
         for (int i = 0; i < concert.performances().size(); i++) {
             var perf = concert.performances().get(i);
@@ -384,7 +438,7 @@ public class ProgramNoteWriter {
             if (perf.composer() != null) {
                 sb.append(perf.composer()).append(": ");
             }
-            sb.append(perf.workName() != null ? perf.workName() : perf.title());
+            sb.append(perf.workName() != null ? perf.workName() : "Unknown work");
             if (perf.performer() != null) {
                 sb.append(" (").append(perf.performer()).append(")");
             }

@@ -119,10 +119,15 @@ public record ChatActions(
                 Subagent.ofClass(ConcertAssembler.class).consuming(ConcertPlan.class)));
 
         // If there's a Concert in the assets, expose ProgramNoteWriter
-        var hasConcert = assetTracker.getAssets().stream()
-                .anyMatch(asset -> asset instanceof Concert);
-        if (hasConcert) {
-            logger.info("Concert found in assets, exposing ProgramNoteWriter subagent");
+        // Put the Concert in the blackboard so the subagent can access it
+        var concert = assetTracker.getAssets().stream()
+                .filter(Concert.class::isInstance)
+                .map(Concert.class::cast)
+                .reduce((first, second) -> second)  // Get the most recent
+                .orElse(null);
+        if (concert != null) {
+            logger.info("Concert found in assets, adding to blackboard and exposing ProgramNoteWriter");
+            context.bind("concert", concert);
             tools.add(assetTracker.addReturnedAssets(
                     Subagent.ofClass(ProgramNoteWriter.class).consuming(ProgramNoteRequest.class)));
         }

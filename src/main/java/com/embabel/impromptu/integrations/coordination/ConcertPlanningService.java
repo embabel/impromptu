@@ -16,7 +16,7 @@
 package com.embabel.impromptu.integrations.coordination;
 
 import com.embabel.agent.api.tool.Tool;
-import com.embabel.agent.api.tool.playbook.PlaybookTool;
+import com.embabel.agent.api.tool.agentic.playbook.PlaybookTool;
 import com.embabel.agent.rag.neo.drivine.cyphergen.CypherQueryTools;
 import com.embabel.impromptu.domain.performance.ConcertPlan;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -89,8 +89,7 @@ public class ConcertPlanningService {
                         for user confirmation. Fast - no streaming service searches. \
                         Call this first, then use assembleConcert after user confirms."""
         )
-                .withTools(queryTool)
-                .withTool(createPlanTool()).unlockedBy(queryTool)
+                .withTools(queryTool, createPlanTool())
                 .withSystemPrompt(loadSystemPrompt())
                 .withParameter(Tool.Parameter.string(
                         "request",
