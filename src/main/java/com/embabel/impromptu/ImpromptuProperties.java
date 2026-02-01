@@ -53,6 +53,7 @@ public record ImpromptuProperties(
         @NestedConfigurationProperty LlmOptions chatLlm,
         @NestedConfigurationProperty LlmOptions pdfGenerationLlm,
         @NestedConfigurationProperty LlmOptions cypherGenerationLlm,
+        @Nullable @NestedConfigurationProperty LlmOptions researchLlm,
         String embeddingService,
         @DefaultValue(DEFAULT) String guardrails,
         @DefaultValue(DEFAULT) String objective,

@@ -77,6 +77,11 @@ impromptu:
     model: gpt-4.1-mini
     temperature: 0.0
 
+  # Fast model for research tasks (program notes, etc.)
+  research-llm:
+    model: gpt-4.1-nano
+    temperature: 0.3
+
   default-personality:
     persona: adaptive
     max-words: 70

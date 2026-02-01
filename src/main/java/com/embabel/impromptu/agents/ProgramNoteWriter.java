@@ -18,15 +18,24 @@ package com.embabel.impromptu.agents;
 import com.embabel.agent.api.annotation.AchievesGoal;
 import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.Agent;
+import com.embabel.agent.api.common.LlmReference;
 import com.embabel.agent.api.common.OperationContext;
+import com.embabel.agent.api.tool.Tool;
 import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.domain.library.InternetResource;
+import com.embabel.chat.Asset;
+import com.embabel.common.ai.model.LlmOptions;
+import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.domain.performance.Concert;
+import com.embabel.impromptu.domain.performance.ConcertPlan;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +43,7 @@ import java.util.stream.Collectors;
  * <p>
  * Flow:
  * 1. Extract topics from the concert (composers, works, performers)
- * 2. Research each topic in parallel using web search
+ * 2. Research each topic in parallel using web search (fast model)
  * 3. Write the final program notes in XHTML format
  */
 @Agent(
@@ -45,6 +54,21 @@ public class ProgramNoteWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(ProgramNoteWriter.class);
     private static final int MAX_CONCURRENCY = 8;
+
+    private final ImpromptuProperties properties;
+
+    public ProgramNoteWriter(ImpromptuProperties properties) {
+        this.properties = properties;
+    }
+
+    /**
+     * Get the LLM to use for research - fast model if configured, otherwise default.
+     */
+    private LlmOptions researchLlm() {
+        return properties.researchLlm() != null
+                ? properties.researchLlm()
+                : LlmOptions.withDefaults();
+    }
 
     /**
      * Simple concert info that can be serialized/deserialized without polymorphism issues.
@@ -88,14 +112,81 @@ public class ProgramNoteWriter {
     }
 
     /**
-     * The final program notes content (markdown format).
-     * Can be converted to XHTML/PDF using ResourceGenerationService.
+     * Simple content record that the LLM can create (no polymorphic annotations).
      */
-    public record ProgramNotes(
+    public record ProgramNotesContent(
             String title,
             String content,
             List<InternetResource> references
-    ) {
+    ) {}
+
+    /**
+     * The final program notes (markdown format).
+     * Implements Asset so it can be tracked and referenced in conversations.
+     * Created by Java code from ProgramNotesContent - NOT directly by LLM.
+     */
+    public record ProgramNotes(
+            String id,
+            String title,
+            String content,
+            List<InternetResource> references,
+            Instant timestamp
+    ) implements Asset {
+
+        /**
+         * Create from LLM-generated content.
+         */
+        public static ProgramNotes from(ProgramNotesContent content) {
+            return new ProgramNotes(
+                    UUID.randomUUID().toString(),
+                    content.title(),
+                    content.content(),
+                    content.references(),
+                    Instant.now()
+            );
+        }
+
+        @Override
+        @NonNull
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        @NonNull
+        public Instant getTimestamp() {
+            return timestamp;
+        }
+
+        @Override
+        public boolean persistent() {
+            return true;
+        }
+
+        @Override
+        @NonNull
+        public LlmReference reference() {
+            var shortId = title.toLowerCase()
+                    .replaceAll("[^a-z0-9]+", "_")
+                    .replaceAll("^_|_$", "");
+            if (shortId.length() > 25) {
+                shortId = shortId.substring(0, 25);
+            }
+
+            var viewTool = Tool.create(
+                    "view_notes",
+                    "View the full program notes",
+                    input -> Tool.Result.text(toResourceContent())
+            );
+
+            return LlmReference.of(
+                    shortId,
+                    title + " [Program Notes]",
+                    List.of(viewTool),
+                    content
+            );
+        }
+
         /**
          * Format as content suitable for ResourceGenerationService.
          */
@@ -167,7 +258,8 @@ public class ProgramNoteWriter {
 
     /**
      * Bind the Concert from the parent blackboard and convert to ConcertInfo.
-     * The Concert is placed in the blackboard by ChatActions before invoking this subagent.
+     * The Concert and ConcertPlan are placed in the blackboard by ChatActions before invoking this subagent.
+     * Uses the ConcertPlan to fill in composer info that may be missing from Performance objects.
      */
     @Action
     public ConcertInfo bindConcert(OperationContext context) {
@@ -178,18 +270,43 @@ public class ProgramNoteWriter {
         }
         logger.info("Bound concert from blackboard: {}", concert.title());
 
+        // Get ConcertPlan for composer info (Performances from Spotify/YouTube may not have it)
+        var concertPlan = context.last(ConcertPlan.class);
+        var composerByWork = new java.util.HashMap<String, String>();
+        if (concertPlan != null) {
+            logger.info("Using ConcertPlan for composer info: {} works", concertPlan.works().size());
+            for (var work : concertPlan.works()) {
+                // Use lowercase for matching since titles may vary slightly
+                composerByWork.put(work.title().toLowerCase(), work.composer());
+            }
+        }
+
         // Convert Concert to ConcertInfo (simple serializable form)
+        // Use ConcertPlan composer info when Performance doesn't have it
         var performances = concert.performances().stream()
-                .map(perf -> new ConcertInfo.PerformanceInfo(
-                        perf.composer(),
-                        perf.workName(),
-                        perf.performer()
-                ))
+                .map(perf -> {
+                    var composer = perf.composer();
+                    if (composer == null && perf.workName() != null) {
+                        composer = composerByWork.get(perf.workName().toLowerCase());
+                    }
+                    return new ConcertInfo.PerformanceInfo(
+                            composer,
+                            perf.workName(),
+                            perf.performer()
+                    );
+                })
+                .collect(Collectors.toList());
+
+        // Build composer list from performances (may now have data from ConcertPlan)
+        var composers = performances.stream()
+                .map(ConcertInfo.PerformanceInfo::composer)
+                .filter(c -> c != null && !c.isBlank())
+                .distinct()
                 .collect(Collectors.toList());
 
         return new ConcertInfo(
                 concert.title(),
-                concert.composers(),
+                composers,
                 performances,
                 concert.performers(),
                 concert.conductors(),
@@ -287,7 +404,7 @@ public class ProgramNoteWriter {
     private TopicResearch researchComposer(String composer, OperationContext context) {
         logger.debug("Researching composer: {}", composer);
         return context.ai()
-                .withDefaultLlm()
+                .withLlm(researchLlm())
                 .withTools(CoreToolGroups.WEB)
                 .creating(TopicResearch.class)
                 .fromPrompt("""
@@ -310,7 +427,7 @@ public class ProgramNoteWriter {
     private TopicResearch researchWork(WorkTopic work, OperationContext context) {
         logger.debug("Researching work: {} by {}", work.workName(), work.composer());
         return context.ai()
-                .withDefaultLlm()
+                .withLlm(researchLlm())
                 .withTools(CoreToolGroups.WEB)
                 .creating(TopicResearch.class)
                 .fromPrompt("""
@@ -340,7 +457,7 @@ public class ProgramNoteWriter {
     private TopicResearch researchPerformer(String performer, OperationContext context) {
         logger.debug("Researching performer: {}", performer);
         return context.ai()
-                .withDefaultLlm()
+                .withLlm(researchLlm())
                 .withTools(CoreToolGroups.WEB)
                 .creating(TopicResearch.class)
                 .fromPrompt("""
@@ -363,7 +480,7 @@ public class ProgramNoteWriter {
     private TopicResearch researchConcept(String concept, OperationContext context) {
         logger.debug("Researching concept: {}", concept);
         return context.ai()
-                .withDefaultLlm()
+                .withLlm(researchLlm())
                 .withTools(CoreToolGroups.WEB)
                 .creating(TopicResearch.class)
                 .fromPrompt("""
@@ -392,9 +509,10 @@ public class ProgramNoteWriter {
         logger.info("Writing program notes for: {}", concert.title());
         var researchSummary = formatResearchForPrompt(research);
 
-        return context.ai()
+        // LLM creates simple ProgramNotesContent (no polymorphic annotations)
+        var notesContent = context.ai()
                 .withDefaultLlm()
-                .creating(ProgramNotes.class)
+                .creating(ProgramNotesContent.class)
                 .fromPrompt("""
                         Write program notes for the following concert in markdown format.
 
@@ -428,6 +546,9 @@ public class ProgramNoteWriter {
                         request.style(),
                         request.wordCount(),
                         researchSummary));
+
+        // Convert to Asset-implementing ProgramNotes (done in Java, not by LLM)
+        return ProgramNotes.from(notesContent);
     }
 
     private String formatWorksForPrompt(ConcertInfo concert) {
