@@ -50,7 +50,10 @@ import java.util.function.Consumer;
  * linked services (Spotify takes priority if linked, otherwise YouTube).
  */
 @Agent(
-        description = "Assembles a playable concert by finding recordings for each work",
+        description = """
+                Find recordings for a ConcertPlan. Call this when user confirms a plan \
+                ("yes", "ok", "do it", "get recordings", "sounds good"). \
+                Requires the ConcertPlan from the previous planConcert call.""",
         // Don't let the planner see internal actions
         opaque = true
 )

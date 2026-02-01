@@ -72,8 +72,8 @@ public class LocalFilesystemResourceStorage implements ResourceStorageStrategy {
         if (info == null) {
             return Optional.empty();
         }
-        // Return plain path - browsers block file:// links from web pages
-        return Optional.of(info.filePath.toAbsolutePath().toString());
+        // Return web-accessible URL that ResourceDownloadController will serve
+        return Optional.of("/api/resource/download/" + storageId);
     }
 
     @Override

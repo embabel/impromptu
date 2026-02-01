@@ -45,10 +45,10 @@ class DrivineImpromptuUserServiceTest {
         @Bean
         ImpromptuProperties impromptuProperties() {
             return new ImpromptuProperties(
-                    null, null, null, null,
-                    "default", "default", "default", "default",
-                    50, null, null, null, null, null, null,
-                    false, false, false, null, null
+                    null, null, null, null,  // chatLlm, pdfGenerationLlm, cypherGenerationLlm, researchLlm
+                    "default", "default", "default", "default", "default",  // embeddingService, guardrails, objective, opinions, behaviour
+                    50, null, null, null, null, null, null, null,  // conversationWindow, defaultPersonality, presets, extraction, neoRag, chunkerConfig, propositionExtractionLlm, entityResolutionLlm
+                    false, false, false, null, null  // showExtractionPrompts, showExtractionResponses, showChatPrompts, speech, dataLoading
             );
         }
     }

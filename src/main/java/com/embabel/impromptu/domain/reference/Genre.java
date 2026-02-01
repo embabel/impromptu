@@ -17,10 +17,12 @@ package com.embabel.impromptu.domain.reference;
 
 import com.embabel.agent.core.CreationPermitted;
 import com.embabel.agent.rag.model.NamedEntity;
+import com.fasterxml.jackson.annotation.JsonClassDescription;
 
 /**
  * Represents a musical genre (e.g., "Orchestral", "Chamber", "Keyboard", "Stage").
  */
 @CreationPermitted(false)
+@JsonClassDescription("Represents a musical genre (e.g., \"Orchestral\", \"Chamber\", \"Keyboard\", \"Stage\").")
 public interface Genre extends NamedEntity {
 }

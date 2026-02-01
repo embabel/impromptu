@@ -28,6 +28,10 @@ import com.embabel.common.ai.model.LlmOptions;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.domain.performance.Concert;
 import com.embabel.impromptu.domain.performance.ConcertPlan;
+import com.embabel.impromptu.resource.ResourceDelivery;
+import com.embabel.impromptu.resource.ResourceGenerationService;
+import com.embabel.impromptu.resource.ResourceRequest;
+import com.embabel.impromptu.resource.ResourceResult;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,9 +60,16 @@ public class ProgramNoteWriter {
     private static final int MAX_CONCURRENCY = 8;
 
     private final ImpromptuProperties properties;
+    private final ResourceGenerationService resourceGenerationService;
+    private final ResourceDelivery resourceDelivery;
 
-    public ProgramNoteWriter(ImpromptuProperties properties) {
+    public ProgramNoteWriter(
+            ImpromptuProperties properties,
+            ResourceGenerationService resourceGenerationService,
+            ResourceDelivery resourceDelivery) {
         this.properties = properties;
+        this.resourceGenerationService = resourceGenerationService;
+        this.resourceDelivery = resourceDelivery;
     }
 
     /**
@@ -130,18 +141,20 @@ public class ProgramNoteWriter {
             String title,
             String content,
             List<InternetResource> references,
+            String resourceUrl,
             Instant timestamp
     ) implements Asset {
 
         /**
-         * Create from LLM-generated content.
+         * Create from LLM-generated content with resource URL.
          */
-        public static ProgramNotes from(ProgramNotesContent content) {
+        public static ProgramNotes from(ProgramNotesContent content, String resourceUrl) {
             return new ProgramNotes(
                     UUID.randomUUID().toString(),
                     content.title(),
                     content.content(),
                     content.references(),
+                    resourceUrl,
                     Instant.now()
             );
         }
@@ -173,16 +186,30 @@ public class ProgramNoteWriter {
                 shortId = shortId.substring(0, 25);
             }
 
-            var viewTool = Tool.create(
-                    "view_notes",
-                    "View the full program notes",
-                    input -> Tool.Result.text(toResourceContent())
-            );
+            var tools = new ArrayList<Tool>();
+
+            // Add link to view/download the formatted notes
+            if (resourceUrl != null && !resourceUrl.isBlank()) {
+                var url = resourceUrl;  // capture for lambda
+                tools.add(Tool.create(
+                        "view_program_notes",
+                        "Open the formatted program notes PDF: " + resourceUrl,
+                        input -> Tool.Result.text(
+                                "{\"type\":\"document\",\"title\":\"" + title.replace("\"", "\\\"") +
+                                        "\",\"url\":\"" + url + "\"}")
+                ));
+            }
+
+            // Build description with link
+            var description = title + " [Program Notes]";
+            if (resourceUrl != null && !resourceUrl.isBlank()) {
+                description += " - [View PDF](" + resourceUrl + ")";
+            }
 
             return LlmReference.of(
                     shortId,
-                    title + " [Program Notes]",
-                    List.of(viewTool),
+                    description,
+                    tools,
                     content
             );
         }
@@ -495,7 +522,7 @@ public class ProgramNoteWriter {
 
     /**
      * Write the final program notes combining all research.
-     * Output is structured markdown content that can be converted to XHTML/PDF
+     * Output is structured markdown content that is converted to PDF
      * using ResourceGenerationService.
      */
     @AchievesGoal(description = "Write program notes for a concert")
@@ -547,8 +574,25 @@ public class ProgramNoteWriter {
                         request.wordCount(),
                         researchSummary));
 
+        // Generate PDF resource from the content
+        String resourceUrl = null;
+        try {
+            var markdownContent = "# " + notesContent.title() + "\n\n" + notesContent.content();
+            var resourceRequest = new ResourceRequest(
+                    "Program Notes: " + concert.title(),
+                    markdownContent
+            );
+            var resourceResult = resourceGenerationService.generate(resourceRequest);
+            var resourceId = resourceDelivery.store(resourceResult);
+            resourceUrl = resourceDelivery.getLocation(resourceId).orElse(null);
+            logger.info("Generated PDF resource for program notes: {}", resourceUrl);
+        } catch (Exception e) {
+            logger.warn("Failed to generate PDF resource for program notes: {}", e.getMessage());
+            // Continue without resource URL - notes will still be available as text
+        }
+
         // Convert to Asset-implementing ProgramNotes (done in Java, not by LLM)
-        return ProgramNotes.from(notesContent);
+        return ProgramNotes.from(notesContent, resourceUrl);
     }
 
     private String formatWorksForPrompt(ConcertInfo concert) {

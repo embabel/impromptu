@@ -77,6 +77,7 @@ class PropositionConfiguration {
                 Work.class,
                 Technique.class,
                 Performer.class,
+                Genre.class,
                 Ensemble.class,
                 Instrument.class,
                 Family.class,

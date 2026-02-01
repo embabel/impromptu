@@ -442,6 +442,14 @@ public class SessionPanel extends Div {
                 }
                 logger.info("Playing YouTube video: {}", title);
             }
+        } else if ("document".equals(type)) {
+            // Document - open URL in new tab
+            var url = json.path("url").asText();
+            var docTitle = json.path("title").asText();
+            if (!url.isBlank()) {
+                getUI().ifPresent(ui -> ui.getPage().open(url, "_blank"));
+                logger.info("Opening document: {}", docTitle);
+            }
         }
     }
 

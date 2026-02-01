@@ -67,27 +67,26 @@ public class ConcertPlanningService {
     /**
      * Create a PlaybookTool for concert planning.
      * <p>
-     * Uses progressive tool unlocking to ensure the LLM queries the database
-     * before attempting to create a plan. This prevents hallucinated works.
+     * The LLM uses its general knowledge of the repertoire to plan concerts.
+     * A database query tool is available but optional - the LLM should proceed
+     * with its own knowledge if queries fail or return no results.
      * <p>
      * This tool plans the program but doesn't search for recordings.
      * The result is a ConcertPlan for user confirmation.
      */
     public Tool createConcertPlanningTool() {
         var queryTool = cypherQueryTools.tool("""
-                Query the music database for composers and works. \
-                The database contains the Open Opus catalog with composers, works, \
-                genres (Orchestral, Chamber, Keyboard, Vocal, Stage), \
-                and epochs (Baroque, Classical, Romantic, 20th Century, etc.). \
-                Example queries: works by a composer, works of a specific genre, \
-                popular works, works from an era.""");
+                OPTIONAL: Query the Open Opus database to discover lesser-known works \
+                or verify details. NOT required - use your general knowledge first. \
+                If queries return no results or errors, just proceed with what you know. \
+                The database may not have all composers or works.""");
 
         return new PlaybookTool(
                 "planConcert",
                 """
-                        Plan a concert program. Returns a ConcertPlan with suggested works \
-                        for user confirmation. Fast - no streaming service searches. \
-                        Call this first, then use assembleConcert after user confirms."""
+                        Plan a NEW concert program. Only use this for new requests. \
+                        NEVER call this if a ConcertPlan already exists - use ConcertAssembler instead. \
+                        When user confirms a plan ("yes", "ok", "do it", "get recordings"), use ConcertAssembler."""
         )
                 .withTools(queryTool, createPlanTool())
                 .withSystemPrompt(loadSystemPrompt())
