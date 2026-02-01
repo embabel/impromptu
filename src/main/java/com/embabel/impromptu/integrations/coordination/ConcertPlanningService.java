@@ -15,8 +15,8 @@
  */
 package com.embabel.impromptu.integrations.coordination;
 
-import com.embabel.agent.api.tool.AgenticTool;
 import com.embabel.agent.api.tool.Tool;
+import com.embabel.agent.api.tool.playbook.PlaybookTool;
 import com.embabel.agent.rag.neo.drivine.cyphergen.CypherQueryTools;
 import com.embabel.impromptu.domain.performance.ConcertPlan;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,30 +65,32 @@ public class ConcertPlanningService {
     }
 
     /**
-     * Create an AgenticTool for concert planning.
+     * Create a PlaybookTool for concert planning.
+     * <p>
+     * Uses progressive tool unlocking to ensure the LLM queries the database
+     * before attempting to create a plan. This prevents hallucinated works.
      * <p>
      * This tool plans the program but doesn't search for recordings.
      * The result is a ConcertPlan for user confirmation.
      */
     public Tool createConcertPlanningTool() {
-        return new AgenticTool(
+        var queryTool = cypherQueryTools.tool("""
+                Query the music database for composers and works. \
+                The database contains the Open Opus catalog with composers, works, \
+                genres (Orchestral, Chamber, Keyboard, Vocal, Stage), \
+                and epochs (Baroque, Classical, Romantic, 20th Century, etc.). \
+                Example queries: works by a composer, works of a specific genre, \
+                popular works, works from an era.""");
+
+        return new PlaybookTool(
                 "planConcert",
                 """
                         Plan a concert program. Returns a ConcertPlan with suggested works \
                         for user confirmation. Fast - no streaming service searches. \
                         Call this first, then use assembleConcert after user confirms."""
         )
-                .withTools(
-                        cypherQueryTools.tool("""
-                                Query the music database for composers and works. \
-                                Use this FIRST to find works matching the user's request. \
-                                The database contains the Open Opus catalog with composers, works, \
-                                genres (Orchestral, Chamber, Keyboard, Vocal, Stage), \
-                                and epochs (Baroque, Classical, Romantic, 20th Century, etc.). \
-                                Example queries: works by a composer, works of a specific genre, \
-                                popular works, works from an era."""),
-                        createPlanTool()
-                )
+                .withTools(queryTool)
+                .withTool(createPlanTool()).unlockedBy(queryTool)
                 .withSystemPrompt(loadSystemPrompt())
                 .withParameter(Tool.Parameter.string(
                         "request",

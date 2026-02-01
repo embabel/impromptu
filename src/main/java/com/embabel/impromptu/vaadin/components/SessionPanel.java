@@ -36,6 +36,8 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
@@ -67,7 +69,9 @@ public class SessionPanel extends Div {
 
     private final PropositionsPanel propositionsPanel;
     private YouTubePlayerPanel youTubePlayerPanel;
+    private SpotifyPlayerPanel spotifyPlayerPanel;
     private final Tabs tabs;
+    private final Tab mediaTab;
     private final Tab assetsTab;
     private final AssetsPanel assetsPanel;
     private final Config config;
@@ -149,7 +153,7 @@ public class SessionPanel extends Div {
         sidePanel.add(header);
 
         // Tabs
-        var mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
+        mediaTab = new Tab(VaadinIcon.MUSIC.create(), new Span("Media"));
         assetsTab = new Tab(VaadinIcon.CUBE.create(), new Span("Assets"));
         var memoryTab = new Tab(VaadinIcon.LIGHTBULB.create(), new Span("Memory"));
         var presetsTab = new Tab(VaadinIcon.MAGIC.create(), new Span("Presets"));
@@ -271,7 +275,8 @@ public class SessionPanel extends Div {
         try {
             if (config.spotifyService() != null && config.spotifyService().isLinked(config.user())) {
                 mediaContent.remove(placeholder);
-                mediaContent.add(new SpotifyPlayerPanel(config.spotifyService(), config.user()));
+                spotifyPlayerPanel = new SpotifyPlayerPanel(config.spotifyService(), config.user());
+                mediaContent.add(spotifyPlayerPanel);
             }
             if (config.youTubeService() != null && config.youTubeService().isConfigured()) {
                 mediaContent.remove(placeholder);
@@ -365,6 +370,7 @@ public class SessionPanel extends Div {
                                     allUris.size(), json.path("title").asText());
                         } catch (Exception e) {
                             logger.error("Failed to play Spotify concert", e);
+                            handleSpotifyError(e);
                         }
                     }
                 } else if ("youtube".equals(platform)) {
@@ -421,6 +427,7 @@ public class SessionPanel extends Div {
                     }
                 } catch (Exception e) {
                     logger.error("Failed to play Spotify track", e);
+                    handleSpotifyError(e);
                 }
             }
         } else if ("youtube".equals(source)) {
@@ -466,6 +473,42 @@ public class SessionPanel extends Div {
                 url
         ));
         logger.info("Opening YouTube playlist ({} videos): {}", videoIds.size(), title);
+    }
+
+    /**
+     * Handle Spotify playback errors with user-friendly notifications.
+     * For NO_ACTIVE_DEVICE errors, opens the session panel to the Media tab
+     * so the user can select a device.
+     */
+    private void handleSpotifyError(Exception e) {
+        String message = e.getMessage();
+        if (message != null && message.contains("NO_ACTIVE_DEVICE")) {
+            // Open panel to Media tab so user can select a device
+            open();
+            tabs.setSelectedTab(mediaTab);
+            if (spotifyPlayerPanel != null) {
+                spotifyPlayerPanel.expand();
+                spotifyPlayerPanel.refresh();
+            }
+            var notification = Notification.show(
+                    "No active Spotify device. Select a device from the Media panel, or open Spotify on your device.",
+                    6000,
+                    Notification.Position.BOTTOM_CENTER
+            );
+            notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
+        } else if (message != null && message.contains("Restricted device")) {
+            Notification.show(
+                    "This device can't be controlled via the web. Try selecting a different device.",
+                    5000,
+                    Notification.Position.BOTTOM_CENTER
+            );
+        } else {
+            Notification.show(
+                    "Spotify error: " + (message != null ? message : "Unknown error"),
+                    5000,
+                    Notification.Position.BOTTOM_CENTER
+            );
+        }
     }
 
     public boolean isOpen() {
