@@ -28,6 +28,7 @@ import com.embabel.common.ai.model.LlmOptions;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.domain.performance.Concert;
 import com.embabel.impromptu.domain.performance.ConcertPlan;
+import com.embabel.impromptu.integrations.imslp.ImslpService;
 import com.embabel.impromptu.resource.ResourceDelivery;
 import com.embabel.impromptu.resource.ResourceGenerationService;
 import com.embabel.impromptu.resource.ResourceRequest;
@@ -64,6 +65,7 @@ public class ProgramNoteWriter {
     private final ImpromptuProperties properties;
     private final ResourceGenerationService resourceGenerationService;
     private final ResourceDelivery resourceDelivery;
+    private final ImslpService imslpService = new ImslpService();
 
     public ProgramNoteWriter(
             ImpromptuProperties properties,
@@ -286,6 +288,37 @@ public class ProgramNoteWriter {
     }
 
     /**
+     * Score link from IMSLP for a work.
+     */
+    public record ScoreLink(
+            String composer,
+            String workName,
+            String imslpPageUrl
+    ) {}
+
+    /**
+     * Collection of score links for all works in a concert.
+     */
+    public record ScoreLinks(
+            List<ScoreLink> links
+    ) {
+        public String getImslpUrl(String composer, String workName) {
+            return links.stream()
+                    .filter(l -> matches(l, composer, workName))
+                    .map(ScoreLink::imslpPageUrl)
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        private boolean matches(ScoreLink link, String composer, String workName) {
+            if (link.composer() == null || link.workName() == null) return false;
+            if (composer == null || workName == null) return false;
+            return link.composer().toLowerCase().contains(composer.toLowerCase().split(",")[0].split(" ")[0])
+                    || composer.toLowerCase().contains(link.composer().toLowerCase().split(",")[0].split(" ")[0]);
+        }
+    }
+
+    /**
      * Bind the Concert from the parent blackboard and convert to ConcertInfo.
      * The Concert and ConcertPlan are placed in the blackboard by ChatActions before invoking this subagent.
      * Uses the ConcertPlan to fill in composer info that may be missing from Performance objects.
@@ -430,6 +463,44 @@ public class ProgramNoteWriter {
         );
     }
 
+    /**
+     * Look up scores on IMSLP for each work in the concert.
+     * This is done in parallel and failures are tolerated (scores are optional).
+     */
+    @Action
+    public ScoreLinks lookupScores(ProgramTopics topics, OperationContext context) {
+        logger.info("Looking up scores on IMSLP for {} works", topics.works().size());
+
+        var links = context.parallelMap(
+                topics.works(),
+                MAX_CONCURRENCY,
+                work -> {
+                    try {
+                        if (work.composer() == null || work.workName() == null) {
+                            return null;
+                        }
+                        var result = imslpService.findScore(work.composer(), work.workName());
+                        if (result.workPageUrl() != null) {
+                            logger.info("Found IMSLP score for '{}' by '{}': {}",
+                                    work.workName(), work.composer(), result.workPageUrl());
+                            return new ScoreLink(work.composer(), work.workName(), result.workPageUrl());
+                        }
+                    } catch (Exception e) {
+                        logger.debug("Could not find IMSLP score for '{}' by '{}': {}",
+                                work.workName(), work.composer(), e.getMessage());
+                    }
+                    return null;
+                }
+        );
+
+        var validLinks = links.stream()
+                .filter(l -> l != null)
+                .collect(Collectors.toList());
+
+        logger.info("Found {} IMSLP score links", validLinks.size());
+        return new ScoreLinks(validLinks);
+    }
+
     private TopicResearch researchComposer(String composer, OperationContext context) {
         logger.debug("Researching composer: {}", composer);
         return context.ai()
@@ -533,25 +604,34 @@ public class ProgramNoteWriter {
             ConcertInfo concert,
             ProgramNoteRequest request,
             ResearchFindings research,
+            ScoreLinks scoreLinks,
             ImpromptuUser user,
             OperationContext context) {
 
         logger.info("Writing program notes for: {}", concert.title());
         var researchSummary = formatResearchForPrompt(research);
+        var scoresSummary = formatScoresForPrompt(scoreLinks);
         int totalWords = request.wordsPerWork() * concert.performances().size();
 
         // LLM creates simple ProgramNotesContent using Jinja template
         // The template handles persona integration via {% include %}
-        var notesContent = context.ai()
-                .withDefaultLlm()
-                .withTemplate("concert/program_notes")
-                .createObject(ProgramNotesContent.class, Map.of(
-                        "user", user,
-                        "concert", concert,
-                        "wordsPerWork", request.wordsPerWork(),
-                        "totalWords", totalWords,
-                        "research", researchSummary
-                ));
+        ProgramNotesContent notesContent;
+        try {
+            notesContent = context.ai()
+                    .withDefaultLlm()
+                    .withTemplate("concert/program_notes")
+                    .createObject(ProgramNotesContent.class, Map.of(
+                            "user", user,
+                            "concert", concert,
+                            "wordsPerWork", request.wordsPerWork(),
+                            "totalWords", totalWords,
+                            "research", researchSummary,
+                            "scores", scoresSummary
+                    ));
+        } catch (Exception e) {
+            logger.error("Failed to generate program notes content: {}", e.getMessage());
+            throw new IllegalStateException("Failed to generate program notes", e);
+        }
 
         // Generate XHTML resource from the content
         String resourceUrl = null;
@@ -637,6 +717,20 @@ public class ProgramNoteWriter {
             }
         }
 
+        return sb.toString();
+    }
+
+    private String formatScoresForPrompt(ScoreLinks scoreLinks) {
+        if (scoreLinks == null || scoreLinks.links().isEmpty()) {
+            return "";
+        }
+
+        var sb = new StringBuilder();
+        sb.append("## Available Scores on IMSLP\n\n");
+        for (var link : scoreLinks.links()) {
+            sb.append("- **").append(link.composer()).append(": ").append(link.workName()).append("**\n");
+            sb.append("  [View Score on IMSLP](").append(link.imslpPageUrl()).append(")\n\n");
+        }
         return sb.toString();
     }
 }

@@ -24,6 +24,10 @@ Target length: approximately {{ wordsPerWork }} words per work ({{ totalWords }}
 Research findings:
 {{ research }}
 
+{% if scores %}
+{{ scores }}
+{% endif %}
+
 ===== STRUCTURE FOR EACH WORK =====
 
 Each work MUST follow this exact structure:
@@ -54,6 +58,12 @@ what inspired it, any dedicatees, circumstances of composition]
 - Brief background on the performer(s)
 - Why they are well-suited to this work
 - Any connection to the composer or work's tradition]
+
+### Follow the Score (if IMSLP link available)
+[If an IMSLP link is provided for this work in the scores section above, include:
+- A brief note that the score is available in the public domain
+- The markdown link to the IMSLP page
+- Skip this section if no IMSLP link is available for this work]
 
 ===== REQUIREMENTS =====
 
