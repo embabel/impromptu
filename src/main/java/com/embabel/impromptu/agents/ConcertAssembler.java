@@ -18,6 +18,7 @@ package com.embabel.impromptu.agents;
 import com.embabel.agent.api.annotation.AchievesGoal;
 import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.Agent;
+import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.OperationContext;
 import com.embabel.agent.api.tool.DelegatingTool;
 import com.embabel.agent.api.tool.Tool;
@@ -196,8 +197,9 @@ public record ConcertAssembler(
      * Platform is determined from the user's linked services.
      */
     @Action
-    public WorksToFind extractWorks(ConcertPlan plan, ImpromptuUser user) {
+    public WorksToFind extractWorks(ConcertPlan plan, ImpromptuUser user, ActionContext context) {
         var platform = determinePlatform(user);
+        context.updateProgress("Finding recordings on " + platform + " for " + plan.works().size() + " works...");
 
         logger.info("Extracting {} works to find on {} for '{}'",
                 plan.works().size(), platform, plan.name());
@@ -216,15 +218,18 @@ public record ConcertAssembler(
     public PerformanceFindings findPerformances(
             WorksToFind worksToFind,
             ImpromptuUser user,
-            OperationContext context) {
+            ActionContext context) {
 
         var works = worksToFind.works();
 
         // Get search tools for the user's platform
         var searchTools = performanceAssemblyService.tools(user);
+        var platform = works.isEmpty() ? "unknown" : works.get(0).platform();
+
+        context.updateProgress("Searching " + platform + " for " + works.size() + " recordings...");
 
         logger.info("Finding performances for {} works using {} tools on {}",
-                works.size(), searchTools.size(), works.isEmpty() ? "unknown" : works.get(0).platform());
+                works.size(), searchTools.size(), platform);
 
         if (searchTools.isEmpty()) {
             logger.warn("No search tools available! Spotify available: {}, YouTube available: {}",
@@ -234,10 +239,16 @@ public record ConcertAssembler(
             logger.info("Available search tools: {}", searchTools.stream().map(t -> t.getDefinition().getName()).toList());
         }
 
+        var foundCount = new java.util.concurrent.atomic.AtomicInteger(0);
         var findings = context.parallelMap(works, MAX_CONCURRENCY, work -> {
+            context.updateProgress("Searching for: " + work.composer() + " - " + work.title() + "...");
             logger.info(">>> Starting search for: {}", work.title());
             var result = findPerformanceForWork(work, searchTools, context);
             logger.info("<<< Finished search for: {} found={}", work.title(), result.found());
+            if (result.found()) {
+                int count = foundCount.incrementAndGet();
+                context.updateProgress("Found " + count + "/" + works.size() + " recordings...");
+            }
             return result;
         });
 
@@ -309,7 +320,8 @@ public record ConcertAssembler(
      */
     @AchievesGoal(description = "Assemble a playable concert from performances")
     @Action
-    public Concert assembleConcert(ConcertPlan plan, PerformanceFindings findings) {
+    public Concert assembleConcert(ConcertPlan plan, PerformanceFindings findings, ActionContext context) {
+        context.updateProgress("Assembling concert program...");
         var performances = findings.successfulPerformances();
         var missing = findings.missingWorks();
 
@@ -331,6 +343,7 @@ public record ConcertAssembler(
                 plan.works().size(),
                 concert.platform());
 
+        context.updateProgress("Concert ready: " + performances.size() + " recordings found");
         return concert;
     }
 }

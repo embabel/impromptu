@@ -18,6 +18,7 @@ package com.embabel.impromptu.agents;
 import com.embabel.agent.api.annotation.AchievesGoal;
 import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.Agent;
+import com.embabel.agent.api.common.ActionContext;
 import com.embabel.agent.api.common.LlmReference;
 import com.embabel.agent.api.common.OperationContext;
 import com.embabel.agent.api.tool.Tool;
@@ -324,7 +325,8 @@ public class ProgramNoteWriter {
      * Uses the ConcertPlan to fill in composer info that may be missing from Performance objects.
      */
     @Action
-    public ConcertInfo bindConcert(OperationContext context) {
+    public ConcertInfo bindConcert(ActionContext context) {
+        context.updateProgress("Preparing to write program notes...");
         var concert = context.last(Concert.class);
         if (concert == null) {
             logger.error("No Concert found in blackboard");
@@ -420,7 +422,10 @@ public class ProgramNoteWriter {
     @Action
     public ResearchFindings researchTopics(
             ProgramTopics topics,
-            OperationContext context) {
+            ActionContext context) {
+
+        int totalTopics = topics.composers().size() + topics.works().size() + topics.performers().size();
+        context.updateProgress("Researching " + totalTopics + " topics (composers, works, performers)...");
 
         logger.info("Starting parallel research on {} composers, {} works, {} performers",
                 topics.composers().size(),
@@ -428,6 +433,7 @@ public class ProgramNoteWriter {
                 topics.performers().size());
 
         // Research composers in parallel
+        context.updateProgress("Researching " + topics.composers().size() + " composers...");
         var composerResearch = context.parallelMap(
                 topics.composers(),
                 MAX_CONCURRENCY,
@@ -435,6 +441,7 @@ public class ProgramNoteWriter {
         );
 
         // Research works in parallel
+        context.updateProgress("Researching " + topics.works().size() + " musical works...");
         var workResearch = context.parallelMap(
                 topics.works(),
                 MAX_CONCURRENCY,
@@ -442,6 +449,7 @@ public class ProgramNoteWriter {
         );
 
         // Research performers in parallel
+        context.updateProgress("Researching " + topics.performers().size() + " performers...");
         var performerResearch = context.parallelMap(
                 topics.performers(),
                 MAX_CONCURRENCY,
@@ -455,6 +463,7 @@ public class ProgramNoteWriter {
                 concept -> researchConcept(concept, context)
         );
 
+        context.updateProgress("Research complete");
         return new ResearchFindings(
                 composerResearch,
                 workResearch,
@@ -468,7 +477,8 @@ public class ProgramNoteWriter {
      * This is done in parallel and failures are tolerated (scores are optional).
      */
     @Action
-    public ScoreLinks lookupScores(ProgramTopics topics, OperationContext context) {
+    public ScoreLinks lookupScores(ProgramTopics topics, ActionContext context) {
+        context.updateProgress("Looking up scores on IMSLP for " + topics.works().size() + " works...");
         logger.info("Looking up scores on IMSLP for {} works", topics.works().size());
 
         var links = context.parallelMap(
@@ -606,8 +616,9 @@ public class ProgramNoteWriter {
             ResearchFindings research,
             ScoreLinks scoreLinks,
             ImpromptuUser user,
-            OperationContext context) {
+            ActionContext context) {
 
+        context.updateProgress("Writing program notes for " + concert.performances().size() + " works...");
         logger.info("Writing program notes for: {}", concert.title());
         var researchSummary = formatResearchForPrompt(research);
         var scoresSummary = formatScoresForPrompt(scoreLinks);
@@ -634,6 +645,7 @@ public class ProgramNoteWriter {
         }
 
         // Generate XHTML resource from the content
+        context.updateProgress("Generating formatted document...");
         String resourceUrl = null;
         try {
             var markdownContent = "# " + notesContent.title() + "\n\n" + notesContent.content();
