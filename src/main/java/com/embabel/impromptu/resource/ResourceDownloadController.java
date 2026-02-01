@@ -57,9 +57,16 @@ public class ResourceDownloadController {
 
         var resource = result.get();
         var headers = new HttpHeaders();
-        headers.setContentType(resolveContentType(resource.filename()));
-        headers.setContentDispositionFormData("attachment", resource.filename());
+        var contentType = resolveContentType(resource.filename());
+        headers.setContentType(contentType);
         headers.setContentLength(resource.size());
+
+        // XHTML should render inline in the browser, not download
+        if (contentType.equals(MediaType.APPLICATION_XHTML_XML)) {
+            headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.filename() + "\"");
+        } else {
+            headers.setContentDispositionFormData("attachment", resource.filename());
+        }
 
         logger.info("Serving resource: {} ({} bytes)", resource.filename(), resource.size());
         return new ResponseEntity<>(resource.bytes(), headers, HttpStatus.OK);

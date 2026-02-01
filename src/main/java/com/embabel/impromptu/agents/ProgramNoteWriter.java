@@ -110,15 +110,15 @@ public class ProgramNoteWriter {
      *
      * @param audience      description of the target audience (e.g., "general concert-goers", "music students")
      * @param style         writing style (e.g., "scholarly", "accessible", "entertaining")
-     * @param wordCount     approximate word count for the final notes
+     * @param wordsPerWork  approximate word count per work (500-600 words = 1 page)
      */
     public record ProgramNoteRequest(
             String audience,
             String style,
-            int wordCount
+            int wordsPerWork
     ) {
         public ProgramNoteRequest() {
-            this("general concert-goers", "accessible and engaging", 1500);
+            this("general concert-goers", "accessible and engaging", 550);
         }
     }
 
@@ -193,7 +193,7 @@ public class ProgramNoteWriter {
                 var url = resourceUrl;  // capture for lambda
                 tools.add(Tool.create(
                         "view_program_notes",
-                        "Open the formatted program notes PDF: " + resourceUrl,
+                        "Open the formatted program notes: " + resourceUrl,
                         input -> Tool.Result.text(
                                 "{\"type\":\"document\",\"title\":\"" + title.replace("\"", "\\\"") +
                                         "\",\"url\":\"" + url + "\"}")
@@ -203,7 +203,7 @@ public class ProgramNoteWriter {
             // Build description with link
             var description = title + " [Program Notes]";
             if (resourceUrl != null && !resourceUrl.isBlank()) {
-                description += " - [View PDF](" + resourceUrl + ")";
+                description += " - [View](" + resourceUrl + ")";
             }
 
             return LlmReference.of(
@@ -522,7 +522,7 @@ public class ProgramNoteWriter {
 
     /**
      * Write the final program notes combining all research.
-     * Output is structured markdown content that is converted to PDF
+     * Output is structured markdown content that is converted to XHTML
      * using ResourceGenerationService.
      */
     @AchievesGoal(description = "Write program notes for a concert")
@@ -535,33 +535,65 @@ public class ProgramNoteWriter {
 
         logger.info("Writing program notes for: {}", concert.title());
         var researchSummary = formatResearchForPrompt(research);
+        int totalWords = request.wordsPerWork() * concert.performances().size();
 
         // LLM creates simple ProgramNotesContent (no polymorphic annotations)
         var notesContent = context.ai()
                 .withDefaultLlm()
                 .creating(ProgramNotesContent.class)
                 .fromPrompt("""
-                        Write program notes for the following concert in markdown format.
+                        Write detailed, professional program notes for the following concert in markdown format.
 
                         Concert: %s
-                        Works:
+                        Works and their performers:
                         %s
 
                         Target audience: %s
                         Style: %s
-                        Approximate word count: %d
+                        Target length: approximately %d words per work (%d words total)
 
                         Research findings:
                         %s
 
-                        Guidelines:
-                        - Write engaging, informative program notes
-                        - Include interesting anecdotes and historical context
-                        - Help the audience appreciate what they're about to hear
-                        - Suggest what to listen for in each piece
-                        - Use markdown formatting with headings (##, ###), paragraphs, and lists
-                        - Start with ## for each work section
+                        ===== STRUCTURE FOR EACH WORK =====
+
+                        Each work MUST follow this exact structure:
+
+                        ## [Composer Full Name]: [Complete Work Title with Opus/Catalog Number]
+                        *Performed by [performer name(s) for THIS specific work]*
+
+                        ### The Composer's World
+                        [2-3 paragraphs about the composer's life situation when writing this work,
+                        what inspired it, any dedicatees, circumstances of composition]
+
+                        ### About the Music
+                        [2-3 paragraphs describing the musical content:
+                        - Movement structure (if multi-movement)
+                        - Key characteristics, themes, and musical language
+                        - Notable passages or sections
+                        - Technical and expressive demands]
+
+                        ### What to Listen For
+                        [1-2 paragraphs with specific listening suggestions:
+                        - Memorable themes or motifs
+                        - Key moments of drama, beauty, or surprise
+                        - Instrumental interplay or solo passages
+                        - How the work builds to its conclusion]
+
+                        ### Today's Performance
+                        [1 paragraph about the performers:
+                        - Brief background on the performer(s)
+                        - Why they are well-suited to this work
+                        - Any connection to the composer or work's tradition]
+
+                        ===== ADDITIONAL REQUIREMENTS =====
+
+                        - Write AT LEAST %d words per work (this is a MINIMUM, not a maximum)
                         - Do NOT include a top-level title (it will be added separately)
+                        - Do NOT have a separate "Performers" section - performers go with each work
+                        - After all works, include a brief closing paragraph connecting the works on the program
+                        - Use *italics* for musical terms, work titles when mentioned in text
+                        - Be engaging and informative, avoiding overly academic language
 
                         Set 'title' to a suitable title for the program notes.
                         Set 'content' to the full markdown content (without the title).
@@ -571,10 +603,12 @@ public class ProgramNoteWriter {
                         formatWorksForPrompt(concert),
                         request.audience(),
                         request.style(),
-                        request.wordCount(),
-                        researchSummary));
+                        request.wordsPerWork(),
+                        totalWords,
+                        researchSummary,
+                        request.wordsPerWork()));
 
-        // Generate PDF resource from the content
+        // Generate XHTML resource from the content
         String resourceUrl = null;
         try {
             var markdownContent = "# " + notesContent.title() + "\n\n" + notesContent.content();
@@ -582,12 +616,13 @@ public class ProgramNoteWriter {
                     "Program Notes: " + concert.title(),
                     markdownContent
             );
-            var resourceResult = resourceGenerationService.generate(resourceRequest);
-            var resourceId = resourceDelivery.store(resourceResult);
+            var xhtmlResult = resourceGenerationService.generateXhtmlOnly(resourceRequest);
+            var resourceId = resourceDelivery.store(
+                    new ResourceResult(xhtmlResult.xhtml().getBytes(), xhtmlResult.filename()));
             resourceUrl = resourceDelivery.getLocation(resourceId).orElse(null);
-            logger.info("Generated PDF resource for program notes: {}", resourceUrl);
+            logger.info("Generated XHTML resource for program notes: {}", resourceUrl);
         } catch (Exception e) {
-            logger.warn("Failed to generate PDF resource for program notes: {}", e.getMessage());
+            logger.warn("Failed to generate XHTML resource for program notes: {}", e.getMessage());
             // Continue without resource URL - notes will still be available as text
         }
 
