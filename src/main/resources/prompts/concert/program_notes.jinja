@@ -1,0 +1,68 @@
+{# Program notes generation template - adapts to user's persona #}
+
+===== YOUR VOICE AND STYLE =====
+
+{% set persona_template = "personas/" ~ user.personality().persona() ~ ".jinja" %}
+{% include persona_template %}
+
+Adapt the program notes to match this voice while maintaining educational value.
+
+===== TASK =====
+
+Write detailed program notes for the following concert in markdown format.
+
+Concert: {{ concert.title }}
+
+Works and their performers:
+{% for perf in concert.performances %}
+{{ loop.index }}. {{ perf.composer if perf.composer else "Unknown" }}: {{ perf.workName if perf.workName else "Unknown work" }}
+   Performed by: {{ perf.performer if perf.performer else "TBA" }}
+{% endfor %}
+
+Target length: approximately {{ wordsPerWork }} words per work ({{ totalWords }} words total)
+
+Research findings:
+{{ research }}
+
+===== STRUCTURE FOR EACH WORK =====
+
+Each work MUST follow this exact structure:
+
+## [Composer Full Name]: [Complete Work Title with Opus/Catalog Number]
+*Performed by [performer name(s) for THIS specific work]*
+
+### The Composer's World
+[2-3 paragraphs about the composer's life situation when writing this work,
+what inspired it, any dedicatees, circumstances of composition]
+
+### About the Music
+[2-3 paragraphs describing the musical content:
+- Movement structure (if multi-movement)
+- Key characteristics, themes, and musical language
+- Notable passages or sections
+- Technical and expressive demands]
+
+### What to Listen For
+[1-2 paragraphs with specific listening suggestions:
+- Memorable themes or motifs
+- Key moments of drama, beauty, or surprise
+- Instrumental interplay or solo passages
+- How the work builds to its conclusion]
+
+### Today's Performance
+[1 paragraph about the performers:
+- Brief background on the performer(s)
+- Why they are well-suited to this work
+- Any connection to the composer or work's tradition]
+
+===== REQUIREMENTS =====
+
+- Write AT LEAST {{ wordsPerWork }} words per work (this is a MINIMUM)
+- Do NOT include a top-level title (it will be added separately)
+- Do NOT have a separate "Performers" section - performers go with each work
+- After all works, include a brief closing paragraph connecting the works on the program
+- Use *italics* for musical terms, work titles when mentioned in text
+
+Set 'title' to a suitable title for the program notes.
+Set 'content' to the full markdown content (without the title).
+Include all references from the research in the 'references' field.

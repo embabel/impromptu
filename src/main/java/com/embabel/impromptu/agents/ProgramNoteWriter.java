@@ -32,6 +32,7 @@ import com.embabel.impromptu.resource.ResourceDelivery;
 import com.embabel.impromptu.resource.ResourceGenerationService;
 import com.embabel.impromptu.resource.ResourceRequest;
 import com.embabel.impromptu.resource.ResourceResult;
+import com.embabel.impromptu.user.ImpromptuUser;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -531,82 +533,25 @@ public class ProgramNoteWriter {
             ConcertInfo concert,
             ProgramNoteRequest request,
             ResearchFindings research,
+            ImpromptuUser user,
             OperationContext context) {
 
         logger.info("Writing program notes for: {}", concert.title());
         var researchSummary = formatResearchForPrompt(research);
         int totalWords = request.wordsPerWork() * concert.performances().size();
 
-        // LLM creates simple ProgramNotesContent (no polymorphic annotations)
+        // LLM creates simple ProgramNotesContent using Jinja template
+        // The template handles persona integration via {% include %}
         var notesContent = context.ai()
                 .withDefaultLlm()
-                .creating(ProgramNotesContent.class)
-                .fromPrompt("""
-                        Write detailed, professional program notes for the following concert in markdown format.
-
-                        Concert: %s
-                        Works and their performers:
-                        %s
-
-                        Target audience: %s
-                        Style: %s
-                        Target length: approximately %d words per work (%d words total)
-
-                        Research findings:
-                        %s
-
-                        ===== STRUCTURE FOR EACH WORK =====
-
-                        Each work MUST follow this exact structure:
-
-                        ## [Composer Full Name]: [Complete Work Title with Opus/Catalog Number]
-                        *Performed by [performer name(s) for THIS specific work]*
-
-                        ### The Composer's World
-                        [2-3 paragraphs about the composer's life situation when writing this work,
-                        what inspired it, any dedicatees, circumstances of composition]
-
-                        ### About the Music
-                        [2-3 paragraphs describing the musical content:
-                        - Movement structure (if multi-movement)
-                        - Key characteristics, themes, and musical language
-                        - Notable passages or sections
-                        - Technical and expressive demands]
-
-                        ### What to Listen For
-                        [1-2 paragraphs with specific listening suggestions:
-                        - Memorable themes or motifs
-                        - Key moments of drama, beauty, or surprise
-                        - Instrumental interplay or solo passages
-                        - How the work builds to its conclusion]
-
-                        ### Today's Performance
-                        [1 paragraph about the performers:
-                        - Brief background on the performer(s)
-                        - Why they are well-suited to this work
-                        - Any connection to the composer or work's tradition]
-
-                        ===== ADDITIONAL REQUIREMENTS =====
-
-                        - Write AT LEAST %d words per work (this is a MINIMUM, not a maximum)
-                        - Do NOT include a top-level title (it will be added separately)
-                        - Do NOT have a separate "Performers" section - performers go with each work
-                        - After all works, include a brief closing paragraph connecting the works on the program
-                        - Use *italics* for musical terms, work titles when mentioned in text
-                        - Be engaging and informative, avoiding overly academic language
-
-                        Set 'title' to a suitable title for the program notes.
-                        Set 'content' to the full markdown content (without the title).
-                        Include all references from the research in the 'references' field.
-                        """.formatted(
-                        concert.title(),
-                        formatWorksForPrompt(concert),
-                        request.audience(),
-                        request.style(),
-                        request.wordsPerWork(),
-                        totalWords,
-                        researchSummary,
-                        request.wordsPerWork()));
+                .withTemplate("concert/program_notes")
+                .createObject(ProgramNotesContent.class, Map.of(
+                        "user", user,
+                        "concert", concert,
+                        "wordsPerWork", request.wordsPerWork(),
+                        "totalWords", totalWords,
+                        "research", researchSummary
+                ));
 
         // Generate XHTML resource from the content
         String resourceUrl = null;
