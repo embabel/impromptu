@@ -25,6 +25,7 @@ import com.embabel.agent.rag.tools.TryHyDE;
 import com.embabel.agent.tools.mcp.McpToolFactory;
 import com.embabel.chat.Chatbot;
 import com.embabel.chat.agent.AgentProcessChatbot;
+import com.embabel.chat.support.InMemoryConversationFactory;
 import com.embabel.dice.common.Relations;
 import com.embabel.dice.projection.memory.MemoryProjector;
 import com.embabel.dice.projection.memory.support.DefaultMemoryProjector;
@@ -60,7 +61,7 @@ class ChatConfiguration {
 
     /**
      * Allows us to use MCP tools in the chatbot
-     * as matryoshka tools.
+     * as unfolding tools.
      * Tools must be configured in application.yml
      */
     @Bean
@@ -75,6 +76,7 @@ class ChatConfiguration {
             ImpromptuProperties properties) {
         return AgentProcessChatbot.utilityFromPlatform(
                 agentPlatform,
+                new InMemoryConversationFactory(),
                 new Verbosity().withShowPrompts(properties.showChatPrompts())
         );
     }

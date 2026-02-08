@@ -15,8 +15,11 @@
  */
 package com.embabel.impromptu.domain.performance;
 
-import com.embabel.agent.api.common.LlmReference;
+import com.embabel.agent.api.reference.LlmReference;
 import com.embabel.agent.api.tool.Tool;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -25,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * A concert program consisting of multiple performances from a single platform.
@@ -207,12 +209,27 @@ public record Concert(
 
     @Override
     public String playbackInfo() {
-        var performanceInfos = performances.stream()
-                .map(Playable::playbackInfo)
-                .collect(Collectors.joining(","));
-        return """
-                {"type":"concert","id":"%s","title":"%s","platform":"%s","durationSeconds":%d,"performances":[%s]}
-                """.formatted(id, title(), platform, durationSeconds(), performanceInfos).trim();
+        ObjectNode node = MAPPER.createObjectNode();
+        node.put("type", "concert");
+        node.put("id", id);
+        node.put("title", title());
+        node.put("platform", platform);
+        node.put("durationSeconds", durationSeconds());
+
+        ArrayNode performancesArray = node.putArray("performances");
+        for (var perf : performances) {
+            try {
+                performancesArray.add(MAPPER.readTree(perf.playbackInfo()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Failed to parse performance playback info", e);
+            }
+        }
+
+        try {
+            return MAPPER.writeValueAsString(node);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize concert playback info", e);
+        }
     }
 
     @Override

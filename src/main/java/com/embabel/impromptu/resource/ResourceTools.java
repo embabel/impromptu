@@ -16,7 +16,7 @@
 package com.embabel.impromptu.resource;
 
 import com.embabel.agent.api.annotation.LlmTool;
-import com.embabel.agent.api.annotation.MatryoshkaTools;
+import com.embabel.agent.api.annotation.UnfoldingTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
@@ -25,14 +25,14 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * LLM tools for document/resource generation.
- * Uses {@link MatryoshkaTools} for progressive tool disclosure.
+ * Uses {@link UnfoldingTools} for progressive tool disclosure.
  * <p>
  * The LLM first sees a "resource_creation" facade tool. When invoked, document generation tools become available.
  * <p>
  * Generated documents are stored temporarily and a download marker is returned in the response.
  * The chat UI parses these markers and renders them as download buttons.
  */
-@MatryoshkaTools(
+@UnfoldingTools(
         name = "resource_creation",
         description = """
                 Generate downloadable documents/resources such as concert programs, \
@@ -85,7 +85,7 @@ public record ResourceTools(
             return String.format("""
                     Your document is ready.
                     %s
-
+                    
                     Download endpoint: `/api/resource/download/%s`
                     """, downloadMarker, downloadId);
 
@@ -105,7 +105,7 @@ public record ResourceTools(
     public String listStyles() {
         return """
                 Available document styles:
-
+                
                 - **professional**: Clean, modern business style with blue accents. Good for reports and summaries.
                 - **minimal**: Ultra-clean with maximum whitespace. Focus on typography and readability.
                 - **elegant**: Refined aesthetic with gold accents and serif fonts. Perfect for concert programs.

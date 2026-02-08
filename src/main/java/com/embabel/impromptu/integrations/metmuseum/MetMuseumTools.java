@@ -16,7 +16,7 @@
 package com.embabel.impromptu.integrations.metmuseum;
 
 import com.embabel.agent.api.annotation.LlmTool;
-import com.embabel.agent.api.annotation.MatryoshkaTools;
+import com.embabel.agent.api.annotation.UnfoldingTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,14 +25,14 @@ import java.util.List;
 /**
  * LLM tools for Metropolitan Museum of Art Collection API integration.
  * <p>
- * Uses {@link MatryoshkaTools} for progressive tool disclosure. The LLM first sees
+ * Uses {@link UnfoldingTools} for progressive tool disclosure. The LLM first sees
  * a "metmuseum" facade tool. When invoked, all Met Museum-specific tools become available.
  * <p>
  * The Met API is public and does not require authentication.
  *
  * @see <a href="https://metmuseum.github.io/">Met Museum API Documentation</a>
  */
-@MatryoshkaTools(
+@UnfoldingTools(
         name = "metmuseum",
         description = """
                 Access the Metropolitan Museum of Art collection. Invoke this tool to search artworks, \

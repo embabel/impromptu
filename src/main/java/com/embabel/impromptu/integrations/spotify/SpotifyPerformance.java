@@ -15,7 +15,7 @@
  */
 package com.embabel.impromptu.integrations.spotify;
 
-import com.embabel.agent.api.common.LlmReference;
+import com.embabel.agent.api.reference.LlmReference;
 import com.embabel.agent.rag.model.Relationship;
 import com.embabel.impromptu.domain.performance.Performance;
 import org.jspecify.annotations.NonNull;

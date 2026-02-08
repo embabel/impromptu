@@ -176,8 +176,7 @@ embabel:
   models:
 
     # Change this to use a non Open AI default LLM
-    default-llm:
-      model: gpt-4.1-mini
+    default-llm: gpt-4.1-mini
 
 
 logging:

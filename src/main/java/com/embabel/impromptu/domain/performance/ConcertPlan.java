@@ -15,7 +15,7 @@
  */
 package com.embabel.impromptu.domain.performance;
 
-import com.embabel.agent.api.common.LlmReference;
+import com.embabel.agent.api.reference.LlmReference;
 import com.embabel.chat.Asset;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

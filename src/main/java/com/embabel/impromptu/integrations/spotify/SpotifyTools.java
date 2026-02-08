@@ -16,7 +16,7 @@
 package com.embabel.impromptu.integrations.spotify;
 
 import com.embabel.agent.api.annotation.LlmTool;
-import com.embabel.agent.api.annotation.MatryoshkaTools;
+import com.embabel.agent.api.annotation.UnfoldingTools;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +28,10 @@ import java.util.stream.Collectors;
  * LLM tools for Spotify integration.
  * These tools are available to the chatbot when the user has linked their Spotify account.
  * <p>
- * Uses {@link MatryoshkaTools} for progressive tool disclosure. The LLM first sees
+ * Uses {@link UnfoldingTools} for progressive tool disclosure. The LLM first sees
  * a "spotify" facade tool. When invoked, all Spotify-specific tools become available.
  */
-@MatryoshkaTools(
+@UnfoldingTools(
         name = "spotify",
         description = """
                 Access Spotify music features. Invoke this tool to enable Spotify operations \

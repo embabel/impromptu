@@ -16,21 +16,21 @@
 package com.embabel.impromptu.integrations.imslp;
 
 import com.embabel.agent.api.annotation.LlmTool;
-import com.embabel.agent.api.annotation.MatryoshkaTools;
+import com.embabel.agent.api.annotation.UnfoldingTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * LLM tools for IMSLP (International Music Score Library Project) integration.
  * <p>
- * Uses {@link MatryoshkaTools} for progressive tool disclosure. The LLM first sees
+ * Uses {@link UnfoldingTools} for progressive tool disclosure. The LLM first sees
  * an "imslp" facade tool. When invoked, all IMSLP-specific tools become available.
  * <p>
  * IMSLP is the Petrucci Music Library, containing over 600,000 public domain music scores.
  *
  * @see <a href="https://imslp.org/">IMSLP - Petrucci Music Library</a>
  */
-@MatryoshkaTools(
+@UnfoldingTools(
         name = "imslp",
         description = """
                 Access IMSLP (International Music Score Library Project) to find and download \

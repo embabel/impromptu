@@ -15,9 +15,12 @@
  */
 package com.embabel.impromptu.domain.performance;
 
-import com.embabel.agent.api.common.LlmReference;
+import com.embabel.agent.api.reference.LlmReference;
 import com.embabel.agent.api.tool.Tool;
 import com.embabel.chat.Asset;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -80,13 +83,26 @@ public interface Playable extends Asset {
     }
 
     /**
+     * Shared ObjectMapper for JSON serialization.
+     */
+    ObjectMapper MAPPER = new ObjectMapper();
+
+    /**
      * Return JSON-formatted playback info for this item.
      * Used by the play tool to provide information needed for playback.
      */
     default String playbackInfo() {
-        return """
-                {"source":"%s","id":"%s","title":"%s","url":"%s","durationSeconds":%d}
-                """.formatted(source(), getId(), title(), url(), durationSeconds()).trim();
+        ObjectNode node = MAPPER.createObjectNode();
+        node.put("source", source());
+        node.put("id", getId());
+        node.put("title", title());
+        node.put("url", url());
+        node.put("durationSeconds", durationSeconds());
+        try {
+            return MAPPER.writeValueAsString(node);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize playback info", e);
+        }
     }
 
     /**

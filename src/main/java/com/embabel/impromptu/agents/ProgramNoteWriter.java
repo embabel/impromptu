@@ -19,8 +19,8 @@ import com.embabel.agent.api.annotation.AchievesGoal;
 import com.embabel.agent.api.annotation.Action;
 import com.embabel.agent.api.annotation.Agent;
 import com.embabel.agent.api.common.ActionContext;
-import com.embabel.agent.api.common.LlmReference;
 import com.embabel.agent.api.common.OperationContext;
+import com.embabel.agent.api.reference.LlmReference;
 import com.embabel.agent.api.tool.Tool;
 import com.embabel.agent.core.CoreToolGroups;
 import com.embabel.agent.domain.library.InternetResource;
@@ -105,7 +105,8 @@ public class ProgramNoteWriter {
                 String composer,
                 String workName,
                 String performer
-        ) {}
+        ) {
+        }
     }
 
     /**
@@ -113,9 +114,9 @@ public class ProgramNoteWriter {
      * The concert data is retrieved from the blackboard (set by ChatActions).
      * This record contains only the user-configurable options.
      *
-     * @param audience      description of the target audience (e.g., "general concert-goers", "music students")
-     * @param style         writing style (e.g., "scholarly", "accessible", "entertaining")
-     * @param wordsPerWork  approximate word count per work (500-600 words = 1 page)
+     * @param audience     description of the target audience (e.g., "general concert-goers", "music students")
+     * @param style        writing style (e.g., "scholarly", "accessible", "entertaining")
+     * @param wordsPerWork approximate word count per work (500-600 words = 1 page)
      */
     public record ProgramNoteRequest(
             String audience,
@@ -134,7 +135,8 @@ public class ProgramNoteWriter {
             String title,
             String content,
             List<InternetResource> references
-    ) {}
+    ) {
+    }
 
     /**
      * The final program notes (markdown format).
@@ -295,7 +297,8 @@ public class ProgramNoteWriter {
             String composer,
             String workName,
             String imslpPageUrl
-    ) {}
+    ) {
+    }
 
     /**
      * Collection of score links for all works in a concert.
@@ -519,17 +522,17 @@ public class ProgramNoteWriter {
                 .creating(TopicResearch.class)
                 .fromPrompt("""
                         Research the composer %s for concert program notes.
-
+                        
                         Focus on:
                         - Brief biographical context relevant to their music
                         - Their musical style and significance
                         - Interesting anecdotes that would engage concert audiences
                         - Historical context and influences
-
+                        
                         Use web search to find authoritative sources.
                         Provide 3-5 key points suitable for program notes.
                         Include references to your sources.
-
+                        
                         Set category to "composer".
                         """.formatted(composer));
     }
@@ -542,18 +545,18 @@ public class ProgramNoteWriter {
                 .creating(TopicResearch.class)
                 .fromPrompt("""
                         Research the musical work "%s" by %s for concert program notes.
-
+                        
                         Focus on:
                         - When and why it was composed (commission, dedication, circumstances)
                         - Structure and notable musical features
                         - Historical reception and significance
                         - What to listen for (themes, memorable moments)
                         - Any connection to the performer %s if relevant
-
+                        
                         Use web search to find authoritative sources.
                         Provide 3-5 key points suitable for program notes.
                         Include references to your sources.
-
+                        
                         Set category to "work".
                         Set topic to "%s: %s".
                         """.formatted(
@@ -572,17 +575,17 @@ public class ProgramNoteWriter {
                 .creating(TopicResearch.class)
                 .fromPrompt("""
                         Research the performer/ensemble %s for concert program notes.
-
+                        
                         Focus on:
                         - Background and musical training
                         - Notable achievements and recordings
                         - Their approach or style
                         - Connection to the repertoire on this program if known
-
+                        
                         Use web search to find authoritative sources.
                         Provide 2-3 key points suitable for program notes.
                         Include references to your sources.
-
+                        
                         Set category to "performer".
                         """.formatted(performer));
     }
@@ -591,14 +594,14 @@ public class ProgramNoteWriter {
         logger.debug("Researching concept: {}", concept);
         return context.ai()
                 .withLlm(researchLlm())
-                .withTools(CoreToolGroups.WEB)
+                .withToolGroups(CoreToolGroups.WEB)
                 .creating(TopicResearch.class)
                 .fromPrompt("""
                         Research the musical concept "%s" for concert program notes.
-
+                        
                         Explain it in accessible terms for concert audiences.
                         Use web search to verify information.
-
+                        
                         Set category to "concept".
                         """.formatted(concept));
     }
@@ -616,9 +619,8 @@ public class ProgramNoteWriter {
             ResearchFindings research,
             ScoreLinks scoreLinks,
             ImpromptuUser user,
-            ActionContext context) {
+            OperationContext context) {
 
-        context.updateProgress("Writing program notes for " + concert.performances().size() + " works...");
         logger.info("Writing program notes for: {}", concert.title());
         var researchSummary = formatResearchForPrompt(research);
         var scoresSummary = formatScoresForPrompt(scoreLinks);
@@ -645,7 +647,6 @@ public class ProgramNoteWriter {
         }
 
         // Generate XHTML resource from the content
-        context.updateProgress("Generating formatted document...");
         String resourceUrl = null;
         try {
             var markdownContent = "# " + notesContent.title() + "\n\n" + notesContent.content();

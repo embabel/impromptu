@@ -16,7 +16,7 @@
 package com.embabel.impromptu.integrations.youtube;
 
 import com.embabel.agent.api.annotation.LlmTool;
-import com.embabel.agent.api.annotation.MatryoshkaTools;
+import com.embabel.agent.api.annotation.UnfoldingTools;
 import com.embabel.impromptu.user.ImpromptuUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * LLM tools for YouTube integration.
  * Allows the chatbot to search for and play YouTube videos.
  */
-@MatryoshkaTools(
+@UnfoldingTools(
         name = "youtube",
         description = "Access YouTube to play or search for videos"
 )
