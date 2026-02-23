@@ -23,7 +23,6 @@ import com.embabel.agent.rag.neo.drivine.DrivineStore;
 import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.chat.*;
 import com.embabel.common.util.StringTrimmingUtilsKt;
-import com.embabel.dice.proposition.EntityMention;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.data.GraphExportService;
 import com.embabel.impromptu.data.pipeline.*;
@@ -42,7 +41,6 @@ import com.embabel.impromptu.vaadin.components.ChatFooter;
 import com.embabel.impromptu.vaadin.components.ChatHeader;
 import com.embabel.impromptu.vaadin.components.SessionPanel;
 import com.embabel.web.vaadin.components.ChatMessageBubble;
-import com.embabel.web.vaadin.components.EntityCard;
 import com.embabel.web.vaadin.components.InlineAssetCard;
 import com.embabel.web.vaadin.components.VoiceControl;
 import com.vaadin.flow.component.Key;
@@ -216,9 +214,9 @@ public class VaadinChatView extends VerticalLayout {
                 youTubeService,
                 youTubePendingPlayback,
                 propositionRepository,
+                entityRepository,
                 personaService,
                 themeService,
-                this::showEntityDetail,
                 this::getAssetView,
                 this::onPersonaChange,
                 this::onMaxWordsChange,
@@ -597,38 +595,6 @@ public class VaadinChatView extends VerticalLayout {
         layout.add(icon, text, openButton, backstageButton);
         notification.add(layout);
         notification.open();
-    }
-
-    /**
-     * Show entity detail dialog when a mention is clicked.
-     */
-    private void showEntityDetail(EntityMention mention) {
-        if (mention.getResolvedId() == null) {
-            return;
-        }
-
-        var entity = entityRepository.findEntityById(mention.getResolvedId());
-        if (entity == null) {
-            logger.warn("Entity not found: {}", mention.getResolvedId());
-            com.vaadin.flow.component.notification.Notification.show(
-                    "Entity not found: " + mention.getResolvedId(),
-                    3000,
-                    com.vaadin.flow.component.notification.Notification.Position.BOTTOM_CENTER
-            );
-            return;
-        }
-
-        var dialog = new Dialog();
-        dialog.setHeaderTitle(entity.getName());
-        dialog.setWidth("400px");
-
-        var content = new VerticalLayout();
-        content.setPadding(false);
-        content.add(new EntityCard(entity));
-
-        dialog.add(content);
-        dialog.getFooter().add(new Button("Close", e -> dialog.close()));
-        dialog.open();
     }
 
     /**

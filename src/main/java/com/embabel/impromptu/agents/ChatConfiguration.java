@@ -22,6 +22,7 @@ import com.embabel.agent.rag.neo.drivine.cyphergen.CypherQueryTools;
 import com.embabel.agent.rag.service.SearchOperations;
 import com.embabel.agent.rag.tools.ToolishRag;
 import com.embabel.agent.rag.tools.TryHyDE;
+import com.embabel.agent.spi.support.springai.SpringAiMcpToolFactory;
 import com.embabel.agent.tools.mcp.McpToolFactory;
 import com.embabel.chat.Chatbot;
 import com.embabel.chat.agent.AgentProcessChatbot;
@@ -34,6 +35,7 @@ import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.integrations.imslp.ImslpTools;
 import com.embabel.impromptu.integrations.metmuseum.MetMuseumTools;
 import com.embabel.impromptu.rag.DocumentService;
+import com.embabel.vaadin.document.DocumentInfoProvider;
 import com.embabel.impromptu.resource.ResourceDelivery;
 import com.embabel.impromptu.resource.ResourceGenerationService;
 import com.embabel.impromptu.resource.ResourceTools;
@@ -67,7 +69,7 @@ class ChatConfiguration {
     @Bean
     McpToolFactory mcpToolFactory(
             List<McpSyncClient> clients) {
-        return new McpToolFactory(clients);
+        return new SpringAiMcpToolFactory(clients);
     }
 
     @Bean
@@ -99,7 +101,7 @@ class ChatConfiguration {
         var description = "Search reference sources";
         if (!docs.isEmpty()) {
             var docList = docs.stream()
-                    .map(DocumentService.DocumentInfo::title)
+                    .map(DocumentInfoProvider.DocumentInfo::title)
                     .collect(Collectors.joining(", "));
             description = "Search reference sources. Available: " + docList;
         }

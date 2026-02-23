@@ -15,8 +15,8 @@
  */
 package com.embabel.impromptu.vaadin.components;
 
+import com.embabel.agent.rag.service.NamedEntityDataRepository;
 import com.embabel.chat.AssetView;
-import com.embabel.dice.proposition.EntityMention;
 import com.embabel.impromptu.ImpromptuProperties;
 import com.embabel.impromptu.integrations.spotify.SpotifyService;
 import com.embabel.impromptu.integrations.youtube.YouTubePendingPlayback;
@@ -25,8 +25,8 @@ import com.embabel.impromptu.proposition.persistence.DrivinePropositionRepositor
 import com.embabel.impromptu.speech.PersonaService;
 import com.embabel.impromptu.theme.ThemeService;
 import com.embabel.impromptu.user.ImpromptuUser;
+import com.embabel.vaadin.component.PropositionsPanel;
 import com.embabel.web.vaadin.components.AssetsPanel;
-import com.embabel.web.vaadin.components.PropositionsPanel;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.ShortcutRegistration;
 import com.vaadin.flow.component.button.Button;
@@ -86,9 +86,9 @@ public class SessionPanel extends Div {
             YouTubeService youTubeService,
             YouTubePendingPlayback youTubePendingPlayback,
             DrivinePropositionRepository propositionRepository,
+            NamedEntityDataRepository entityRepository,
             PersonaService personaService,
             ThemeService themeService,
-            Consumer<EntityMention> onMentionClick,
             Supplier<AssetView> assetViewSupplier,
             Consumer<String> onPersonaChange,
             IntConsumer onMaxWordsChange,
@@ -186,9 +186,11 @@ public class SessionPanel extends Div {
         var userContextId = config.user().currentContext();
 
         // Create propositions panel first (needed for button references)
-        propositionsPanel = new PropositionsPanel(config.propositionRepository());
+        propositionsPanel = new PropositionsPanel(
+                config.propositionRepository(),
+                id -> config.entityRepository().findEntityById(id)
+        );
         propositionsPanel.setContextId(userContextId);
-        propositionsPanel.setOnMentionClick(config.onMentionClick());
         propositionsPanel.setOnDelete(id -> config.propositionRepository().delete(id));
 
         // Button row with Analyze and Clear

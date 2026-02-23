@@ -85,13 +85,16 @@ class DrivinePropositionRepositoryTest {
                 mentions,
                 confidence,
                 0.0,  // decay
+                0.5,  // importance
                 null, // reasoning
                 List.of(), // grounding
                 Instant.now(),
                 Instant.now(),
+                Instant.now(), // lastAccessed
                 status,
                 0,    // level
                 List.of(), // sourceIds
+                0,    // reinforceCount
                 Map.of(),  // metadata
                 null  // uri
         );

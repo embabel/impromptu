@@ -33,7 +33,6 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,7 +75,7 @@ public class DrivinePropositionRepository implements PropositionRepository {
                     `vector.dimensions`: %d,
                     `vector.similarity_function`: 'cosine'
                 }}
-                """.formatted(name, label, ((EmbeddingModel) embeddingService.getModel()).dimensions());
+                """.formatted(name, label, embeddingService.getDimensions());
         try {
             persistenceManager.execute(QuerySpecification.withStatement(statement));
             logger.info("Created vector index {} on {}", name, label);
@@ -351,6 +350,9 @@ public class DrivinePropositionRepository implements PropositionRepository {
             case EFFECTIVE_CONFIDENCE_DESC -> cypher.replace("RETURN", "ORDER BY p.confidence DESC RETURN");
             case CREATED_DESC -> cypher.replace("RETURN", "ORDER BY p.createdAt DESC RETURN");
             case REVISED_DESC -> cypher.replace("RETURN", "ORDER BY p.revisedAt DESC RETURN");
+            case LAST_ACCESSED_DESC -> cypher.replace("RETURN", "ORDER BY p.lastAccessed DESC RETURN");
+            case REINFORCE_COUNT_DESC -> cypher.replace("RETURN", "ORDER BY p.reinforceCount DESC RETURN");
+            case IMPORTANCE_DESC -> cypher.replace("RETURN", "ORDER BY p.importance DESC RETURN");
             case NONE -> cypher;
         };
 

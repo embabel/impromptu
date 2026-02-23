@@ -1,3 +1,4 @@
 {
+  "parent": "embabel-base",
   "lumoImports": ["typography", "color", "spacing", "badge", "utility"]
 }

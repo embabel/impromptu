@@ -19,6 +19,7 @@ import com.embabel.agent.rag.ingestion.HierarchicalContentReader;
 import com.embabel.agent.rag.ingestion.TikaHierarchicalContentReader;
 import com.embabel.agent.rag.model.ContentRoot;
 import com.embabel.agent.rag.neo.drivine.DrivineStore;
+import com.embabel.vaadin.document.DocumentInfoProvider;
 import kotlin.collections.CollectionsKt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,30 +28,18 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.List;
 
 /**
  * Service for managing document ingestion and retrieval for the Knowledge tab.
  */
 @Service
-public class DocumentService {
+public class DocumentService implements DocumentInfoProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(DocumentService.class);
 
     private final DrivineStore store;
     private final HierarchicalContentReader contentReader;
-
-    /**
-     * Summary info about an ingested document.
-     */
-    public record DocumentInfo(
-            String uri,
-            String title,
-            Instant ingestedAt,
-            int chunkCount
-    ) {
-    }
 
     public DocumentService(DrivineStore store) {
         this.store = store;
@@ -99,19 +88,22 @@ public class DocumentService {
     /**
      * Get list of all ingested documents from the database.
      */
-    public List<DocumentInfo> getDocuments() {
+    @Override
+    public List<DocumentInfoProvider.DocumentInfo> getDocuments() {
         return CollectionsKt.map(store.findAll(ContentRoot.class), root ->
-                new DocumentInfo(
+                new DocumentInfoProvider.DocumentInfo(
                         root.getUri(),
                         root.getTitle(),
-                        root.getIngestionTimestamp(),
-                        0
+                        null,
+                        0,
+                        root.getIngestionTimestamp()
                 ));
     }
 
     /**
      * Delete a document by its URI.
      */
+    @Override
     public boolean deleteDocument(String uri) {
         logger.info("Deleting document: {}", uri);
         var result = store.deleteRootAndDescendants(uri);
@@ -121,6 +113,7 @@ public class DocumentService {
     /**
      * Get total document count.
      */
+    @Override
     public int getDocumentCount() {
         return store.info().getDocumentCount();
     }
@@ -128,6 +121,7 @@ public class DocumentService {
     /**
      * Get total chunk count.
      */
+    @Override
     public int getChunkCount() {
         return store.info().getChunkCount();
     }

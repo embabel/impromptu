@@ -21,6 +21,7 @@ import org.drivine.annotation.GraphRelationship;
 import org.drivine.annotation.GraphView;
 import org.drivine.annotation.Root;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -101,13 +102,16 @@ public class PropositionView {
                 diceMentions,
                 proposition.getConfidence(),
                 proposition.getDecay(),
+                0.5,  // importance (default)
                 proposition.getReasoning(),
                 proposition.getGrounding(),
                 proposition.getCreated(),
                 proposition.getRevised(),
+                Instant.now(),  // lastAccessed
                 proposition.getStatus(),
                 0,
                 proposition.getSourceIds(),  // Preserve sourceIds for lineage tracking
+                0,  // reinforceCount
                 Map.of(),
                 proposition.getUri()
         );

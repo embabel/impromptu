@@ -8,6 +8,19 @@
 
 /* Default theme variables (Gold) - overridden by dynamic theme CSS */
 :root {
+  /* Shared base theme variables (embabel-base) */
+  --sb-bg-dark: var(--concert-black);
+  --sb-bg-medium: var(--velvet-purple);
+  --sb-bg-light: var(--piano-black);
+  --sb-accent: var(--accent-primary);
+  --sb-accent-light: var(--accent-soft);
+  --sb-text-primary: var(--text-primary);
+  --sb-text-secondary: var(--text-secondary);
+  --sb-text-muted: var(--text-muted);
+  --sb-border: var(--accent-glow);
+  --sb-error: var(--lumo-error-color);
+  --sb-success: var(--lumo-success-color);
+  --sb-heading: var(--accent-primary);
   --concert-black: #0a0a0f;
   --piano-black: #121218;
   --velvet-purple: #1a1525;

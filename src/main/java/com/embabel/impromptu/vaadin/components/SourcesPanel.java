@@ -16,6 +16,7 @@
 package com.embabel.impromptu.vaadin.components;
 
 import com.embabel.impromptu.rag.DocumentService;
+import com.embabel.vaadin.document.DocumentInfoProvider;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.Div;
@@ -236,7 +237,7 @@ public class SourcesPanel extends VerticalLayout {
         }
     }
 
-    private HorizontalLayout createDocumentRow(DocumentService.DocumentInfo doc) {
+    private HorizontalLayout createDocumentRow(DocumentInfoProvider.DocumentInfo doc) {
         var row = new HorizontalLayout();
         row.setWidthFull();
         row.setAlignItems(Alignment.CENTER);
