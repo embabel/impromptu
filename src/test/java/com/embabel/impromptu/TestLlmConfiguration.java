@@ -128,23 +128,8 @@ public class TestLlmConfiguration {
         }
 
         @Override
-        public float[] embed(String text) {
-            return new float[1536];
-        }
-
-        @Override
         public float[] embed(Document document) {
             return new float[1536];
-        }
-
-        @Override
-        public List<float[]> embed(List<String> texts) {
-            return texts.stream().map(t -> new float[1536]).toList();
-        }
-
-        @Override
-        public EmbeddingResponse embedForResponse(List<String> texts) {
-            return new EmbeddingResponse(List.of());
         }
 
         @Override
@@ -157,7 +142,6 @@ public class TestLlmConfiguration {
      * A simple fake EmbeddingService for tests.
      */
     static class FakeEmbeddingService implements EmbeddingService {
-        private final FakeEmbeddingModel model = new FakeEmbeddingModel();
 
         @Override
         public String getName() {
@@ -185,11 +169,6 @@ public class TestLlmConfiguration {
         @Override
         public int getDimensions() {
             return 1536;
-        }
-
-        @Override
-        public Object getModel() {
-            return model;
         }
     }
 

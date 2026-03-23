@@ -65,7 +65,7 @@ class YouTubePerformancePersistenceIntegrationTest {
     private NamedEntityDataRepository namedEntityDataRepository;
 
     private static final String TEST_VIDEO_ID = "dQw4w9WgXcQ";
-    private static final String TEST_PERFORMANCE_ID = TEST_VIDEO_ID;
+    private static final String TEST_PERFORMANCE_ID = "perf-" + TEST_VIDEO_ID;
     private static final String TEST_WORK_ID = "work-brahms-symphony4";
 
     @BeforeEach
@@ -123,7 +123,7 @@ class YouTubePerformancePersistenceIntegrationTest {
                             perf.performer = $performer,
                             perf.ensemble = $ensemble,
                             perf.conductor = $conductor,
-                            perf.primarySource = 'youtube-test'
+                            perf.primarySource = $primarySource
                         """)
                         .bind(Map.of(
                                 "id", TEST_PERFORMANCE_ID,
@@ -132,7 +132,8 @@ class YouTubePerformancePersistenceIntegrationTest {
                                 "videoId", TEST_VIDEO_ID,
                                 "performer", "",
                                 "ensemble", "Berlin Philharmonic",
-                                "conductor", "Herbert von Karajan"
+                                "conductor", "Herbert von Karajan",
+                                "primarySource", "youtube-test"
                         ))
         );
 
