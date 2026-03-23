@@ -235,7 +235,7 @@ public class TestDataHelper {
      */
     public long countComposers() {
         return persistenceManager.getOne(
-                QuerySpecification.withStatement("MATCH (c:Composer) RETURN count(c)")
+                QuerySpecification.withStatement("MATCH (c:Composer) WHERE c.primarySource = 'test' RETURN count(c)")
                         .transform(Long.class)
         );
     }
@@ -245,7 +245,7 @@ public class TestDataHelper {
      */
     public long countWorks() {
         return persistenceManager.getOne(
-                QuerySpecification.withStatement("MATCH (w:Work) RETURN count(w)")
+                QuerySpecification.withStatement("MATCH (w:Work) WHERE w.primarySource = 'test' RETURN count(w)")
                         .transform(Long.class)
         );
     }
