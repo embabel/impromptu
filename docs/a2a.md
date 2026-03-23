@@ -1,8 +1,7 @@
 # A2A Support
 
 Embabel integrates with the [A2A](https://github.com/google-a2a/A2A) protocol, allowing you to connect to other
-A2A-enabled agents and
-services.
+A2A-enabled agents and services.
 
 > Embabel agents can be exposed to A2A with zero developer effort.
 
