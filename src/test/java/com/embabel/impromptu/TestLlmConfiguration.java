@@ -21,6 +21,7 @@ import com.embabel.common.ai.model.ConfigurableModelProviderProperties;
 import com.embabel.common.ai.model.EmbeddingService;
 import com.embabel.common.ai.model.ModelProvider;
 import com.embabel.common.ai.model.ConfigurableModelProvider;
+import com.embabel.common.ai.model.PricingModel;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -151,6 +152,11 @@ public class TestLlmConfiguration {
         @Override
         public String getProvider() {
             return "TestProvider";
+        }
+
+        @Override
+        public PricingModel getPricingModel() {
+            return null;
         }
 
         @Override
