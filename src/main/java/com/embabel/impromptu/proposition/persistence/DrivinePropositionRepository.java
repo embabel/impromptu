@@ -280,9 +280,9 @@ public class DrivinePropositionRepository implements PropositionRepository {
         }
 
         // Status filter
-        if (query.getStatus() != null) {
-            whereConditions.add("p.status = $status");
-            params.put("status", query.getStatus().name());
+        if (query.getStatuses() != null && !query.getStatuses().isEmpty()) {
+            whereConditions.add("p.status IN $statuses");
+            params.put("statuses", query.getStatuses().stream().map(Enum::name).toList());
         }
 
         // Level filters
@@ -431,9 +431,9 @@ public class DrivinePropositionRepository implements PropositionRepository {
             whereConditions.add("p.contextId = $contextId");
             params.put("contextId", query.getContextIdValue());
         }
-        if (query.getStatus() != null) {
-            whereConditions.add("p.status = $status");
-            params.put("status", query.getStatus().name());
+        if (query.getStatuses() != null && !query.getStatuses().isEmpty()) {
+            whereConditions.add("p.status IN $statuses");
+            params.put("statuses", query.getStatuses().stream().map(Enum::name).toList());
         }
         if (query.getMinLevel() != null) {
             whereConditions.add("p.level >= $minLevel");

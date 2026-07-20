@@ -73,8 +73,8 @@ class BuildCypherTest {
 
         var result = repository.buildCypher(query);
 
-        assertTrue(result.cypher().contains("p.status = $status"));
-        assertEquals("ACTIVE", result.params().get("status"));
+        assertTrue(result.cypher().contains("p.status IN $statuses"));
+        assertEquals(java.util.List.of("ACTIVE"), result.params().get("statuses"));
     }
 
     @Test
@@ -177,10 +177,10 @@ class BuildCypherTest {
 
         assertTrue(result.cypher().contains("m.resolvedId = $entityId"));
         assertTrue(result.cypher().contains("p.contextId = $contextId"));
-        assertTrue(result.cypher().contains("p.status = $status"));
+        assertTrue(result.cypher().contains("p.status IN $statuses"));
         assertEquals("entity-123", result.params().get("entityId"));
         assertEquals("ctx-1", result.params().get("contextId"));
-        assertEquals("ACTIVE", result.params().get("status"));
+        assertEquals(java.util.List.of("ACTIVE"), result.params().get("statuses"));
     }
 
     @Test
@@ -249,7 +249,7 @@ class BuildCypherTest {
         var result = repository.buildCypher(query);
 
         assertTrue(result.cypher().contains("p.contextId = $contextId"));
-        assertTrue(result.cypher().contains("p.status = $status"));
+        assertTrue(result.cypher().contains("p.status IN $statuses"));
         assertTrue(result.cypher().contains("p.level >= $minLevel"));
         assertTrue(result.cypher().contains("p.level <= $maxLevel"));
         assertTrue(result.cypher().contains("p.createdAt >= $createdAfter"));
@@ -257,7 +257,7 @@ class BuildCypherTest {
         assertTrue(result.cypher().contains("LIMIT 20"));
 
         assertEquals("session-42", result.params().get("contextId"));
-        assertEquals("ACTIVE", result.params().get("status"));
+        assertEquals(java.util.List.of("ACTIVE"), result.params().get("statuses"));
         assertEquals(1, result.params().get("minLevel"));
         assertEquals(5, result.params().get("maxLevel"));
         assertEquals(createdAfter.toEpochMilli(), result.params().get("createdAfter"));

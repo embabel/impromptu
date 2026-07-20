@@ -131,7 +131,7 @@ class ChatConfiguration {
             logger.info("Adding Brave Search MCP tool");
             tools.add(braveSearch.withNote(deter));
         }
-        var wikipediaTool = mcpToolFactory.matryoshkaByName(
+        var wikipediaTool = mcpToolFactory.unfoldingByName(
                 "wikipedia",
                 "Search and find content from Wikipedia: " + deter,
                 Set.of("search_wikipedia", "get_article", "get_related_topics", "get_summary", "get_wikipedia_summary"));

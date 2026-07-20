@@ -518,7 +518,7 @@ public class ProgramNoteWriter {
         logger.debug("Researching composer: {}", composer);
         return context.ai()
                 .withLlm(researchLlm())
-                .withTools(CoreToolGroups.WEB)
+                .withToolGroup(CoreToolGroups.WEB)
                 .creating(TopicResearch.class)
                 .fromPrompt("""
                         Research the composer %s for concert program notes.
@@ -541,7 +541,7 @@ public class ProgramNoteWriter {
         logger.debug("Researching work: {} by {}", work.workName(), work.composer());
         return context.ai()
                 .withLlm(researchLlm())
-                .withTools(CoreToolGroups.WEB)
+                .withToolGroup(CoreToolGroups.WEB)
                 .creating(TopicResearch.class)
                 .fromPrompt("""
                         Research the musical work "%s" by %s for concert program notes.
@@ -571,7 +571,7 @@ public class ProgramNoteWriter {
         logger.debug("Researching performer: {}", performer);
         return context.ai()
                 .withLlm(researchLlm())
-                .withTools(CoreToolGroups.WEB)
+                .withToolGroup(CoreToolGroups.WEB)
                 .creating(TopicResearch.class)
                 .fromPrompt("""
                         Research the performer/ensemble %s for concert program notes.
@@ -632,7 +632,7 @@ public class ProgramNoteWriter {
         try {
             notesContent = context.ai()
                     .withDefaultLlm()
-                    .withTemplate("concert/program_notes")
+                    .rendering("concert/program_notes")
                     .createObject(ProgramNotesContent.class, Map.of(
                             "user", user,
                             "concert", concert,
